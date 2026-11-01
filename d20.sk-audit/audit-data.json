@@ -1,0 +1,328 @@
+{
+ "summary": {
+  "health_score": 80,
+  "business_type": "Obsahový web s nástrojmi (fanúšikovský DnD publisher, SK/EN)",
+  "top_findings": [
+   "Žiadna viditeľná autorita/zmienky mimo webu, indexácia neoverená",
+   "Tenký obsah na /kocky/ a /tvorba-postavy/ (68–99 slov)",
+   "Chýba stránka O projekte, autor a dátumy (E-E-A-T)",
+   "H2 zo šablóny a prázdne nadpisy na každej stránke",
+   "Na mobile je H1 pod veľkým obrázkom a cookie lišta prekrýva úvod"
+  ],
+  "quick_wins": [
+   "Search Console + Bing Webmaster + odoslať sitemapu",
+   "Šablónové H2 zmeniť na <p>, odstrániť prázdne nadpisy",
+   "Doplniť 300–500 slov na /kocky/ a /tvorba-postavy/",
+   "Stránka O projekte + Person/sameAs v schéme",
+   "Na mobile posunúť H1 nad obrázok kocky"
+  ]
+ },
+ "categories": [
+  {
+   "name": "Technical SEO",
+   "score": 90,
+   "what_works": [
+    "robots.txt je v poriadku: `Allow: /` a blokuje len interné priečinky (`/php/`, `/inc/`, `/partials/`, `/pages/`) a odkazuje na sitemapu.",
+    "Sitemapa: 30 URL, všetky vracajú 200, všetky majú `lastmod` a hreflang a žiadna stránka mimo sitemapy sa nenašla.",
+    "Canonical je self-referencing na všetkých stránkach. URL s parametrami (`?utm_source=…`) majú canonical na čistú adresu.",
+    "Presmerovania sú konzistentné: `www` → bez www (301), chýbajúca lomka → s lomkou (301), `/index.html` → `/` (301).",
+    "Vlastná stránka 404 vracia skutočný stav 404 a má `noindex`.",
+    "HTTPS s HSTS (2 roky, includeSubDomains), `X-Content-Type-Options`, HTTP/2 aj HTTP/3.",
+    "Statické súbory majú verziu v URL a `max-age` 1 rok, HTML je komprimované gzipom.",
+    "`lang` atribút sedí s jazykom stránky (sk/en). Hreflang je obojsmerný a má `x-default`."
+   ],
+   "findings": [
+    {
+     "title": "Odkazy v „Mape kráľovstva“ na homepage vkladá až JavaScript: v surovom HTML sú 4 odkazy v ",
+     "severity": "Medium",
+     "description": "Odkazy v „Mape kráľovstva“ na homepage vkladá až JavaScript: v surovom HTML sú 4 odkazy v `<main>`, po vykreslení 14.",
+     "recommendation": "Google JS vykreslí, ale je bezpečnejšie dať odkazy priamo do HTML. Navigácia ich už obsahuje, takže dopad je malý."
+    },
+    {
+     "title": "Chýbajú bezpečnostné hlavičky Content-Security-Policy, Referrer-Policy, Permissions-Policy",
+     "severity": "Low",
+     "description": "Chýbajú bezpečnostné hlavičky `Content-Security-Policy`, `Referrer-Policy`, `Permissions-Policy` a `X-Frame-Options` (alebo `frame-ancestors`).",
+     "recommendation": "Doplniť ich v nginx. Na pozície nemajú priamy vplyv, sú to signály dôvery a ochrany."
+    },
+    {
+     "title": "Kompresia je len gzip, nie Brotli",
+     "severity": "Low",
+     "description": "Kompresia je len gzip, nie Brotli.",
+     "recommendation": "Zapnúť Brotli (`brotli on;`), ušetrí ~15–20 % na HTML/CSS/JS."
+    },
+    {
+     "title": "/NAVODY/ (veľké písmená) vracia 404",
+     "severity": "Low",
+     "description": "`/NAVODY/` (veľké písmená) vracia 404.",
+     "recommendation": "Je to v poriadku, len to netreba nikde odkazovať."
+    },
+    {
+     "title": "/llms",
+     "severity": "Info",
+     "description": "`/llms.txt` a `/.well-known/security.txt` neexistujú.",
+     "recommendation": "Oba sú voliteľné, pozri sekciu o AI vyhľadávaní."
+    }
+   ]
+  },
+  {
+   "name": "Content Quality",
+   "score": 68,
+   "what_works": [
+    "Referenčné stránky sú hodnotné a štruktúrované: `/povolania/` (~880 slov vlastného textu), `/rasy/` (~690), `/slovnik/` (~820) a generátory NPC, krčmy a pokladu (1 100 až 1 550).",
+    "Text je prirodzený, zrozumiteľný a písaný pre začiatočníkov, s anglickými originálmi pojmov („Barbar · Barbarian“). To pomáha aj pri vyhľadávaní v angličtine.",
+    "Licencia SRD 5.1/5.2 (CC BY 4.0) a upozornenie na ochrannú známku Wizards of the Coast sú v pätičke.",
+    "Slovenská nika má veľmi slabú konkurenciu. Vyhľadávanie slovenských návodov a generátorov DnD nenašlo žiadny ucelený slovenský zdroj, len české alebo anglické."
+   ],
+   "findings": [
+    {
+     "title": "Tenký obsah na nástrojoch s najväčším potenciálom hľadanosti: /kocky/ ~68 slov, /en/dice-r",
+     "severity": "High",
+     "description": "Tenký obsah na nástrojoch s najväčším potenciálom hľadanosti: `/kocky/` ~68 slov, `/en/dice-roller/` ~70, `/tvorba-postavy/` ~99, `/en/character-creator/` ~83 (bez navigácie, formulára a pätičky).",
+     "recommendation": "Pod nástroj doplniť 300–500 slov: ako funguje hod, čo je výhoda/nevýhoda, ktoré kocky sa na čo používajú, FAQ („Aké kocky potrebujem na DnD?“, „Čo je d20?“)."
+    },
+    {
+     "title": "Chýbajú signály E-E-A-T",
+     "severity": "High",
+     "description": "Chýbajú signály E-E-A-T. Nie je tu stránka „O projekte“ ani autor, iba meno vydavateľa v schéme. Návody nemajú dátum vydania ani aktualizácie.",
+     "recommendation": "Vytvoriť `/o-projekte/` a `/en/about/` s tým, kto web robí a aké má skúsenosti s DnD. Pri návodoch zobraziť „Aktualizované: …“."
+    },
+    {
+     "title": "Homepage (~160 slov) a /navody/ (~225 slov) sú rozcestníky s málom textu",
+     "severity": "Medium",
+     "description": "Homepage (~160 slov) a `/navody/` (~225 slov) sú rozcestníky s málom textu. `/navody/` cieli na silný dopyt „ako hrať DnD“.",
+     "recommendation": "`/navody/` rozšíriť na plnohodnotný návod (1 000+ slov) alebo z neho spraviť hub s podstránkami (pravidlá, prvé sedenie, ako byť DM)."
+    },
+    {
+     "title": "Žiadne odkazy na externé zdroje okrem právnych stránok",
+     "severity": "Medium",
+     "description": "Žiadne odkazy na externé zdroje okrem právnych stránok.",
+     "recommendation": "Odkázať na oficiálne SRD a D&D Beyond pri pravidlách. Zvyšuje to dôveryhodnosť."
+    },
+    {
+     "title": "Rovnaký veľký blok textu („List do Veže osudu“, cookie lišta, pätička) má každá stránka v ",
+     "severity": "Low",
+     "description": "Rovnaký veľký blok textu („List do Veže osudu“, cookie lišta, pätička) má každá stránka v HTML (~250 slov).",
+     "recommendation": "Je to v poriadku, len to zväčšuje pomer šablóny k obsahu na krátkych stránkach. Ďalší dôvod rozšíriť obsah nástrojov."
+    }
+   ]
+  },
+  {
+   "name": "On-Page SEO",
+   "score": 82,
+   "what_works": [
+    "Titulky majú 23–60 znakov, sú unikátne a obsahujú kľúčové slovo aj značku.",
+    "Meta popisy sú unikátne a väčšinou majú 111–169 znakov. Výnimkou sú stránky o súkromí, ktoré majú 69 a 76 znakov.",
+    "Každá stránka má práve jeden H1, ktorý zodpovedá téme.",
+    "Open Graph a Twitter Card sú kompletné na všetkých stránkach (vrátane rozmerov a alt textu).",
+    "Zrozumiteľné slovenské URL (`/generator-krcmy/`, `/harok-postavy/`).",
+    "Každá stránka má odkazy zo všetkých ostatných (navigácia a pätička), takže žiadna nie je osirelá."
+   ],
+   "findings": [
+    {
+     "title": "Na každej stránke sú 3 H2 zo šablóny: „List do Veže osudu“, „List je zapečatený!“ a „Čo by",
+     "severity": "Medium",
+     "description": "Na každej stránke sú 3 H2 zo šablóny: „List do Veže osudu“, „List je zapečatený!“ a „Čo by si tu chcel?“. Na `/kocky/` sú to jediné H2.",
+     "recommendation": "Zmeniť ich na `<p class=\"…\">` alebo `<div role=\"heading\">` mimo obsahovej hierarchie."
+    },
+    {
+     "title": "Prázdne nadpisy, ktoré dopĺňa JS: <h3> na homepage (karta hrdinu) a <h2> na /tvorba-postav",
+     "severity": "Medium",
+     "description": "Prázdne nadpisy, ktoré dopĺňa JS: `<h3>` na homepage (karta hrdinu) a `<h2>` na `/tvorba-postavy/`.",
+     "recommendation": "Dať do nich predvolený text alebo nadpis vložiť až s obsahom."
+    },
+    {
+     "title": "/navody/ skáče z H1 rovno na H3 (5 krokov) a H2 („Knižnica“) prichádza až potom",
+     "severity": "Low",
+     "description": "`/navody/` skáče z H1 rovno na H3 (5 krokov) a H2 („Knižnica“) prichádza až potom.",
+     "recommendation": "Kroky zabaliť pod H2 „Ako začať v 5 krokoch“."
+    },
+    {
+     "title": "Málo kontextových odkazov z nástrojov",
+     "severity": "Low",
+     "description": "Málo kontextových odkazov z nástrojov. `/generator-npc/` odkazuje v obsahu len na breadcrumb.",
+     "recommendation": "Z generátorov odkazovať na súvisiace stránky (NPC → krčma → tracker súboja, kocky → hárok postavy)."
+    },
+    {
+     "title": "Krátke meta popisy na /ochrana-osobnych-udajov/ (76) a /en/privacy/ (69)",
+     "severity": "Low",
+     "description": "Krátke meta popisy na `/ochrana-osobnych-udajov/` (76) a `/en/privacy/` (69).",
+     "recommendation": "Nevadí, sú to stránky s nízkou prioritou."
+    }
+   ]
+  },
+  {
+   "name": "Schema / Structured Data",
+   "score": 85,
+   "what_works": [
+    "JSON-LD na všetkých 30 stránkach, bez chýb pri parsovaní.",
+    "`BreadcrumbList` na všetkých podstránkach.",
+    "`WebApplication` s `applicationCategory: GameApplication` a `offers` s cenou 0 na nástrojoch.",
+    "`DefinedTermSet` s `DefinedTerm` a URL na kotvy v slovníku, čo je výborné pre AI citácie.",
+    "`WebSite` na homepage, `inLanguage` všade."
+   ],
+   "findings": [
+    {
+     "title": "Chýba entita vydavateľa so sameAs",
+     "severity": "Medium",
+     "description": "Chýba entita vydavateľa so `sameAs`. `publisher` je len `Person` s menom, bez URL a profilov.",
+     "recommendation": "Pridať `Person` (alebo `Organization`) s `@id`, `url` na stránku „O projekte“ a `sameAs` (Discord, Instagram, GitHub…), potom na ňu odkazovať z `WebSite.publisher`."
+    },
+    {
+     "title": "WebApplication",
+     "severity": "Low",
+     "description": "`WebApplication.name` obsahuje príponu „ \\| d20.sk“ (skopírovaný titulok).",
+     "recommendation": "Použiť čistý názov, napr. „Generátor NPC do DnD“."
+    },
+    {
+     "title": "Návody a referenčné stránky nemajú datePublished ani dateModified",
+     "severity": "Low",
+     "description": "Návody a referenčné stránky nemajú `datePublished` ani `dateModified`.",
+     "recommendation": "Doplniť do `WebPage` (alebo použiť `Article` s `author`)."
+    },
+    {
+     "title": "FAQ a HowTo rich results Google pre bežné weby už nezobrazuje",
+     "severity": "Info",
+     "description": "FAQ a HowTo rich results Google pre bežné weby už nezobrazuje.",
+     "recommendation": "`FAQPage` pridať len ak bude FAQ obsah na stránke. Pre rich results to nerob, pomáha to iba AI vyhľadávačom."
+    }
+   ]
+  },
+  {
+   "name": "Performance (CWV)",
+   "score": 95,
+   "what_works": [],
+   "findings": [
+    {
+     "title": "TTFB 0,57–0,82 s (meraný cez proxy, reálne pravdepodobne nižší)",
+     "severity": "Low",
+     "description": "TTFB 0,57–0,82 s (meraný cez proxy, reálne pravdepodobne nižší).",
+     "recommendation": "Overiť v PageSpeed Insights. Pri TTFB > 0,6 s zvážiť cache HTML na Cloudflare edge."
+    },
+    {
+     "title": "3D kocky na desktope majú 160 ms blokovania hlavného vlákna",
+     "severity": "Low",
+     "description": "3D kocky na desktope majú 160 ms blokovania hlavného vlákna.",
+     "recommendation": "3D knižnicu načítať až po prvej interakcii alebo cez `requestIdleCallback`."
+    },
+    {
+     "title": "INP sa v laboratóriu nedá zmerať",
+     "severity": "Info",
+     "description": "INP sa v laboratóriu nedá zmerať.",
+     "recommendation": "Po nazbieraní návštevnosti sledovať CrUX alebo Search Console."
+    }
+   ]
+  },
+  {
+   "name": "AI Search Readiness",
+   "score": 60,
+   "what_works": [
+    "robots.txt nijako neblokuje AI crawlery (GPTBot, ClaudeBot, PerplexityBot, Google-Extended).",
+    "Obsah je v serverovom HTML a nie je závislý od JS. Jasné definície (slovník) a odseky sa dobre citujú.",
+    "`DefinedTermSet` a kotvy na pojmy umožňujú presnú citáciu."
+   ],
+   "findings": [
+    {
+     "title": "Žiadne zmienky o značke mimo webu",
+     "severity": "High",
+     "description": "Žiadne zmienky o značke mimo webu. Vyhľadávanie „d20.sk“ nenašlo web ani odkazy naň. AI asistenti citujú hlavne zdroje, ktoré poznajú z iných webov.",
+     "recommendation": "Získať zmienky a odkazy z komunity: Discord D&D Slovakia (~1 400 členov), slovenské a české RPG fóra, Reddit r/DnD a r/Slovakia, herné obchody (Tlama Games, Ihrisko), blogy."
+    },
+    {
+     "title": "Nie je overená indexácia v Google a Bingu",
+     "severity": "Medium",
+     "description": "Nie je overená indexácia v Google a Bingu. Bing je zdrojom pre ChatGPT search a Copilot.",
+     "recommendation": "Search Console + Bing Webmaster Tools a zapnúť IndexNow."
+    },
+    {
+     "title": "Chýba llms",
+     "severity": "Low",
+     "description": "Chýba `llms.txt`.",
+     "recommendation": "Voliteľné. Google ho ignoruje, niektoré AI nástroje ho čítajú. Stačí krátky zoznam hlavných stránok s popisom."
+    },
+    {
+     "title": "Chýbajú krátke odpovede v štýle FAQ („Čo je DnD?“, „Koľko hráčov treba?“)",
+     "severity": "Low",
+     "description": "Chýbajú krátke odpovede v štýle FAQ („Čo je DnD?“, „Koľko hráčov treba?“).",
+     "recommendation": "Pridať na `/navody/` blok FAQ s 40–60-slovnými odpoveďami."
+    }
+   ]
+  },
+  {
+   "name": "Images",
+   "score": 75,
+   "what_works": [],
+   "findings": [
+    {
+     "title": "Chýbajú obsahové ilustrácie s alt textom",
+     "severity": "Medium",
+     "description": "Všetky <img> sú logá/dekorácia; ilustrácie cez CSS/canvas.",
+     "recommendation": "Pridať ilustrácie povolaní a rás s popisným alt."
+    },
+    {
+     "title": "Jeden OG obrázok na jazyk",
+     "severity": "Low",
+     "description": "og-sk.jpg / og-en.jpg pre všetky stránky.",
+     "recommendation": "Vlastné OG obrázky pre nástroje."
+    }
+   ]
+  }
+ ],
+ "action_plan": {
+  "phases": [
+   {
+    "name": "Phase 1: Critical Fixes",
+    "timeframe": "Week 1",
+    "items": [
+     "Google Search Console a Bing Webmaster Tools: overiť doménu, odoslať `sitemap.xml`, skontrolovať indexáciu všetkých 30 URL a zapnúť IndexNow. *(30 min)*",
+     "Rozšíriť `/kocky/` a `/en/dice-roller/`: 300–500 slov pod nástrojom (kocky v DnD, výhoda/nevýhoda, zápis 2d6+3) a FAQ. *(2 h)*",
+     "Rozšíriť `/tvorba-postavy/` a `/en/character-creator/`: postup tvorby postavy v 6 krokoch, ako rozdeliť vlastnosti a odkazy na povolania, rasy a hárok. *(2–3 h)*",
+     "Stránka „O projekte“ (`/o-projekte/`, `/en/about/`): kto web robí, prečo a skúsenosti s DnD. Odkaz z pätičky, `Person` + `sameAs` v schéme. *(1–2 h)*",
+     "Zmienky o značke: predstaviť web na Discorde D&D Slovakia, v slovenských a českých RPG skupinách a na Reddite. Ponúknuť nástroje herným obchodom a klubom. *(priebežne)*"
+    ]
+   },
+   {
+    "name": "Phase 2: High-Impact Improvements",
+    "timeframe": "Weeks 2-3",
+    "items": [
+     "Nadpisy v šablóne: „List do Veže osudu“, „List je zapečatený!“ a „Čo by si tu chcel?“ z `<h2>` zmeniť na ne-nadpisové prvky. Odstrániť prázdne `<h3>`/`<h2>`. Na `/navody/` doplniť H2 nad 5 krokov. *(30 min)*",
+     "Mobil: H1 a úvod presunúť nad obrázok kocky alebo obrázok zmenšiť na ~45 % výšky. Znížiť výšku cookie lišty. *(1 h)*",
+     "`/navody/` rozšíriť na hlavný návod (1 000+ slov) s FAQ blokom (krátke odpovede pre AI). *(3–4 h)*",
+     "Dátumy: zobraziť „Aktualizované: …“ na návodoch a doplniť `dateModified` do schémy. *(30 min)*",
+     "Kontextové odkazy medzi nástrojmi (NPC ↔ krčma ↔ poklad ↔ tracker, kocky ↔ hárok). *(1 h)*",
+     "Odkazy „Mapy kráľovstva“ na homepage dať priamo do HTML namiesto vkladania cez JS. *(30 min)*"
+    ]
+   },
+   {
+    "name": "Phase 3: Content & Authority",
+    "timeframe": "Month 2",
+    "items": [
+     "Samostatné stránky pre každé povolanie a rasu (`/povolania/bojovnik/` …), 24 nových URL v SK aj EN.",
+     "„Ako byť Dungeon Master“, „Prvé sedenie krok za krokom“, slovník kúziel.",
+     "Jednorazové dobrodružstvo na stiahnutie (PDF) ako magnet na odkazy.",
+     "Prehľad slovenských DnD komunít a obchodov (oplatí sa za ním aj výmena odkazov).",
+     "Bezpečnostné hlavičky v nginx: CSP, Referrer-Policy, Permissions-Policy, frame-ancestors.",
+     "Brotli kompresia.",
+     "`WebApplication.name` bez prípony „| d20.sk“.",
+     "Vlastné OG obrázky pre jednotlivé nástroje.",
+     "Ilustrácie povolaní a rás s alt textom (Google Obrázky).",
+     "`llms.txt` so zoznamom hlavných stránok.",
+     "3D kocky načítať až po interakcii (TBT 160 ms na desktope).",
+     "Väčšie dotykové plochy v pätičke a breadcrumb (min. 24×24 px)."
+    ]
+   },
+   {
+    "name": "Phase 4: Monitoring & Iteration",
+    "timeframe": "Ongoing",
+    "items": [
+     "Mesačne Search Console: indexácia, dopyty, CTR.",
+     "Po zmenách nástrojov znova merať Core Web Vitals.",
+     "O 2–3 mesiace zopakovať audit (`/seo-audit https://d20.sk`)."
+    ]
+   }
+  ]
+ },
+ "artifacts": {
+  "findings_dir": "findings/",
+  "screenshots_dir": "screenshots/"
+ }
+}

@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Generátor NPC do DnD: mená, povaha, tajomstvá | d20.sk</title>
+<meta name="description" content="Náhodná nehráčska postava (NPC) do DnD za sekundu: meno, druh, povolanie, vzhľad, povaha, zvyk, čo chce a aké tají tajomstvo.">
+<link rel="canonical" href="https://d20.sk/generator-npc/">
+<link rel="alternate" hreflang="sk" href="https://d20.sk/generator-npc/">
+<link rel="alternate" hreflang="en" href="https://d20.sk/en/npc-generator/">
+<link rel="alternate" hreflang="x-default" href="https://d20.sk/generator-npc/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="d20.sk">
+<meta property="og:title" content="Generátor NPC do DnD: mená, povaha, tajomstvá | d20.sk">
+<meta property="og:description" content="Náhodná nehráčska postava (NPC) do DnD za sekundu: meno, druh, povolanie, vzhľad, povaha, zvyk, čo chce a aké tají tajomstvo.">
+<meta property="og:url" content="https://d20.sk/generator-npc/">
+<meta property="og:image" content="https://d20.sk/img/og-sk.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="sk_SK">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image:alt" content="d20.sk">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0d0918">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="96x96" href="/img/favicon-96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/img/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://static.cloudflareinsights.com" crossorigin>
+<link rel="preload" href="/fonts/new-rocker.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/grenze-gotisch.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/alegreya-sans-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/fonts.css?v=4b70b414">
+<link rel="stylesheet" href="/css/style.css?v=131afae2">
+<script src="/js/boot.js?v=63e19e5d"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Domov","item":"https://d20.sk/"},{"@type":"ListItem","position":2,"name":"Nástroje","item":"https://d20.sk/nastroje/"},{"@type":"ListItem","position":3,"name":"Generátor NPC","item":"https://d20.sk/generator-npc/"}]},{"@type":"WebApplication","name":"Generátor NPC do DnD: mená, povaha, tajomstvá | d20.sk","url":"https://d20.sk/generator-npc/","description":"Náhodná nehráčska postava (NPC) do DnD za sekundu: meno, druh, povolanie, vzhľad, povaha, zvyk, čo chce a aké tají tajomstvo.","inLanguage":"sk","applicationCategory":"GameApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}]}</script>
+</head>
+<body>
+<div class="sky" aria-hidden="true"></div>
+<div class="candle a" aria-hidden="true"></div>
+<div class="candle b" aria-hidden="true"></div>
+<canvas id="embers" aria-hidden="true"></canvas>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="brassG" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbe9b8"/><stop offset=".35" stop-color="#d1a24c"/><stop offset=".7" stop-color="#7a5a22"/><stop offset="1" stop-color="#c99a45"/>
+    </linearGradient>
+    <radialGradient id="waxG" cx=".38" cy=".32" r=".75">
+      <stop offset="0" stop-color="#c3382d"/><stop offset=".55" stop-color="#8e1b22"/><stop offset="1" stop-color="#4a0a0f"/>
+    </radialGradient>
+    <symbol id="brass" viewBox="0 0 46 46">
+      <path d="M0 0H40Q34 4 30 8Q22 6 16 10Q10 14 10 22Q6 26 8 30Q4 34 0 40Z" fill="url(#brassG)" stroke="#4a3410" stroke-width=".8"/>
+      <path d="M6 6Q16 4 22 9M6 6Q4 16 9 22" fill="none" stroke="#fff3cf" stroke-opacity=".55" stroke-width="1"/>
+      <circle cx="9" cy="9" r="3.2" fill="url(#brassG)" stroke="#4a3410" stroke-width=".8"/>
+      <circle cx="8.2" cy="8.2" r="1" fill="#fff6d8" opacity=".8"/>
+    </symbol>
+    <symbol id="seal" viewBox="0 0 40 40">
+      <path d="M20 1.5C24 3 26 1 29 4S33 5 35 9S38 13 37 17S40 22 37 26S36 33 32 35S27 39 22 38S15 40 11 37S5 35 4 30S0 24 3 20S1 13 4 9S9 3 13 3S17 0 20 1.5Z" fill="url(#waxG)"/>
+      <circle cx="20" cy="20" r="12.5" fill="none" stroke="#2e0507" stroke-opacity=".5" stroke-width="1.2"/>
+      <circle cx="20" cy="20" r="11.5" fill="none" stroke="#ff9a88" stroke-opacity=".25" stroke-width=".8"/>
+      <g fill="none" stroke="#3a0609" stroke-opacity=".65" stroke-width="1.4" stroke-linejoin="round">
+        <path d="M20 11l7.5 4.2v8.6L20 28l-7.5-4.2v-8.6z"/><path d="M20 14.5l4.2 7.2h-8.4z"/>
+      </g>
+    </symbol>
+    <symbol id="sigil" viewBox="0 0 40 40">
+      <g fill="none" stroke="currentColor" stroke-width="1.3">
+        <circle cx="20" cy="20" r="18"/><circle cx="20" cy="20" r="13" stroke-dasharray="2 3"/>
+        <path d="M20 4L33.9 28L6.1 28Z"/><path d="M20 36L6.1 12L33.9 12Z" opacity=".6"/>
+      </g>
+      <circle cx="20" cy="20" r="2.2" fill="currentColor"/>
+    </symbol>
+    <symbol id="fleuron" viewBox="0 0 60 20">
+      <g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+        <path d="M30 4C26 10 18 12 12 9C16 7 20 8 22 11M30 4C34 10 42 12 48 9C44 7 40 8 38 11"/>
+        <path d="M30 4V16M26 13C28 15 32 15 34 13"/>
+      </g>
+      <circle cx="30" cy="4" r="2" fill="currentColor"/><circle cx="5" cy="10" r="1.4" fill="currentColor"/><circle cx="55" cy="10" r="1.4" fill="currentColor"/>
+    </symbol>
+    <symbol id="d6s" viewBox="0 0 42 42"><path d="M21 3L38 12V30L21 39L4 30V12Z M4 12L21 21L38 12 M21 21V39" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="d10s" viewBox="0 0 52 52"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M26 2L49 21L26 50L3 21Z"/><path d="M3 21L26 31L49 21M26 31V50" opacity=".55"/></g></symbol>
+    <symbol id="d20s" viewBox="0 0 42 42"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M21 2L38 11.5V30.5L21 40L4 30.5V11.5Z"/><path d="M21 9L31 26H11Z"/><path d="M21 2V9M4 11.5L11 26M38 11.5L31 26M21 40L11 26M21 40L31 26" opacity=".55"/></g></symbol><symbol id="d20n" viewBox="0 0 42 42"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M21 2L38 11.5V30.5L21 40L4 30.5V11.5Z"/><path d="M21 7L35 31H7Z"/><path d="M21 2V7M4 11.5L21 7M38 11.5L21 7M4 11.5L7 31M38 11.5L35 31M4 30.5L7 31M38 30.5L35 31M21 40L7 31M21 40L35 31" opacity=".5"/></g></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 6.5l5 8.5H7z"/></g></symbol>
+    <symbol id="i-quill" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 3C12 4 7 9 5 19"/><path d="M20 3c-1 6-5 10-11 11"/><path d="M4 21l2-3"/></g></symbol>
+    <symbol id="i-unlock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7.5a4 4 0 0 1 7.6-1.7"/></g></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="boot" aria-hidden="true"><div class="boot-c"><div class="boot-ring"></div><img src="/img/logo-176.webp" srcset="/img/logo-176.webp 176w, /img/logo-352.webp 352w" sizes="150px" alt=""><b>d20.sk</b></div></div>
+<div class="warp" id="warp" aria-hidden="true"><div class="warp-c"><img src="/img/logo-176.webp" alt="" loading="lazy"></div></div>
+<div class="shell">
+  <header class="top">
+    <div class="wrap">
+      <div class="top-inner">
+        <a class="brand" href="/"><img src="/img/logo-88.webp" alt="" width="44" height="44"><b>d20<span>.sk</span></b></a>
+        <nav class="menu" aria-label="Menu">
+          <a href="/">Domov</a>
+          <a href="/navody/">Návody</a>
+          <a href="/tvorba-postavy/">Tvorba postavy</a>
+          <a href="/tvorba-pribehu/">Tvorba príbehu</a>
+          <a href="/kocky/">Kocky</a>
+          <a href="/nastroje/">Nástroje</a>
+        </nav>
+        <div class="lang" role="group" aria-label="Jazyk">
+          <a href="/generator-npc/" hreflang="sk" lang="sk" aria-current="true">SK</a>
+          <a href="/en/npc-generator/" hreflang="en" lang="en">EN</a>
+        </div>
+      </div>
+      <nav class="menu-mobile" aria-label="Menu">
+        <a href="/navody/">Návody</a>
+        <a href="/tvorba-postavy/">Postava</a>
+        <a href="/tvorba-pribehu/">Príbeh</a>
+        <a href="/kocky/">Kocky</a>
+        <a href="/nastroje/">Nástroje</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+<section class="page wrap" data-page="npc">
+  <div class="head">
+    <nav class="crumbs" aria-label="Omrvinková navigácia">
+  <a href="/">Domov</a>
+  <span aria-hidden="true">›</span><a href="/nastroje/">Nástroje</a>
+  <span aria-hidden="true">›</span><span aria-current="page">Generátor NPC</span>
+</nav>
+    <h1 class="kicker"><svg class="sg"><use href="#sigil"/></svg><span>Generátor NPC do DnD</span></h1>
+    <p class="h1 gild">Cudzinec pri ohni</p>
+    <p class="lede">Hráči sa pýtajú krčmára na meno a ty nevieš, čo povedať? Hoď si nehráčsku postavu (NPC): meno, druh, povolanie a sedem drobností, ktoré ju oživia. Čo sa ti páči, zamkni.</p>
+  </div>
+  <div class="tool">
+    <div class="ctrl leather">
+      <div><label class="label" for="n-sp">Druh</label>
+        <select class="input" id="n-sp">
+          <option value="">Ktorýkoľvek druh</option>
+          <option value="human">Človek</option>
+          <option value="elf">Elf</option>
+          <option value="dwarf">Trpaslík</option>
+          <option value="halfling">Polovičník</option>
+          <option value="gnome">Gnóm</option>
+          <option value="dragonborn">Drakorodený</option>
+          <option value="tiefling">Tiefling</option>
+          <option value="orc">Ork</option>
+          <option value="goliath">Goliáš</option>
+        </select></div>
+      <div><span class="label">Pohlavie</span><div class="opts" id="n-g">
+        <button class="opt" type="button" data-g="" aria-pressed="true">Náhodne</button>
+        <button class="opt" type="button" data-g="0" aria-pressed="false">Muž</button>
+        <button class="opt" type="button" data-g="1" aria-pressed="false">Žena</button>
+      </div></div>
+      <button class="btn wide" type="button" id="n-roll"><svg class="seal"><use href="#i-dice"/></svg><span id="n-roll-l">Hodiť novú postavu</span></button>
+      <button class="btn ghost wide" type="button" id="n-copy"><svg width="18" height="18" aria-hidden="true"><use href="#i-quill"/></svg><span>Kopírovať ako text</span></button>
+      <p class="note">Tip: zamkni povahu a tajomstvo a hádž, kým nenájdeš vzhľad, ktorý sa hodí do tvojho sveta.</p>
+    </div>
+    <div class="board leather" id="npc">
+      <div class="who parchment" aria-live="polite">
+        <div class="who-top"><h2 class="nm" id="n-name">Sela Thunakai</h2>
+          <button class="icon-btn" type="button" id="n-name-roll" aria-label="Iné meno"><svg><use href="#i-dice"/></svg></button></div>
+        <p class="sub" id="n-sub" data-sp="goliath" data-g="1">Staršia goliáška, pekárka</p>
+      </div>
+      <div class="note-row" data-r="2"><div class="d d20" aria-label="d20: 2"><svg><use href="#d20n"/></svg><span>2</span></div><div><p class="k">Vzhľad</p><p class="v">zlatý zub, ktorý sa zaleskne pri každom úsmeve</p></div><button class="lock" type="button" aria-label="Zamknúť: Vzhľad" aria-pressed="false"><svg><use href="#i-unlock"/></svg><span>Zamknúť</span></button></div>
+      <div class="note-row" data-r="3"><div class="d d20" aria-label="d20: 3"><svg><use href="#d20n"/></svg><span>3</span></div><div><p class="k">Povaha</p><p class="v">rozdá posledný groš, ak ho niekto potrebuje viac</p></div><button class="lock" type="button" aria-label="Zamknúť: Povaha" aria-pressed="false"><svg><use href="#i-unlock"/></svg><span>Zamknúť</span></button></div>
+      <div class="note-row" data-r="13"><div class="d d20" aria-label="d20: 13"><svg><use href="#d20n"/></svg><span>13</span></div><div><p class="k">Zvyk</p><p class="v">pri každom zvuku sa strhne</p></div><button class="lock" type="button" aria-label="Zamknúť: Zvyk" aria-pressed="false"><svg><use href="#i-unlock"/></svg><span>Zamknúť</span></button></div>
+      <div class="note-row" data-r="20"><div class="d d20" aria-label="d20: 20"><svg><use href="#d20n"/></svg><span>20</span></div><div><p class="k">Reč</p><p class="v">hovorí tak potichu, že sa všetci musia nakloniť</p></div><button class="lock" type="button" aria-label="Zamknúť: Reč" aria-pressed="false"><svg><use href="#i-unlock"/></svg><span>Zamknúť</span></button></div>
+      <div class="note-row" data-r="19"><div class="d d20" aria-label="d20: 19"><svg><use href="#d20n"/></svg><span>19</span></div><div><p class="k">Čo chce</p><p class="v">odhaliť tajomstvo starej veže za mestom</p></div><button class="lock" type="button" aria-label="Zamknúť: Čo chce" aria-pressed="false"><svg><use href="#i-unlock"/></svg><span>Zamknúť</span></button></div>
+      <div class="note-row" data-r="13"><div class="d d20" aria-label="d20: 13"><svg><use href="#d20n"/></svg><span>13</span></div><div><p class="k">Tajomstvo</p><p class="v">pochádza z kráľovskej rodiny, ale nikto to nesmie vedieť</p></div><button class="lock" type="button" aria-label="Zamknúť: Tajomstvo" aria-pressed="false"><svg><use href="#i-unlock"/></svg><span>Zamknúť</span></button></div>
+      <div class="note-row" data-r="17"><div class="d d20" aria-label="d20: 17"><svg><use href="#d20n"/></svg><span>17</span></div><div><p class="k">Prvé slová</p><p class="v">„Hádam nie ste tí, o ktorých hovorí proroctvo?“</p></div><button class="lock" type="button" aria-label="Zamknúť: Prvé slová" aria-pressed="false"><svg><use href="#i-unlock"/></svg><span>Zamknúť</span></button></div>
+    </div>
+  </div>
+  <section class="rolls" id="tables" aria-labelledby="tables-h">
+    <div class="section-title">
+      <p class="kicker"><svg class="sg"><use href="#sigil"/></svg><span>Tabuľky na hádzanie</span></p>
+      <h2 class="h2" id="tables-h">Tabuľky na tvorbu NPC</h2>
+      <p class="lede">Hráš radšej so skutočnými kockami? Hoď d20 za každú tabuľku. Čísla na kockách pri lístkoch hore sú presne tieto hody.</p>
+    </div>
+    <div class="rtables">
+      <div class="rtable parchment"><h3><span>d20</span> Vzhľad</h3><ol data-k="Vzhľad">
+        <li>jazva cez ľavé obočie</li>
+        <li>zlatý zub, ktorý sa zaleskne pri každom úsmeve</li>
+        <li>vlasy spletené do desiatok tenkých vrkočov</li>
+        <li>jedno oko modré a druhé hnedé</li>
+        <li>ruky celé od atramentu</li>
+        <li>tetovanie hada, ktoré sa vinie okolo krku</li>
+        <li>priveľký klobúk s ošúchaným pierkom</li>
+        <li>obviazaná ruka, ktorú nikdy neodhalí</li>
+        <li>drahé šaty, ale roztrhané topánky</li>
+        <li>nápadne bledá pleť a kruhy pod očami</li>
+        <li>zlomený nos, ktorý zle zrástol</li>
+        <li>na každom prste iný prsteň</li>
+        <li>vôňa levandule, ktorú cítiť na tri kroky</li>
+        <li>chýbajúce ucho a namiesto neho strieborná náušnica v diere</li>
+        <li>vlasy plné sušených kvetov</li>
+        <li>plášť zošitý z mnohých rôznych látok</li>
+        <li>taká vysoká postava, že sa skláňa v každých dverách</li>
+        <li>prenikavé sivé oči, ktoré akoby nikdy nežmurkli</li>
+        <li>opálené obočie a sadze na tvári</li>
+        <li>starý vojenský odznak pripnutý na hrudi</li>
+      </ol></div>
+      <div class="rtable parchment"><h3><span>d20</span> Povaha</h3><ol data-k="Povaha">
+        <li>nikomu neverí, kým si to neoverí na vlastné oči</li>
+        <li>smeje sa na vlastných vtipoch, aj keď sa nesmeje nikto iný</li>
+        <li>rozdá posledný groš, ak ho niekto potrebuje viac</li>
+        <li>na všetko sa sťažuje, ale nič nemení</li>
+        <li>miluje klebety a o každom v meste nejakú pozná</li>
+        <li>hovorí, len keď musí</li>
+        <li>všetko meria peniazmi, aj priateľstvo</li>
+        <li>bojí sa mágie a čarodejníkom sa vyhýba oblúkom</li>
+        <li>večne sa ponáhľa a nikdy nič nestihne</li>
+        <li>verí na znamenia a v každej maličkosti vidí osud</li>
+        <li>každého hneď od prvého slova nazýva priateľom</li>
+        <li>dodržiava pravidlá do bodky, aj tie hlúpe</li>
+        <li>nedokáže odolať stávke</li>
+        <li>klame z čírej zábavy, aj keď netreba</li>
+        <li>má na všetkých zlú náladu, kým sa nenaraňajkuje</li>
+        <li>zastane sa slabších, aj keď si tým narobí problémy</li>
+        <li>všade vidí sprisahanie</li>
+        <li>cudzincov víta s nedôverou, priateľov s otvorenou náručou</li>
+        <li>pre každý nový nápad sa okamžite nadchne</li>
+        <li>snaží sa pôsobiť dôležitejšie, než v skutočnosti je</li>
+      </ol></div>
+      <div class="rtable parchment"><h3><span>d20</span> Zvyk</h3><ol data-k="Zvyk">
+        <li>neustále si prehadzuje mincu medzi prstami</li>
+        <li>počas rozhovoru si niečo kreslí</li>
+        <li>každú vetu končí otázkou, však?</li>
+        <li>nikdy sa nepozrie do očí</li>
+        <li>pri každej príležitosti si poklepe na nos</li>
+        <li>žuje stebielko slamy</li>
+        <li>dookola si pospevuje tú istú pesničku</li>
+        <li>hovorí o sebe v tretej osobe</li>
+        <li>ohmatáva každú vec, ktorá je na dosah</li>
+        <li>pri rozhovore sa nakláňa nepríjemne blízko</li>
+        <li>ustavične si napráva šaty</li>
+        <li>zapisuje si všetko, čo kto povie</li>
+        <li>pri každom zvuku sa strhne</li>
+        <li>kdekoľvek si sadne, vyloží si nohy na stôl</li>
+        <li>stále niečo je</li>
+        <li>gestikuluje tak divoko, že zhadzuje veci</li>
+        <li>na všetko má príslovie, často vymyslené</li>
+        <li>pred každým rozhodnutím si hodí kockou</li>
+        <li>pri smiechu si zakrýva ústa</li>
+        <li>každého oslovuje titulom, aj kuchára</li>
+      </ol></div>
+      <div class="rtable parchment"><h3><span>d20</span> Reč</h3><ol data-k="Reč">
+        <li>šepká, akoby niekto načúval</li>
+        <li>hovorí nahlas a smeje sa tak, že sa trasú poháre</li>
+        <li>hovorí pomaly a každé slovo váži</li>
+        <li>hovorí rýchlo a skáče z témy na tému</li>
+        <li>zajakáva sa, len čo príde reč na peniaze</li>
+        <li>má silný prízvuk z ďalekého severu</li>
+        <li>používa vznešené slová, často nesprávne</li>
+        <li>má chrapľavý hlas a stále si odkašliava</li>
+        <li>hovorí spevavo, akoby každú vetu zanôtil</li>
+        <li>odpovedá stručne, ako vojak pri hlásení</li>
+        <li>šušle</li>
+        <li>hovorí v hádankách a náznakoch</li>
+        <li>neustále nadáva, ale veľmi vynaliezavo</li>
+        <li>hovorí ako kazateľ, s pátosom a zdvihnutým prstom</li>
+        <li>mrmle si popod nos, takže sa treba pýtať znova</li>
+        <li>hovorí veľmi zdvorilo a formálne, aj s deťmi</li>
+        <li>do reči mieša slová z cudzieho jazyka</li>
+        <li>má hlboký, pokojný hlas, ktorý upokojí aj splašeného koňa</li>
+        <li>opakuje posledné slovo druhého, slovo druhého</li>
+        <li>hovorí tak potichu, že sa všetci musia nakloniť</li>
+      </ol></div>
+      <div class="rtable parchment"><h3><span>d20</span> Čo chce</h3><ol data-k="Čo chce">
+        <li>splatiť dlh nebezpečným ľuďom</li>
+        <li>nájsť strateného brata alebo sestru</li>
+        <li>pomstiť sa šľachticovi, ktorý zničil celú rodinu</li>
+        <li>ujsť z mesta, kým nie je neskoro</li>
+        <li>otvoriť si vlastný obchod</li>
+        <li>získať späť ukradnutý rodinný meč</li>
+        <li>dostať sa do cechu mágov</li>
+        <li>aspoň raz v živote vidieť more</li>
+        <li>zbohatnúť rýchlo a bez námahy</li>
+        <li>ochrániť deti pred tým, čo žije v lese</li>
+        <li>zistiť, kto otrávil starého starostu</li>
+        <li>získať slávu, o ktorej budú spievať bardi</li>
+        <li>zbaviť sa kliatby, ktorú nikto iný nevidí</li>
+        <li>vrátiť sa domov, hoci domov už neexistuje</li>
+        <li>kúpiť si odpustenie za starý hriech</li>
+        <li>nájsť liek pre chorého priateľa</li>
+        <li>za každú cenu prekonať rivala</li>
+        <li>mať konečne pokoj od dobrodruhov</li>
+        <li>odhaliť tajomstvo starej veže za mestom</li>
+        <li>získať srdce niekoho, kto o tom nemá ani tušenie</li>
+      </ol></div>
+      <div class="rtable parchment"><h3><span>d20</span> Tajomstvo</h3><ol data-k="Tajomstvo">
+        <li>pracuje pre cech zlodejov</li>
+        <li>pod podlahou ukrýva ukradnutú korunu</li>
+        <li>používa falošné meno, to skutočné je na zatykači</li>
+        <li>pozná tajnú chodbu pod mestom</li>
+        <li>má dvojča, o ktorom nikto nevie</li>
+        <li>dlhuje veľa peňazí miestnemu barónovi</li>
+        <li>vie čarovať, ale skrýva to</li>
+        <li>každú noc sa s niekým stretáva na cintoríne</li>
+        <li>slúži tajnému kultu, ktorý uctieva draka</li>
+        <li>má na svedomí smrť bývalého spoločníka</li>
+        <li>vie, kde je zakopaný poklad, ale bojí sa tam ísť</li>
+        <li>posiela správy nepriateľskému vojsku</li>
+        <li>pochádza z kráľovskej rodiny, ale nikto to nesmie vedieť</li>
+        <li>nosí zakliaty prsteň, ktorý v noci šepká</li>
+        <li>v pivnici falšuje mince</li>
+        <li>za splnu sa mení na vlka</li>
+        <li>pozná pravého vraha, ale zo strachu mlčí</li>
+        <li>kradne z chrámovej pokladnice</li>
+        <li>tajne si dopisuje s nepriateľom rodiny</li>
+        <li>v skutočnosti je to meňavec v cudzej podobe</li>
+      </ol></div>
+      <div class="rtable parchment"><h3><span>d20</span> Prvé slová</h3><ol data-k="Prvé slová">
+        <li>„Ešte krok a zavolám stráže!“</li>
+        <li>„Hľadáte prácu? Mám niečo, čo sa vám nebude páčiť.“</li>
+        <li>„Vy nie ste odtiaľto, však?“</li>
+        <li>„Za informácie sa platí. Za dobré dvojnásobne.“</li>
+        <li>„Konečne! Čakám na vás už tri dni.“</li>
+        <li>„Ak sa pýtate na vežu, nič neviem.“</li>
+        <li>„Pst! Tu nás môžu počuť.“</li>
+        <li>„Dobrodruhovia? Vyzeráte skôr ako problém.“</li>
+        <li>„Čo si dáte? Dnes máme len polievku a zlé správy.“</li>
+        <li>„Nedotýkajte sa toho! To je… veľmi vzácne.“</li>
+        <li>„Poslali vás bohovia. Alebo démoni, to sa ešte uvidí.“</li>
+        <li>„Mám pre vás ponuku, ktorú nemôžete odmietnuť. Teda môžete, ale nemali by ste.“</li>
+        <li>„Ten meč… kde ste ho vzali?“</li>
+        <li>„Dnes nie. Príďte zajtra. Alebo radšej vôbec.“</li>
+        <li>„Vraj sa v lese zase niečo hýbe.“</li>
+        <li>„Tri zlaté a môžete ísť ďalej.“</li>
+        <li>„Hádam nie ste tí, o ktorých hovorí proroctvo?“</li>
+        <li>„Pomoc! Niekto mi ukradol kozu!“</li>
+        <li>„Neverte krčmárovi. A mne už vôbec nie.“</li>
+        <li>„Viete čítať? Výborne, potrebujem, aby ste mi niečo prečítali.“</li>
+      </ol></div>
+    </div>
+  </section>
+</section>
+<script id="npc-data" type="application/json">{"species":{"human":["muž","žena","human"],"elf":["elf","elfka","elf"],"dwarf":["trpaslík","trpaslíčka","dwarf"],"halfling":["polovičník","polovičníčka","halfling"],"gnome":["gnóm","gnómka","gnome"],"dragonborn":["drakorodený","drakorodená","dragonborn"],"tiefling":["tiefling","tieflingka","tiefling"],"orc":["ork","orkyňa","orc"],"goliath":["goliáš","goliáška","goliath"]},"names":{"human":{"m":["Aldren","Corvin","Edric","Halvard","Joren","Merrick","Osric","Rowan","Tobin","Varek"],"f":["Brenna","Elsabet","Lirien","Maren","Odessa","Rhosyn","Seraphine","Tamsin","Wren","Ysolde"],"family":["Ashcombe","Greymoor","Holloway","Marrow","Redfern","Stormvane","Thornwell","Vale"]},"elf":{"m":["Aelar","Caelion","Elorin","Faelan","Ilvaris","Lathiel","Nyrandil","Quelenor","Sylvaran","Varion"],"f":["Caelynn","Eluviel","Faenya","Ilyana","Liarin","Naivara","Sariel","Theriel","Vanyth","Yaelith"],"family":["Ellisandre","Iliandor","Ithrandel","Nauravel","Quirathil","Selvarin","Sylvenar","Thaelith"]},"dwarf":{"m":["Brokkar","Dorgrim","Durnik","Grundar","Haldrek","Korgan","Morvik","Torbek","Ulgrin","Varnok"],"f":["Amberra","Brundis","Dagna","Gerdra","Hildrun","Ingra","Margna","Orsolda","Thordis","Tovra"],"family":["Balderk","Barakh","Dunvar","Gorunn","Korrgan","Kragmor","Ozzrim","Thrundak"]},"halfling":{"m":["Corrin","Eldon","Fennick","Garret","Lyle","Osborn","Perrin","Roscoe","Tobble","Wellby"],"f":["Andry","Bree","Callie","Lavinia","Merla","Nedda","Posy","Rosamund","Tilly","Verna"],"family":["Applewick","Burrowell","Dewfoot","Hilltopple","Kettlewhistle","Mossbottom","Puddifoot","Thistlebrook"]},"gnome":{"m":["Bimble","Dabbin","Fizzwick","Gimlen","Nackle","Orrik","Pockle","Tinkerby","Wizzlo","Zebbin"],"f":["Bixi","Dobbla","Fenna","Lilli","Mimsy","Nissa","Pippa","Quilla","Tinka","Zanna"],"family":["Cogsworth","Copperkettle","Fiddlewhit","Gearspark","Nimblefinger","Sprocketeer","Tumblebrass","Whistlewick"]},"dragonborn":{"m":["Azhrak","Bharash","Draxen","Grezzik","Ithrax","Korrath","Shazrin","Tarhun","Vorrash","Zekhar"],"f":["Ashara","Ilyrix","Jhessa","Kaziri","Nyxara","Qiraxa","Raesha","Sirrah","Vaelra","Zhorra"],"family":["Ghazradon","Ixendar","Kerrhylon","Morrovax","Shazzarak","Thurnavex","Ulthraxis","Vharnathi"]},"tiefling":{"m":["Belthor","Dravos","Ezrakh","Kazmer","Malachar","Orzhel","Rhazien","Sethrak","Vexim","Zanthos"],"f":["Ashkara","Belisandra","Calyx","Draxia","Ivyra","Lilivex","Nyssara","Seraxa","Vespera","Zethra"],"family":["Ashmourne","Crowmere","Draxil","Ebonthorn","Kalvaris","Morvane","Nightvale","Vesperyn"]},"orc":{"m":["Brug","Durgash","Ghorz","Grukk","Karg","Mogrul","Ruzgar","Thrakk","Uzgoth","Zogar"],"f":["Agra","Bashka","Durza","Gharra","Krisha","Murza","Oghra","Shazra","Urzha","Zhara"],"family":["Brazzog","Dargun","Ghashnak","Gorthak","Khazruk","Murzog","Narkul","Ulgrim"]},"goliath":{"m":["Arokan","Ganthor","Haukar","Kethal","Mauri","Oltan","Takkar","Thurak","Vaelon","Zaruk"],"f":["Aniko","Breia","Kaiya","Lunari","Mavela","Neiri","Sela","Teruna","Vaela","Yorra"],"family":["Elikanai","Gathakui","Horthagai","Kolamui","Orokalai","Thunakai","Tuvaleo","Varamuri"]}},"jobs":[["krčmár","krčmárka","innkeeper"],["kováč","kováčka","blacksmith"],["strážnik","strážnička","town guard"],["kupec","kupkyňa","merchant"],["bylinkár","bylinkárka","herbalist"],["kňaz","kňažka","priest"],["lovec","lovkyňa","hunter"],["pašerák","pašeráčka","smuggler"],["pisár","pisárka","scribe"],["hrobár","hrobárka","gravedigger"],["rybár","rybárka","fisher"],["potulný spevák","potulná speváčka","wandering minstrel"],["žoldnier","žoldnierka","mercenary"],["alchymista","alchymistka","alchemist"],["mlynár","mlynárka","miller"],["vreckár","vreckárka","pickpocket"],["kartograf","kartografka","cartographer"],["šľachtic","šľachtičná","noble"],["žobrák","žobráčka","beggar"],["veštec","veštkyňa","fortune teller"],["námorník","námorníčka","sailor"],["pekár","pekárka","baker"],["knihovník","knihovníčka","librarian"],["krotiteľ zvierat","krotiteľka zvierat","animal tamer"],["ranhojič","ranhojička","healer"],["lovec odmien","lovkyňa odmien","bounty hunter"],["zlatník","zlatníčka","goldsmith"],["pastier","pastierka","shepherd"],["mágov učeň","mágova učnica","wizard's apprentice"],["výberca daní","výberkyňa daní","tax collector"]],"ages":[["mladý","mladá","young"],["skúsený","skúsená","seasoned"],["zrelý","zrelá","middle-aged"],["starší","staršia","older"],["starý","stará","old"],["prastarý","prastará","ancient"]]}</script>
+  </main>
+
+<dialog class="ct" id="ct" aria-labelledby="ct-h">
+  <div class="leather ct-frame">
+    <svg class="brass tl"><use href="#brass"/></svg><svg class="brass tr"><use href="#brass"/></svg><svg class="brass bl"><use href="#brass"/></svg><svg class="brass br"><use href="#brass"/></svg>
+    <div class="parchment ct-sheet">
+      <button class="ct-x" type="button" id="ct-close" aria-label="Zavrieť">&times;</button>
+      <form id="ct-form" novalidate>
+        <h2 id="ct-h">List do Veže osudu</h2>
+        <p class="ct-lede">Máš nápad, našiel si chybu alebo chceš spolupracovať? Napíš pár riadkov a odpovieme ti e-mailom.</p>
+        <div class="ct-row">
+          <label class="ct-f"><span>Meno alebo prezývka (nepovinné)</span><input class="input" id="ct-name" name="name" type="text" maxlength="80" autocomplete="name"></label>
+          <label class="ct-f"><span>E-mail na odpoveď</span><input class="input" id="ct-email" name="email" type="email" maxlength="160" autocomplete="email" required></label>
+        </div>
+        <fieldset class="ct-topic">
+          <legend>O čom píšeš</legend>
+          <label><input type="radio" name="topic" value="idea" checked><span>Nápad</span></label>
+          <label><input type="radio" name="topic" value="bug"><span>Chyba na webe</span></label>
+          <label><input type="radio" name="topic" value="collab"><span>Spolupráca</span></label>
+          <label><input type="radio" name="topic" value="other"><span>Iné</span></label>
+        </fieldset>
+        <label class="ct-f"><span>Správa</span><textarea class="input" id="ct-msg" name="message" rows="6" maxlength="4000" required></textarea></label>
+        <div class="ct-hp" aria-hidden="true"><label>Web <input type="text" name="website" id="ct-web" tabindex="-1" autocomplete="off"></label></div>
+        <label class="ct-consent"><input type="checkbox" id="ct-ok" name="consent" value="1" required><span>Súhlasím so spracovaním e-mailu, mena a správy na účel odpovede. Viac v <a href="/ochrana-osobnych-udajov/">ochrane osobných údajov</a>.</span></label>
+        <p class="ct-err" id="ct-err" role="alert" hidden></p>
+        <button class="btn" type="submit" id="ct-send"><svg class="seal"><use href="#seal"/></svg><span>Zapečatiť a odoslať</span></button>
+      </form>
+      <div class="ct-done" id="ct-done" hidden tabindex="-1">
+        <svg class="ct-stamp" aria-hidden="true"><use href="#seal"/></svg>
+        <h2>List je zapečatený!</h2>
+        <p>Havran s tvojím listom už letí do Veže osudu. Len čo ho mudrci prečítajú, pošlú ti odpoveď. Nech ti padajú samé dvadsiatky!</p>
+        <button class="btn ghost" type="button" id="ct-again">Späť k dobrodružstvu</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<div class="cookie" id="cookie" role="region" aria-label="Informácia o cookies" hidden>
+  <p>Nepoužívame cookies. Návštevnosť meriame anonymne cez Cloudflare bez cookies a prehliadač si pamätá len zvolený jazyk a súboj v trackeri, ak ho používaš.</p>
+  <div class="cookie-act"><a href="/ochrana-osobnych-udajov/">Viac o súkromí</a><button class="btn ghost" type="button" id="ck-ok">Rozumiem</button></div>
+</div>
+
+
+<footer>
+  <div class="wrap">
+    <div class="fleuron gold"><svg><use href="#fleuron"/></svg></div>
+    <div class="foot">
+      <div class="about">
+        <a class="brand" href="/"><img src="/img/logo-88.webp" alt="" width="44" height="44"><b>d20<span>.sk</span></b></a>
+        <p>d20.sk je slovenský domov pre Dungeons &amp; Dragons. Vznikol pre ľudí, ktorí o DnD počuli, ale nevedia, kde začať, aj pre skúsené družiny, ktoré chcú rýchlo vymyslieť postavu, príbeh alebo si hodiť kockou. Web rastie postupne podľa toho, čo hráči potrebujú.</p>
+      </div>
+      <div class="idea">
+        <h2>Čo by si tu chcel?</h2>
+        <p>Návod, generátor, mapu, hľadanie družiny? Pošli nám nápad alebo chybu, ktorú si našiel. Každý list prečítame.</p>
+        <button class="btn ghost" type="button" id="ct-open"><svg width="18" height="18" aria-hidden="true"><use href="#i-quill"/></svg><span>Napíš nám</span></button>
+      </div>
+    </div>
+    <nav class="foot-links" aria-label="Obsah webu">
+      <a href="/navody/">Návody</a>
+      <a href="/povolania/">Povolania</a>
+      <a href="/rasy/">Rasy</a>
+      <a href="/slovnik/">Slovník</a>
+      <a href="/tvorba-postavy/">Tvorba postavy</a>
+      <a href="/harok-postavy/">Hárok postavy</a>
+      <a href="/kocky/">Kocky</a>
+      <a href="/tracker-suboja/">Tracker súboja</a>
+      <a href="/tvorba-pribehu/">Tvorba príbehu</a>
+      <a href="/generator-npc/">Generátor NPC</a>
+      <a href="/generator-krcmy/">Generátor krčmy</a>
+      <a href="/generator-pokladu/">Generátor pokladu</a>
+      <a href="/nastroje/">Nástroje</a>
+    </nav>
+    <div class="foot-base">
+      <span>&copy; <span id="yr">2026</span> d20.sk · <a href="/ochrana-osobnych-udajov/">Ochrana osobných údajov</a></span>
+      <p>Neoficiálny fanúšikovský web. Dungeons &amp; Dragons je ochranná známka spoločnosti Wizards of the Coast, s ktorou d20.sk nie je spojený. Karty Goblin a Ohnivá guľa a magické predmety vychádzajú zo SRD 5.1, povolania a rasy zo SRD 5.2 (obe CC BY 4.0, Wizards of the Coast).</p>
+    </div>
+  </div>
+</footer>
+</div>
+
+<script id="d20-boot" type="application/json">{"lang":"sk","page":"npc","urls":{"404":"/404.php","domov":"/","navody":"/navody/","postava":"/tvorba-postavy/","pribeh":"/tvorba-pribehu/","kocky":"/kocky/","sukromie":"/ochrana-osobnych-udajov/","povolania":"/povolania/","rasy":"/rasy/","slovnik":"/slovnik/","nastroje":"/nastroje/","npc":"/generator-npc/","krcma":"/generator-krcmy/","poklad":"/generator-pokladu/","harok":"/harok-postavy/","suboj":"/tracker-suboja/"},"I":{"nav.domov":"Domov","nav.navody":"Návody","nav.postava":"Tvorba postavy","nav.pribeh":"Tvorba príbehu","nav.kocky":"Kocky","c.eyebrow":"Tvorba postavy do DnD","c.h1":"Zrodenie hrdinu","c.lede":"Vyber druh a povolanie a hoď vlastnosti. Najvyššie hodnoty sa samy priradia tam, kde ich tvoje povolanie potrebuje.","c.name":"Meno","c.nameRoll":"Náhodné meno","c.species":"Druh","c.class":"Povolanie","c.method":"Vlastnosti","c.m1":"Hod 4d6, najnižšia sa škrtá","c.m2":"Štandardné pole","c.mnote":"Bonusy +2 a +1 z pôvodu (background) si pripočítaš podľa pravidiel.","c.reroll":"Hodiť vlastnosti","c.level":"1. úroveň","c.hp":"Životy","c.hd":"Kocka životov","c.init":"Iniciatíva","t.eyebrow":"Nápady na DnD príbeh a zápletky","t.h1":"Nástenka v krčme","t.lede":"Každý lístok je jeden hod kockou d10 a spolu dajú zápletku na dnešný večer. Tlačidlom hodíš nový príbeh. Lístok, ktorý sa ti páči, si zamkni a pri ďalšom hode sa nezmení.","t.sum":"Zápletka","t.roll":"Hodiť nový príbeh","t.note":"Tip: zamkni napríklad miesto a zvrat a hádž, kým ti nesadne zadávateľ a odmena.","d.eyebrow":"DnD kocky online","d.h1":"Podnos na kocky","d.lede":"Vyber kocku, počet a bonus. Pri d20 môžeš hádzať s výhodou (lepší z dvoch hodov) alebo s nevýhodou (horší z dvoch).","d.die":"Kocka","d.count":"Počet","d.mod":"Bonus","d.mode":"Spôsob (iba 1d20)","d.normal":"Bežne","d.adv":"Výhoda","d.dis":"Nevýhoda","d.presets":"Časté hody","d.stage":"Hodiť","d.hist":"Posledné hody","d.histEmpty":"Zatiaľ žiadne hody.","hc.new":"Nový hrdina","hc.open":"Upraviť","hc.hp":"Životy","hc.init":"Iniciatíva","c.hpL":"Životy","c.hdL":"Kocka životov","c.initL":"Iniciatíva","c.lvl":"1. úroveň","t.wanted":"Hľadajú sa odvážlivci!","t.rollRest":"Hodiť znova (zamknuté ostanú)","t.rollAll":"Všetko je zamknuté","ct.open":"Napíš nám","ct.h":"List do Veže osudu","ct.lede":"Máš nápad, našiel si chybu alebo chceš spolupracovať? Napíš pár riadkov a odpovieme ti e-mailom.","ct.name":"Meno alebo prezývka (nepovinné)","ct.email":"E-mail na odpoveď","ct.topic":"O čom píšeš","ct.t.idea":"Nápad","ct.t.bug":"Chyba na webe","ct.t.collab":"Spolupráca","ct.t.other":"Iné","ct.msg":"Správa","ct.consent":"Súhlasím so spracovaním e-mailu, mena a správy na účel odpovede. Viac v \u003Ca href=\"/ochrana-osobnych-udajov/\"\u003Eochrane osobných údajov\u003C/a\u003E.","ct.send":"Zapečatiť a odoslať","ct.sending":"Havran letí…","ct.close":"Zavrieť","ct.closeBtn":"Späť k dobrodružstvu","ct.doneH":"List je zapečatený!","ct.done":"Havran s tvojím listom už letí do Veže osudu. Len čo ho mudrci prečítajú, pošlú ti odpoveď. Nech ti padajú samé dvadsiatky!","ct.e.email":"Skontroluj e-mail, havran by naň netrafil.","ct.e.message":"Napíš aspoň pár slov (najmenej 10 znakov).","ct.e.consent":"Bez súhlasu ti nemôžeme odpovedať. Zaškrtni ho, prosím.","ct.e.rate":"Poslal si veľa listov naraz. Skús to znova o hodinu.","ct.e.send":"Havran sa stratil v hmle. Skús to znova alebo napíš priamo na hello@d20.sk.","nav.povolania":"Povolania","nav.rasy":"Rasy","nav.slovnik":"Slovník","c.more":"Nevieš sa rozhodnúť? Pozri si \u003Ca href=\"/rasy/\"\u003Eprehľad rás\u003C/a\u003E a \u003Ca href=\"/povolania/\"\u003Epovolaní\u003C/a\u003E.","b.lock":"Zamknúť","b.locked":"Zamknuté","b.copy":"Kopírovať ako text","b.copied":"Skopírované","b.kicker":"Tabuľky na hádzanie","t.tablesH":"Všetky tabuľky zápletiek","t.tablesP":"Hráš radšej so skutočnými kockami? Hoď d10 za každú tabuľku a nájdi číslo v zozname.","t.more":"Do príbehu potrebuješ aj postavy a miesto? Skús \u003Ca href=\"/generator-npc/\"\u003Egenerátor NPC\u003C/a\u003E a \u003Ca href=\"/generator-krcmy/\"\u003Egenerátor krčmy\u003C/a\u003E.","c.sheet":"Hárok postavy na tlač","nav.nastroje":"Nástroje","nav.npc":"Generátor NPC","nav.krcma":"Generátor krčmy","nav.poklad":"Generátor pokladu","nav.harok":"Hárok postavy","npc.eyebrow":"Generátor NPC do DnD","npc.h1":"Cudzinec pri ohni","npc.lede":"Hráči sa pýtajú krčmára na meno a ty nevieš, čo povedať? Hoď si nehráčsku postavu (NPC): meno, druh, povolanie a sedem drobností, ktoré ju oživia. Čo sa ti páči, zamkni.","npc.species":"Druh","npc.any":"Ktorýkoľvek druh","npc.gender":"Pohlavie","npc.any2":"Náhodne","npc.m":"Muž","npc.f":"Žena","npc.roll":"Hodiť novú postavu","npc.rollRest":"Hodiť znova (zamknuté ostanú)","npc.nameRoll":"Iné meno","npc.note":"Tip: zamkni povahu a tajomstvo a hádž, kým nenájdeš vzhľad, ktorý sa hodí do tvojho sveta.","npc.tablesH":"Tabuľky na tvorbu NPC","npc.tablesP":"Hráš radšej so skutočnými kockami? Hoď d20 za každú tabuľku. Čísla na kockách pri lístkoch hore sú presne tieto hody.","nav.suboj":"Tracker súboja"}}</script>
+<script src="/js/core.js?v=ee395403"></script>
+<script src="/js/board.js?v=4d897da5"></script>
+<script src="/js/npc.js?v=e16d338f"></script>
+<script src="/js/site.js?v=2f019a8e"></script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "a4364bdff4704985b782ef1f0c8e5ae7"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

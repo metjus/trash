@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://d20.sk/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/navody/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/navody/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/guides/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/navody/"/>
+    <lastmod>2026-10-26</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/guides/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/navody/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/guides/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/navody/"/>
+    <lastmod>2026-10-26</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/povolania/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/povolania/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/classes/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/povolania/"/>
+    <lastmod>2026-10-26</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/classes/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/povolania/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/classes/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/povolania/"/>
+    <lastmod>2026-10-26</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/rasy/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/rasy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/species/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/rasy/"/>
+    <lastmod>2026-10-26</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/species/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/rasy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/species/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/rasy/"/>
+    <lastmod>2026-10-26</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/slovnik/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/slovnik/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/glossary/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/slovnik/"/>
+    <lastmod>2026-10-26</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/glossary/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/slovnik/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/glossary/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/slovnik/"/>
+    <lastmod>2026-10-26</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/tvorba-postavy/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/tvorba-postavy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/character-creator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/tvorba-postavy/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/character-creator/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/tvorba-postavy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/character-creator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/tvorba-postavy/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/harok-postavy/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/harok-postavy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/character-sheet/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/harok-postavy/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/character-sheet/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/harok-postavy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/character-sheet/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/harok-postavy/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/tvorba-pribehu/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/tvorba-pribehu/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/story-generator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/tvorba-pribehu/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/story-generator/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/tvorba-pribehu/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/story-generator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/tvorba-pribehu/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/generator-npc/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/generator-npc/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/npc-generator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/generator-npc/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/npc-generator/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/generator-npc/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/npc-generator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/generator-npc/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/generator-krcmy/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/generator-krcmy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/tavern-generator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/generator-krcmy/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/tavern-generator/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/generator-krcmy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/tavern-generator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/generator-krcmy/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/generator-pokladu/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/generator-pokladu/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/loot-generator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/generator-pokladu/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/loot-generator/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/generator-pokladu/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/loot-generator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/generator-pokladu/"/>
+    <lastmod>2026-10-28</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/kocky/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/kocky/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/dice-roller/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/kocky/"/>
+    <lastmod>2026-10-26</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/dice-roller/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/kocky/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/dice-roller/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/kocky/"/>
+    <lastmod>2026-10-26</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/nastroje/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/nastroje/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/tools/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/nastroje/"/>
+    <lastmod>2026-10-30</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/tools/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/nastroje/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/tools/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/nastroje/"/>
+    <lastmod>2026-10-30</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/ochrana-osobnych-udajov/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/ochrana-osobnych-udajov/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/ochrana-osobnych-udajov/"/>
+    <lastmod>2026-10-30</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/privacy/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/ochrana-osobnych-udajov/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/ochrana-osobnych-udajov/"/>
+    <lastmod>2026-10-30</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/tracker-suboja/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/tracker-suboja/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/combat-tracker/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/tracker-suboja/"/>
+    <lastmod>2026-10-30</lastmod>
+  </url>
+  <url>
+    <loc>https://d20.sk/en/combat-tracker/</loc>
+    <xhtml:link rel="alternate" hreflang="sk" href="https://d20.sk/tracker-suboja/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://d20.sk/en/combat-tracker/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://d20.sk/tracker-suboja/"/>
+    <lastmod>2026-10-30</lastmod>
+  </url>
+</urlset>
