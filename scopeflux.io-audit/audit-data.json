@@ -1,0 +1,339 @@
+{
+ "summary": {
+  "health_score": 75,
+  "business_type": "SaaS / dátový nástroj (zoznam expirujúcich domén, freemium)",
+  "top_findings": [
+   "Len 8 indexovateľných URL, chýbajú TLD stránky a /recently-expired",
+   "Zoznam domén nie je v HTML zo servera (Loading…, 456 kB inline JSON)",
+   "www.scopeflux.io nefunguje",
+   "Identická schéma na všetkých stránkach, chýba WebPage/Breadcrumb/FAQ/Dataset",
+   "Prvá strana zoznamu začína spam a číselnými doménami"
+  ],
+  "quick_wins": [
+   "www → 301 na apex",
+   "Predvolené zoradenie podľa kvality + spam filter",
+   "SSR prvých 50–100 riadkov zoznamu",
+   "Schema pre každú stránku + FAQPage na /how-it-works",
+   "Skrátiť dlhé titulky a popis /sources"
+  ]
+ },
+ "categories": [
+  {
+   "name": "Technical SEO",
+   "score": 85,
+   "what_works": [
+    "robots.txt je čistý: blokuje `/api/`, `/account/` a `/status` a odkazuje na sitemapu aj `llms.txt`.",
+    "Sitemapa: 8 URL, všetky 200 a s `lastmod`. Canonical je self-referencing, URL s `?utm_` majú canonical na čistú adresu.",
+    "Lomka na konci → 301 na verziu bez lomky. Stránka 404 vracia skutočný stav 404 a má `noindex, nofollow`.",
+    "Bezpečnosť je vzorová: HSTS (2 roky), CSP, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, `security.txt`.",
+    "Brotli na HTML, gzip na súboroch. Súbory s hashom v názve majú `max-age=31536000, immutable`. Cloudflare, HTTP/2 aj HTTP/3.",
+    "Meta robots `index, follow, max-image-preview:large, max-snippet:-1` na všetkých verejných stránkach."
+   ],
+   "findings": [
+    {
+     "title": "Na homepage server pošle prázdny stav zoznamu („0 results“, <h3>Loading the current list…<",
+     "severity": "High",
+     "description": "Na homepage server pošle prázdny stav zoznamu („0 results“, `<h3>Loading the current list…</h3>`) a dáta (~456 kB JSON) sú v inline `<script>`. Crawlery bez JS vidia prázdnu stránku hlavného produktu.",
+     "recommendation": "Server-side vykresliť prvých 50 až 100 riadkov tabuľky do HTML. JS ich iba hydratuje."
+    },
+    {
+     "title": "www.scopeflux.io nefunguje (502 pri CONNECT, pravdepodobne chýba DNS záznam).",
+     "severity": "Medium",
+     "description": "`www.scopeflux.io` nefunguje (502 pri CONNECT, pravdepodobne chýba DNS záznam).",
+     "recommendation": "Pridať DNS záznam `www` (proxied) a pravidlo v Cloudflare: 301 `www` → apex so zachovaním cesty."
+    },
+    {
+     "title": "HTML homepage má 487 kB, z toho 456 kB tvorí inline JSON s celým zoznamom (630 záznamov)",
+     "severity": "Medium",
+     "description": "HTML homepage má 487 kB, z toho 456 kB tvorí inline JSON s celým zoznamom (630 záznamov). Po Brotli je to ~138 kB, ale parsovanie a hydratácia spomaľujú slabšie mobily.",
+     "recommendation": "Vložiť len prvú stranu (100 záznamov) a ďalšie strany doťahovať z API. Alebo dáta zmenšiť (skratky kľúčov, bez opakovaných `sourceUrl`)."
+    },
+    {
+     "title": "Podstránky (/check-domain, /how-it-works, /premium, /sources) volajú na pozadí /api/domain",
+     "severity": "Low",
+     "description": "Podstránky (`/check-domain`, `/how-it-works`, `/premium`, `/sources`) volajú na pozadí `/api/domains?period=7`, server vracia 403 a v konzole je chyba.",
+     "recommendation": "Nepredťahovať zoznam na stránkach, ktoré ho nezobrazujú, alebo poslať guard token aj tam."
+    },
+    {
+     "title": "HTML má cache-control: private, no-store a cf-cache-status: DYNAMIC",
+     "severity": "Low",
+     "description": "HTML má `cache-control: private, no-store` a `cf-cache-status: DYNAMIC`. TTFB 0,4–0,9 s.",
+     "recommendation": "Statické podstránky (how-it-works, sources, about, privacy) cachovať na edge (`s-maxage`)."
+    },
+    {
+     "title": "Hlavička X-Content-Type-Options sa posiela dvakrát.",
+     "severity": "Low",
+     "description": "Hlavička `X-Content-Type-Options` sa posiela dvakrát.",
+     "recommendation": "Odstrániť duplicitu (aplikácia aj Cloudflare)."
+    },
+    {
+     "title": "/index.html a veľké písmená vracajú 404.",
+     "severity": "Info",
+     "description": "`/index.html` a veľké písmená vracajú 404.",
+     "recommendation": "V poriadku."
+    }
+   ]
+  },
+  {
+   "name": "Content Quality",
+   "score": 62,
+   "what_works": [
+    "`/how-it-works` (~1 000 slov) a `/sources` (~800 slov) sú nadpriemerné. Vysvetľujú grace period, redemption, pending delete a rozdiely medzi TLD a citujú primárne zdroje (ICANN, CZ.NIC, SK-NIC, Registro .it, auDA, Verisign). Silný signál E-E-A-T.",
+    "Poctivé vymedzenie („not a registrar“, „a date is a forecast“) buduje dôveru.",
+    "`/contact` uvádza prevádzkovateľa: meno, adresu a IČO.",
+    "Jedinečná výhoda: pokrytie .sk, .cz, .it a .au, ktoré bežné nástroje nemajú. Pri vyhľadávaní .sk drop listov som nenašiel konkurenciu."
+   ],
+   "findings": [
+    {
+     "title": "Len 8 URL, žiadne vstupné stránky pre jednotlivé TLD",
+     "severity": "High",
+     "description": "Len 8 URL, žiadne vstupné stránky pre jednotlivé TLD. Dopyty ako „expired .io domains“, „expiring .co.uk domains“ či „.sk domény na uvoľnenie“ nemajú kam pristáť.",
+     "recommendation": "Vytvoriť `/expired-domains/{tld}` pre 21 TLD: zoznam vykreslený na serveri, unikátny popis procesu daného registra, zdroj, časovanie, FAQ."
+    },
+    {
+     "title": "„Recently expired“ je len /#recent, „Watchlist“ /#watch",
+     "severity": "High",
+     "description": "„Recently expired“ je len `/#recent`, „Watchlist“ `/#watch`. Hash nie je samostatná indexovateľná URL.",
+     "recommendation": "`/recently-expired` ako skutočná stránka (SSR, canonical, v sitemape). Watchlist nechať neindexovaný."
+    },
+    {
+     "title": "Prvá strana zoznamu („Soonest first“) začína číselnými a spam/gambling doménami",
+     "severity": "Medium",
+     "description": "Prvá strana zoznamu („Soonest first“) začína číselnými a spam/gambling doménami. Pôsobí to nekvalitne na ľudí aj pri hodnotení kvality.",
+     "recommendation": "Predvolene radiť podľa kvality (Premium potential) alebo „Mixed“ a filtrovať zjavný spam (slová bet, slot, adult, casino, náhodné reťazce)."
+    },
+    {
+     "title": "/check-domain má ~300 slov vrátane šablóny, takmer len formulár.",
+     "severity": "Medium",
+     "description": "`/check-domain` má ~300 slov vrátane šablóny, takmer len formulár.",
+     "recommendation": "Pridať 300–500 slov: čo znamenajú stavy RDAP (clientHold, redemptionPeriod, pendingDelete), ako čítať dátum expirácie, FAQ."
+    },
+    {
+     "title": "/about nemenuje ľudí za projektom",
+     "severity": "Medium",
+     "description": "`/about` nemenuje ľudí za projektom. Prevádzkovateľ je len na `/contact`.",
+     "recommendation": "Na `/about` pridať sekciu „Who builds ScopeFlux“ s menom, skúsenosťami s doménami a odkazmi (LinkedIn, X, GitHub)."
+    },
+    {
+     "title": "Chýba glosár pojmov (drop catching, backorder, redemption, RGP, pending delete…).",
+     "severity": "Low",
+     "description": "Chýba glosár pojmov (drop catching, backorder, redemption, RGP, pending delete…).",
+     "recommendation": "`/glossary` s `DefinedTermSet`. Je to dobrý cieľ pre AI citácie aj dlhý chvost dopytov."
+    }
+   ]
+  },
+  {
+   "name": "On-Page SEO",
+   "score": 75,
+   "what_works": [
+    "Titulky sú unikátne a cielia na hlavné dopyty („Expired Domains List“, „Domain Expiration Date Checker“, „Expired Domains API“).",
+    "Meta popisy sú unikátne, väčšinou 135–161 znakov.",
+    "Jeden H1 na stránku. Open Graph a Twitter Card sú kompletné.",
+    "`/how-it-works` a `/sources` majú logickú hierarchiu H2/H3."
+   ],
+   "findings": [
+    {
+     "title": "H1 na /about („A good name",
+     "severity": "Medium",
+     "description": "H1 na `/about` („A good name. A new beginning.“), `/sources` („Data you can understand.“), `/contact` a `/privacy` sú slogany bez kľúčových slov.",
+     "recommendation": "Prvý riadok nechať ako slogan, ale do H1 dať opisný text, napr. „About ScopeFlux, a free expired domain finder“, „Expired domain data sources“."
+    },
+    {
+     "title": "Interné odkazy sú len navigácia a pätička",
+     "severity": "Medium",
+     "description": "Interné odkazy sú len navigácia a pätička. Žiadne kontextové odkazy medzi obsahom a nástrojmi (okrem CTA).",
+     "recommendation": "Z `/how-it-works` odkazovať na TLD stránky a `/check-domain`. Zo `/sources` na TLD stránky, ktoré daný zdroj pokrýva."
+    },
+    {
+     "title": "Titulky dlhšie ako ~60 znakov sa v SERP orežú: /how-it-works 71, /check-domain 65, / 62.",
+     "severity": "Low",
+     "description": "Titulky dlhšie ako ~60 znakov sa v SERP orežú: `/how-it-works` 71, `/check-domain` 65, `/` 62.",
+     "recommendation": "Napr. „Domain Expiry Explained: Redemption & Pending Delete“ alebo „Domain Expiration Checker: When Does It Expire?“."
+    },
+    {
+     "title": "Popis /sources má 215 znakov.",
+     "severity": "Low",
+     "description": "Popis `/sources` má 215 znakov.",
+     "recommendation": "Skrátiť na ~155."
+    },
+    {
+     "title": "Titulky Contact — ScopeFlux a Privacy — ScopeFlux používajú inú pomlčku a formát ako ostat",
+     "severity": "Low",
+     "description": "Titulky `Contact — ScopeFlux` a `Privacy — ScopeFlux` používajú inú pomlčku a formát ako ostatné (`|`).",
+     "recommendation": "Zjednotiť formát."
+    },
+    {
+     "title": "V H1 chýba medzera medzi riadkami (domains.Upcoming), lebo <br> je bez medzery",
+     "severity": "Low",
+     "description": "V H1 chýba medzera medzi riadkami (`domains.Upcoming`), lebo `<br>` je bez medzery. Niektoré nástroje a snippety ich spoja.",
+     "recommendation": "Pridať medzeru pred `<br>` alebo riadky dať do `<span>` s medzerou."
+    },
+    {
+     "title": "Breadcrumb „Workspace / Expiring soon“ je aplikačný, nie navigačný.",
+     "severity": "Low",
+     "description": "Breadcrumb „Workspace / Expiring soon“ je aplikačný, nie navigačný.",
+     "recommendation": "Pre obsahové stránky použiť „Home / How it works“ a prepojiť ho s `BreadcrumbList`."
+    }
+   ]
+  },
+  {
+   "name": "Schema / Structured Data",
+   "score": 65,
+   "what_works": [
+    "Validný JSON-LD s `@id` prepojeniami (`WebSite.publisher` → `#organization`).",
+    "`Organization` má `logo` a `email`. `WebApplication` má `isAccessibleForFree` a `offers`."
+   ],
+   "findings": [
+    {
+     "title": "Všetkých 8 stránok má identický @graph, aj Privacy a Contact majú WebApplication.",
+     "severity": "Medium",
+     "description": "Všetkých 8 stránok má **identický** `@graph`, aj Privacy a Contact majú `WebApplication`.",
+     "recommendation": "Spoločné nechať `WebSite` + `Organization` (s `@id`) a pridať pre každú stránku `WebPage` (`name`, `url`, `description`, `isPartOf`) a `BreadcrumbList`. `WebApplication` dať len na `/` a `/check-domain`."
+    },
+    {
+     "title": "/how-it-works má viditeľnú sekciu „Common questions“ (5 otázok) bez FAQPage.",
+     "severity": "Medium",
+     "description": "`/how-it-works` má viditeľnú sekciu „Common questions“ (5 otázok) bez `FAQPage`.",
+     "recommendation": "Pridať `FAQPage` s rovnakými otázkami. Google FAQ rich results pre bežné weby obmedzil, ale AI vyhľadávače štruktúru využijú."
+    },
+    {
+     "title": "Organization nemá founder, address, sameAs ani vatID/identifier, hoci údaje sú na /contact",
+     "severity": "Medium",
+     "description": "`Organization` nemá `founder`, `address`, `sameAs` ani `vatID`/`identifier`, hoci údaje sú na `/contact`.",
+     "recommendation": "Doplniť `founder` (`Person`), `address` (PostalAddress SK) a `identifier` (IČO). `sameAs` doplniť po vytvorení profilov."
+    },
+    {
+     "title": "Zoznam domén je dátová sada bez Dataset schémy.",
+     "severity": "Low",
+     "description": "Zoznam domén je dátová sada bez `Dataset` schémy.",
+     "recommendation": "`Dataset` na `/` a TLD stránkach (`name`, `description`, `creator`, `temporalCoverage`, `isAccessibleForFree`, `license`). Môže sa zobraziť v Google Dataset Search."
+    },
+    {
+     "title": "/premium nemá Offer/Product pre plány.",
+     "severity": "Low",
+     "description": "`/premium` nemá `Offer`/`Product` pre plány.",
+     "recommendation": "Doplniť po spustení Premium (cena, mena, `availability: PreOrder` alebo `InStock`)."
+    }
+   ]
+  },
+  {
+   "name": "Performance (CWV)",
+   "score": 95,
+   "what_works": [],
+   "findings": [
+    {
+     "title": "Veľké inline JSON na homepage",
+     "severity": "Low",
+     "description": "487 kB HTML, 456 kB inline JSON.",
+     "recommendation": "Vložiť len prvú stranu dát."
+    }
+   ]
+  },
+  {
+   "name": "AI Search Readiness",
+   "score": 75,
+   "what_works": [
+    "**`llms.txt` je vzorový**: popis produktu, hlavné stránky, zdroje dát a obmedzenia.",
+    "robots.txt neblokuje AI crawlery. Obsah `/how-it-works` a `/sources` je v serverovom HTML a dobre citovateľný (krátke definície, FAQ).",
+    "Citované primárne zdroje zvyšujú dôveryhodnosť."
+   ],
+   "findings": [
+    {
+     "title": "AI crawlery nespúšťajú JS, takže na homepage vidia „0 results / Loading…“.",
+     "severity": "High",
+     "description": "AI crawlery nespúšťajú JS, takže na homepage vidia „0 results / Loading…“.",
+     "recommendation": "SSR prvých riadkov zoznamu (rovnaká oprava ako v technickom SEO)."
+    },
+    {
+     "title": "Značka nemá žiadne zmienky mimo webu",
+     "severity": "High",
+     "description": "Značka nemá žiadne zmienky mimo webu. Vyhľadávanie „scopeflux“ nenašlo nič.",
+     "recommendation": "Spustiť web na Product Hunt, Indie Hackers, DNForum, NamePros, r/Domains, r/SideProject a v slovenských a českých komunitách (.sk/.cz pokrytie je unikátne). Napísať hosťovský článok do domain blogov (DomainNameWire, TheDomains)."
+    },
+    {
+     "title": "Chýba glosár a pravidelný obsah („notable drops this week“).",
+     "severity": "Low",
+     "description": "Chýba glosár a pravidelný obsah („notable drops this week“).",
+     "recommendation": "Newsletter „Notable drops, every Monday“ publikovať aj ako webový archív (`/drops/2026-w45`). Vzniká čerstvý, citovateľný obsah."
+    }
+   ]
+  },
+  {
+   "name": "Images",
+   "score": 70,
+   "what_works": [],
+   "findings": [
+    {
+     "title": "Jeden OG obrázok pre všetky stránky",
+     "severity": "Low",
+     "description": "og-image.png (175 kB) na všetkých stránkach.",
+     "recommendation": "Vlastné OG obrázky pre TLD stránky a /how-it-works."
+    },
+    {
+     "title": "Chýba diagram životného cyklu domény",
+     "severity": "Low",
+     "description": "Žiadne obsahové obrázky.",
+     "recommendation": "Diagram expired → grace → redemption → pending delete → release s alt textom."
+    }
+   ]
+  }
+ ],
+ "action_plan": {
+  "phases": [
+   {
+    "name": "Phase 1: Critical Fixes",
+    "timeframe": "Week 1",
+    "items": [
+     "`www` → apex: DNS záznam `www` (proxied) a v Cloudflare presmerovanie 301 so zachovaním cesty. *(15 min, robíš ty)*",
+     "Overiť Search Console a Bing Webmaster Tools: import z GSC, kontrola sitemapy a indexácie. *(30 min, robíš ty)*",
+     "SSR zoznamu: prvých 50 až 100 riadkov do HTML namiesto „Loading…“ a inline JSON zmenšiť na prvú stranu. *(agent, 3–5 h)*",
+     "Predvolené zoradenie a spam filter: prvá strana bez čísel a gambling/adult domén, predvolene „Premium candidates“ alebo „Mixed“. *(agent, 1–2 h)*",
+     "Schema pre každú stránku: `WebPage` + `BreadcrumbList` všade, `FAQPage` na `/how-it-works`, `WebApplication` len na nástrojoch, doplnená `Organization`. *(agent, 1–2 h)*"
+    ]
+   },
+   {
+    "name": "Phase 2: High-Impact Improvements",
+    "timeframe": "Weeks 2-4",
+    "items": [
+     "TLD vstupné stránky `/expired-domains/{tld}` (21×): zoznam vykreslený na serveri, unikátny popis procesu registra, FAQ a `Dataset`. *(agent, 1–2 dni)*",
+     "`/recently-expired` ako skutočná URL (dnes `/#recent`). *(agent, 2–3 h)*",
+     "H1 a titulky: opisné H1 na about, sources, contact a privacy, skrátené titulky nad 60 znakov a popis `/sources`. *(agent, 30 min)*",
+     "Rozšíriť `/check-domain` o vysvetlenie stavov RDAP a FAQ. *(agent, 2 h)*",
+     "`/about`: kto projekt robí, skúsenosti a odkazy na profily. *(ty + agent)*",
+     "Kontextové odkazy medzi `/how-it-works`, `/sources`, `/check-domain` a TLD stránkami. *(agent)*",
+     "Launch a zmienky: Product Hunt, Indie Hackers, NamePros, DNForum, r/Domains, r/SideProject a slovenské a české komunity. *(robíš ty, priebežne)*"
+    ]
+   },
+   {
+    "name": "Phase 3: Content & Authority",
+    "timeframe": "Month 2",
+    "items": [
+     "Týždenný archív „Notable drops“ (`/drops/2026-w45`), recyklovaný newsletter.",
+     "Návody pre jednotlivé registre: „How .sk domains are released“, „.cz release process“, „.it droptime explained“. Na tieto témy konkurencia nemá obsah.",
+     "Porovnanie „ScopeFlux vs ExpiredDomains.net“ a podobné stránky (skill `/seo-competitor-pages`).",
+     "Edge cache pre statické podstránky (`s-maxage`) na nižšie TTFB.",
+     "Nepredťahovať `/api/domains` na podstránkach (chyby 403 v konzole).",
+     "Odstrániť duplicitnú hlavičku `X-Content-Type-Options`.",
+     "Medzera v H1 pri `<br>`.",
+     "Zjednotiť formát titulkov (`|`) a komunikáciu Premium („SOON“ vs. ponuka).",
+     "`/glossary` s `DefinedTermSet`.",
+     "Diagram životného cyklu domény (obrázok + alt) a vlastné OG obrázky.",
+     "`Offer` schema na `/premium` po spustení."
+    ]
+   },
+   {
+    "name": "Phase 4: Monitoring & Iteration",
+    "timeframe": "Ongoing",
+    "items": [
+     "Search Console: indexácia nových TLD stránok, dopyty „expired {tld} domains“.",
+     "Bing Webmaster: index (zdroj pre ChatGPT search a Copilot).",
+     "Zopakovať audit o 2 až 3 mesiace: `/seo-audit https://scopeflux.io`."
+    ]
+   }
+  ]
+ },
+ "artifacts": {
+  "findings_dir": "findings/",
+  "screenshots_dir": "screenshots/"
+ }
+}

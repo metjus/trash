@@ -1,0 +1,1776 @@
+{
+ "sitemap": [
+  "https://scopeflux.io/",
+  "https://scopeflux.io/check-domain",
+  "https://scopeflux.io/how-it-works",
+  "https://scopeflux.io/sources",
+  "https://scopeflux.io/about",
+  "https://scopeflux.io/premium",
+  "https://scopeflux.io/contact",
+  "https://scopeflux.io/privacy"
+ ],
+ "pages": {
+  "https://scopeflux.io/": {
+   "url": "https://scopeflux.io/",
+   "status": 200,
+   "time": 0.823,
+   "bytes": 487546,
+   "location": null,
+   "in_sitemap": true,
+   "ctype": "text/html; charset=utf-8",
+   "title": "Expired Domains List – Expiring & Dropping Domains | ScopeFlux",
+   "metas": {
+    "viewport": "width=device-width, initial-scale=1",
+    "theme-color": "#0d1019",
+    "color-scheme": "dark",
+    "description": "Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.",
+    "application-name": "ScopeFlux",
+    "author": "ScopeFlux",
+    "creator": "ScopeFlux",
+    "category": "technology",
+    "format-detection": "telephone=no",
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1",
+    "og:title": "Expired Domains List – Expiring & Dropping Domains | ScopeFlux",
+    "og:description": "Free list of expired and expiring domains for .com, .net, .org, .io, .sk, .cz and more, with release days and a watchlist.",
+    "og:url": "https://scopeflux.io/",
+    "og:site_name": "ScopeFlux",
+    "og:locale": "en_GB",
+    "og:image": "https://scopeflux.io/og-image.png?v=2",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:image:alt": "ScopeFlux — expiring and dropping domains",
+    "og:type": "website",
+    "twitter:card": "summary_large_image",
+    "twitter:title": "Expired Domains List – Expiring & Dropping Domains | ScopeFlux",
+    "twitter:description": "Free list of expired and expiring domains for .com, .net, .org, .io, .sk, .cz and more, with release days and a watchlist.",
+    "twitter:image": "https://scopeflux.io/og-image.png?v=2",
+    "twitter:image:alt": "ScopeFlux — expiring and dropping domains"
+   },
+   "links": [],
+   "canon": "https://scopeflux.io/",
+   "hreflang": {},
+   "h": [
+    [
+     "h1",
+     "Expired & expiring domains.Upcoming domain drops."
+    ],
+    [
+     "h2",
+     "Filters"
+    ],
+    [
+     "h2",
+     "Expiring & dropping soon"
+    ],
+    [
+     "h3",
+     "Loading the current list…"
+    ],
+    [
+     "h2",
+     "Expired domains, explained."
+    ],
+    [
+     "h2",
+     "Notable drops, every Monday"
+    ]
+   ],
+   "imgs": [],
+   "a": [
+    {
+     "href": "#main-content",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/#recent",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/check-domain",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "/account/login?next=%2F",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+     "rel": null
+    },
+    {
+     "href": "https://qrko.net/?ref=scopeflux",
+     "rel": "noopener"
+    }
+   ],
+   "ldjson": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"WebSite\",\"@id\":\"https://scopeflux.io/#website\",\"url\":\"https://scopeflux.io/\",\"name\":\"ScopeFlux\",\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\",\"inLanguage\":\"en\",\"publisher\":{\"@id\":\"https://scopeflux.io/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://scopeflux.io/#organization\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"logo\":\"https://scopeflux.io/icon-512.png\",\"email\":\"hello@scopeflux.io\"},{\"@type\":\"WebApplication\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"applicationCategory\":\"UtilitiesApplication\",\"operatingSystem\":\"Any\",\"isAccessibleForFree\":true,\"offers\":{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"EUR\"},\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\"}]}"
+   ],
+   "lang": "en",
+   "scripts": [
+    {
+     "src": null,
+     "defer": false,
+     "async": false,
+     "type": "application/json"
+    },
+    {
+     "src": "/assets/app.b93eba33d8.js",
+     "defer": true,
+     "async": false,
+     "type": null
+    },
+    {
+     "src": null,
+     "defer": false,
+     "async": false,
+     "type": "application/json"
+    },
+    {
+     "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+     "defer": false,
+     "async": false,
+     "type": "module"
+    }
+   ],
+   "css": [
+    "/assets/app.71d6b0903b.css"
+   ],
+   "word_count": 783,
+   "text_sample": "Expired Domains List – Expiring & Dropping Domains | ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Expiring soon Sign in DOMAINS ON THE HORIZON Expired & expiring domains. Upcoming domain drops. A free expired domains list: browse domains approaching release, see the day they are expected to drop and filter by your favourite extensions. .com .io .sk .cz Filter the live catalogue Have a specific domain in mind? Full domain name Check domain — Domains in the live list 21 extensions Covered by ScopeFlux Expected release Estimated day and a countdown Refine your search Show filters Filters Clear Domain extension Up to 2 .com .net .org .io .app .xyz .info .me .biz .us .pro .cc .tv .co.uk .uk .org.uk .com.au .au .it .cz .sk Select up to 2 extensions, or none for the soonest from all. Premium potential All domains Premium candidates Other names Estimated name quality. Registry premium prices are not available in these feeds. How we select names Short names: 2–4 letters. Single words from a curated Englis",
+   "text": "Expired Domains List – Expiring & Dropping Domains | ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Expiring soon Sign in DOMAINS ON THE HORIZON Expired & expiring domains. Upcoming domain drops. A free expired domains list: browse domains approaching release, see the day they are expected to drop and filter by your favourite extensions. .com .io .sk .cz Filter the live catalogue Have a specific domain in mind? Full domain name Check domain — Domains in the live list 21 extensions Covered by ScopeFlux Expected release Estimated day and a countdown Refine your search Show filters Filters Clear Domain extension Up to 2 .com .net .org .io .app .xyz .info .me .biz .us .pro .cc .tv .co.uk .uk .org.uk .com.au .au .it .cz .sk Select up to 2 extensions, or none for the soonest from all. Premium potential All domains Premium candidates Other names Estimated name quality. Registry premium prices are not available in these feeds. How we select names Short names: 2–4 letters. Single words from a curated English / Slovak keyword list. Two words from that list, up to 12 letters total; each word at least 3 letters. Letters only; no digits or hyphens. Rules apply equally to every extension. No price, trademark or resale-value check is included. A name outside these rules may still be valuable. Date range All dates Today Within 7 days Name length 1–63 characters Min Max No hyphens No numbers Finding a name does not guarantee registration. Confirm current availability with a registrar. Expiring & dropping soon 0 results · Within 7 days · All extensions Soonest first Mixed extensions By name Showing the soonest releases from every extension. Choose up to 2 extensions in the filters to see their full lists. Loading the current list… Fetching data from a live external source. Release estimates from source lists · not guaranteed availability. Data coverage QUICK ANSWERS Expired domains, explained. How expiring, pending delete and dropped domains work, and how to get one when it is released. What are expired domains? An expired domain is a name whose owner did not renew it by its domain expiration date. It is not free yet: the owner usually still has a grace period and a redemption period. Only when the registry deletes it, when the domain drops, can anyone register it. What does pending delete mean? Pending delete is the last stage before a domain is deleted, usually five days for .com and .net. Nobody can renew the name any more. ScopeFlux lists pending delete and deleted domains with the day they are expected to drop. How can I buy an expired domain? Wait for the release day and register the name at any registrar, or place a backorder with a drop catching service before it drops. Popular names are often caught within seconds. ScopeFlux does not sell or register domains; it shows when a name is expected to become available. When does a domain expire, and when is it released? Use the domain expiration checker to see a domain’s expiration date from public registry data. For listed names, ScopeFlux shows the estimated release day from the source: Verisign pending-delete lists for .com and .net, the registries’ own drop lists for .it and .au, Backorder.sk for .sk and CZ.NIC for .cz. Which extensions are covered? .com, .net, .org, .io, .app, .xyz, .info, .me, .biz, .us, .pro, .cc, .tv, .co.uk, .uk, .org.uk, .com.au, .au, .it, .sk and .cz. Expiring .sk and .cz domains are rarely covered by other expired domain lists. Is the expired domains list free? Yes. Browsing, search, filters and the watchlist are free. Signing in with Google is optional and keeps your watchlist on all your devices. CSV export and API access are part of ScopeFlux Premium, a monthly plan. Notable drops, every Monday A short e-mail with the most interesting names expected to be released that week, only in the extensions you choose. Free, no account needed, unsubscribe with one click. E-mail address Subscribe Extensions: .com, .net, .org, .io Show extensions ▾ We send a confirmation e-mail first. See Privacy . ScopeFlux / Good names are worth watching. How it works Sources About Premium Privacy Contact Send feedback Also by us: QRko , free QR codes"
+  },
+  "https://scopeflux.io/check-domain": {
+   "url": "https://scopeflux.io/check-domain",
+   "status": 200,
+   "time": 0.296,
+   "bytes": 19601,
+   "location": null,
+   "in_sitemap": true,
+   "ctype": "text/html; charset=utf-8",
+   "title": "Domain Expiration Date Checker – When Does It Expire? | ScopeFlux",
+   "metas": {
+    "viewport": "width=device-width, initial-scale=1",
+    "theme-color": "#0d1019",
+    "color-scheme": "dark",
+    "description": "Check any domain’s expiration date and registration status with public RDAP data. See when a domain expires and, for listed names, the estimated release day.",
+    "application-name": "ScopeFlux",
+    "author": "ScopeFlux",
+    "creator": "ScopeFlux",
+    "category": "technology",
+    "format-detection": "telephone=no",
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1",
+    "og:title": "Domain Expiration Date Checker – When Does It Expire? | ScopeFlux",
+    "og:description": "Look up any domain: expiration date, registration status and estimated release day.",
+    "og:url": "https://scopeflux.io/check-domain",
+    "og:site_name": "ScopeFlux",
+    "og:locale": "en_GB",
+    "og:image": "https://scopeflux.io/og-image.png?v=2",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:image:alt": "ScopeFlux — expiring and dropping domains",
+    "og:type": "website",
+    "twitter:card": "summary_large_image",
+    "twitter:title": "Domain Expiration Date Checker – When Does It Expire? | ScopeFlux",
+    "twitter:description": "Look up any domain: expiration date, registration status and estimated release day.",
+    "twitter:image": "https://scopeflux.io/og-image.png?v=2",
+    "twitter:image:alt": "ScopeFlux — expiring and dropping domains"
+   },
+   "links": [],
+   "canon": "https://scopeflux.io/check-domain",
+   "hreflang": {},
+   "h": [
+    [
+     "h1",
+     "Domain expiration date checker.Know where it stands."
+    ],
+    [
+     "h2",
+     "Which domain are you checking?"
+    ],
+    [
+     "h2",
+     "Notable drops, every Monday"
+    ]
+   ],
+   "imgs": [],
+   "a": [
+    {
+     "href": "#main-content",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/#recent",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/check-domain",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "/account/login?next=%2Fcheck-domain",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+     "rel": null
+    },
+    {
+     "href": "https://qrko.net/?ref=scopeflux",
+     "rel": "noopener"
+    }
+   ],
+   "ldjson": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"WebSite\",\"@id\":\"https://scopeflux.io/#website\",\"url\":\"https://scopeflux.io/\",\"name\":\"ScopeFlux\",\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\",\"inLanguage\":\"en\",\"publisher\":{\"@id\":\"https://scopeflux.io/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://scopeflux.io/#organization\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"logo\":\"https://scopeflux.io/icon-512.png\",\"email\":\"hello@scopeflux.io\"},{\"@type\":\"WebApplication\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"applicationCategory\":\"UtilitiesApplication\",\"operatingSystem\":\"Any\",\"isAccessibleForFree\":true,\"offers\":{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"EUR\"},\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\"}]}"
+   ],
+   "lang": "en",
+   "scripts": [
+    {
+     "src": null,
+     "defer": false,
+     "async": false,
+     "type": "application/json"
+    },
+    {
+     "src": "/assets/app.b93eba33d8.js",
+     "defer": true,
+     "async": false,
+     "type": null
+    },
+    {
+     "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+     "defer": false,
+     "async": false,
+     "type": "module"
+    }
+   ],
+   "css": [
+    "/assets/app.71d6b0903b.css"
+   ],
+   "word_count": 303,
+   "text_sample": "Domain Expiration Date Checker – When Does It Expire? | ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Check domain Sign in DOMAIN CHECK Domain expiration date checker. Know where it stands. See when a domain expires: look up the expiration date and registration status of any domain, independently of the catalogue’s extensions. Which domain are you checking? Enter any domain name, with any extension and no expiration-date limit. We check public registry data or a supported source, even when expiration is years away. Domain name Check domain Supports international names and endings beyond the discovery catalogue. Enter the domain itself, without a page path. Try a format example.com example.xyz example.co.uk Some registries do not publish RDAP data. We explain when a record cannot be verified and provide a registry reference. A missing record does not confirm availability, and an expiration date does not guarantee a release. Notable drops, every Monday A short e-mail with the most interesting names ",
+   "text": "Domain Expiration Date Checker – When Does It Expire? | ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Check domain Sign in DOMAIN CHECK Domain expiration date checker. Know where it stands. See when a domain expires: look up the expiration date and registration status of any domain, independently of the catalogue’s extensions. Which domain are you checking? Enter any domain name, with any extension and no expiration-date limit. We check public registry data or a supported source, even when expiration is years away. Domain name Check domain Supports international names and endings beyond the discovery catalogue. Enter the domain itself, without a page path. Try a format example.com example.xyz example.co.uk Some registries do not publish RDAP data. We explain when a record cannot be verified and provide a registry reference. A missing record does not confirm availability, and an expiration date does not guarantee a release. Notable drops, every Monday A short e-mail with the most interesting names expected to be released that week, only in the extensions you choose. Free, no account needed, unsubscribe with one click. E-mail address Subscribe Extensions: .com, .net, .org, .io Show extensions ▾ We send a confirmation e-mail first. See Privacy . ScopeFlux / Good names are worth watching. How it works Sources About Premium Privacy Contact Send feedback Also by us: QRko , free QR codes"
+  },
+  "https://scopeflux.io/how-it-works": {
+   "url": "https://scopeflux.io/how-it-works",
+   "status": 200,
+   "time": 0.603,
+   "bytes": 26456,
+   "location": null,
+   "in_sitemap": true,
+   "ctype": "text/html; charset=utf-8",
+   "title": "Domain Expiry Explained: Redemption Period & Pending Delete | ScopeFlux",
+   "metas": {
+    "viewport": "width=device-width, initial-scale=1",
+    "theme-color": "#0d1019",
+    "color-scheme": "dark",
+    "description": "What happens when a domain expires: grace period, redemption period, pending delete and release, with typical fees, backorders and drop catching explained.",
+    "application-name": "ScopeFlux",
+    "author": "ScopeFlux",
+    "creator": "ScopeFlux",
+    "category": "technology",
+    "format-detection": "telephone=no",
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1",
+    "og:title": "Domain Expiry Explained: Redemption Period & Pending Delete | ScopeFlux",
+    "og:description": "Expired is not free yet. Grace period, redemption, pending delete and release, explained simply.",
+    "og:url": "https://scopeflux.io/how-it-works",
+    "og:site_name": "ScopeFlux",
+    "og:locale": "en_GB",
+    "og:image": "https://scopeflux.io/og-image.png?v=2",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:image:alt": "ScopeFlux — expiring and dropping domains",
+    "og:type": "website",
+    "twitter:card": "summary_large_image",
+    "twitter:title": "Domain Expiry Explained: Redemption Period & Pending Delete | ScopeFlux",
+    "twitter:description": "Expired is not free yet. Grace period, redemption, pending delete and release, explained simply.",
+    "twitter:image": "https://scopeflux.io/og-image.png?v=2",
+    "twitter:image:alt": "ScopeFlux — expiring and dropping domains"
+   },
+   "links": [],
+   "canon": "https://scopeflux.io/how-it-works",
+   "hreflang": {},
+   "h": [
+    [
+     "h1",
+     "Expired is not free.Here is what happens."
+    ],
+    [
+     "h2",
+     "From expired to available, step by step."
+    ],
+    [
+     "h3",
+     "It can be sold before it drops"
+    ],
+    [
+     "h3",
+     "The release is a race"
+    ],
+    [
+     "h2",
+     "Fees when an owner forgets to pay."
+    ],
+    [
+     "h2",
+     "Three things to remember."
+    ],
+    [
+     "h3",
+     "A date is a forecast"
+    ],
+    [
+     "h3",
+     "Timing matters"
+    ],
+    [
+     "h3",
+     "Check before you plan"
+    ],
+    [
+     "h2",
+     "Common questions."
+    ],
+    [
+     "h2",
+     "Notable drops, every Monday"
+    ]
+   ],
+   "imgs": [],
+   "a": [
+    {
+     "href": "#main-content",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/#recent",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/check-domain",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "/account/login?next=%2Fhow-it-works",
+     "rel": null
+    },
+    {
+     "href": "https://www.icann.org/resources/pages/domain-name-renewal-expiration-faqs-2018-12-07-en",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "https://www.nic.cz/files/documents/Pravidla_aukci.pdf",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "https://sk-nic.sk/",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+     "rel": null
+    },
+    {
+     "href": "https://qrko.net/?ref=scopeflux",
+     "rel": "noopener"
+    }
+   ],
+   "ldjson": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"WebSite\",\"@id\":\"https://scopeflux.io/#website\",\"url\":\"https://scopeflux.io/\",\"name\":\"ScopeFlux\",\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\",\"inLanguage\":\"en\",\"publisher\":{\"@id\":\"https://scopeflux.io/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://scopeflux.io/#organization\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"logo\":\"https://scopeflux.io/icon-512.png\",\"email\":\"hello@scopeflux.io\"},{\"@type\":\"WebApplication\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"applicationCategory\":\"UtilitiesApplication\",\"operatingSystem\":\"Any\",\"isAccessibleForFree\":true,\"offers\":{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"EUR\"},\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\"}]}"
+   ],
+   "lang": "en",
+   "scripts": [
+    {
+     "src": null,
+     "defer": false,
+     "async": false,
+     "type": "application/json"
+    },
+    {
+     "src": "/assets/app.b93eba33d8.js",
+     "defer": true,
+     "async": false,
+     "type": null
+    },
+    {
+     "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+     "defer": false,
+     "async": false,
+     "type": "module"
+    }
+   ],
+   "css": [
+    "/assets/app.71d6b0903b.css"
+   ],
+   "word_count": 1042,
+   "text_sample": "Domain Expiry Explained: Redemption Period & Pending Delete | ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / How it works Sign in DOMAIN LIFECYCLE Expired is not free. Here is what happens. What happens when an owner forgets to renew: the stages, how long each one lasts and what it costs. THE SHORT VERSION Expired does not mean free. The owner gets extra time to pay, often weeks. Waiting longer costs the owner more. Paying a little late is cheap, paying at the last moment can cost a lot more. Only at the end can anyone else get it. Then it is first come, first served, or an auction. THE TIMELINE From expired to available, step by step. The same order applies to every extension, from stage 1 to stage 5. The exact number of days depends on the registry and the registrar. 01 Active Until the expiration date The domain is registered and paid. Owner Renews at the normal price. Cost Normal renewal 02 Grace period First days or weeks Expired, but the owner can still renew it. The website and email may sto",
+   "text": "Domain Expiry Explained: Redemption Period & Pending Delete | ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / How it works Sign in DOMAIN LIFECYCLE Expired is not free. Here is what happens. What happens when an owner forgets to renew: the stages, how long each one lasts and what it costs. THE SHORT VERSION Expired does not mean free. The owner gets extra time to pay, often weeks. Waiting longer costs the owner more. Paying a little late is cheap, paying at the last moment can cost a lot more. Only at the end can anyone else get it. Then it is first come, first served, or an auction. THE TIMELINE From expired to available, step by step. The same order applies to every extension, from stage 1 to stage 5. The exact number of days depends on the registry and the registrar. 01 Active Until the expiration date The domain is registered and paid. Owner Renews at the normal price. Cost Normal renewal 02 Grace period First days or weeks Expired, but the owner can still renew it. The website and email may stop working. Owner Can renew, usually at the normal price. Cost Normal renewal, sometimes a late fee 03 Last chance Before deletion Often called the redemption period: the final stage before the domain is deleted. Only the old owner can still save it. Owner Can still save it, sometimes with an extra restore fee. Cost Renewal or a restore fee 04 Deletion or auction A set day Often called pending delete. Locked: nobody can renew or register it. Then the registry deletes it, or sells it in a public auction. Owner Too late to save it. Cost Not possible 05 Released After deletion or auction The domain is free again. The first registration wins. Owner Anyone can register it. Cost Normal registration or a backorder Owner is safe Owner should pay now Last chance for the owner Locked or auction Free to register It can be sold before it drops Some registrars auction expired names during the grace period, and some registries auction them instead of deleting them. If someone buys it there, the name never becomes free. The release is a race Released names are often caught within seconds by backorder services. If you want a valuable name, be ready on the day or use a backorder. WHAT IT COSTS Fees when an owner forgets to pay. Steps 1 to 5 follow each other in time. This is the general pattern: the details differ by extension (a .cz name, for example, goes to a registry auction), prices are typical, and the registrar’s own price list is what counts. 1 Pays on time Before the expiration date Normal yearly price The usual renewal at the registrar. 2 Pays a little late First days or weeks after expiry Usually still the normal price Some registrars add a small late fee. 3 Pays very late Last stage before deletion Can cost a lot more Some extensions charge a restore fee, often about 50–200 EUR, on top of the renewal. 4 Too late for the owner Deletion or auction Cannot be saved any more The domain is deleted, or sold in an auction. 5 Someone else gets it After release Normal price, a backorder fee or an auction bid Whoever is first registers it at the normal price. A backorder service or an auction can cost more. WHAT THIS MEANS FOR YOU Three things to remember. 01 A date is a forecast Release dates come from public sources. The owner can still renew, so a name can vanish from the list at any time. 02 Timing matters Most good names are taken in the first minutes after release. Know the exact day and be ready, or use a backorder. 03 Check before you plan Open a domain in ScopeFlux to see its current registration status, then confirm with a registrar before you count on it. QUICK ANSWERS Common questions. If a domain is on the list, will it definitely become free? No. The owner can renew it until the last stage, and a registrar may sell it at auction first. A release date is an estimate from the source, not a promise. Can I buy a domain before it is released? Not from the registry. Only the current owner can renew or restore it. Some registrars sell their own expired names at auction during the grace period. Why does the website still work after the expiration date? Many registrars and registries keep the name running for a few days or weeks after expiry, to give the owner a chance to notice and pay. What is a domain backorder or drop catching? A backorder asks a drop catching service to try to register a name the moment it is deleted. If several people backorder the same domain, it usually goes to an auction. ScopeFlux does not place backorders; it shows the expected drop day so you can choose a service in time. Does ScopeFlux register domains? No. ScopeFlux only shows what public sources publish. To register, backorder or bid, use a registrar. Ready to look for a name? Browse the domains that are getting close to release, filtered by your favourite extensions. Browse expiring domains General rules: ICANN renewal and expiration FAQ CZ.NIC auction rules SK-NIC Notable drops, every Monday A short e-mail with the most interesting names expected to be released that week, only in the extensions you choose. Free, no account needed, unsubscribe with one click. E-mail address Subscribe Extensions: .com, .net, .org, .io Show extensions ▾ We send a confirmation e-mail first. See Privacy . ScopeFlux / Good names are worth watching. How it works Sources About Premium Privacy Contact Send feedback Also by us: QRko , free QR codes"
+  },
+  "https://scopeflux.io/sources": {
+   "url": "https://scopeflux.io/sources",
+   "status": 200,
+   "time": 0.331,
+   "bytes": 33913,
+   "location": null,
+   "in_sitemap": true,
+   "ctype": "text/html; charset=utf-8",
+   "title": "Expired Domain Lists & Drop Data Sources | ScopeFlux",
+   "metas": {
+    "viewport": "width=device-width, initial-scale=1",
+    "theme-color": "#0d1019",
+    "color-scheme": "dark",
+    "description": "Where ScopeFlux gets its release dates: Verisign deletion lists, SnapNames and Dynadot for .com, .net, .org, .io, .xyz and more, Registro .it and auDA for .it and .au, CZ.NIC for .cz, Backorder.sk for .sk, and RDAP.",
+    "application-name": "ScopeFlux",
+    "author": "ScopeFlux",
+    "creator": "ScopeFlux",
+    "category": "technology",
+    "format-detection": "telephone=no",
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1",
+    "og:title": "Expired Domain Lists & Drop Data Sources | ScopeFlux",
+    "og:description": "Every release date has a source: CZ.NIC, Backorder.sk, NameBio, SnapNames, Dynadot and RDAP. What each covers and its limits.",
+    "og:url": "https://scopeflux.io/sources",
+    "og:site_name": "ScopeFlux",
+    "og:locale": "en_GB",
+    "og:image": "https://scopeflux.io/og-image.png?v=2",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:image:alt": "ScopeFlux — expiring and dropping domains",
+    "og:type": "website",
+    "twitter:card": "summary_large_image",
+    "twitter:title": "Expired Domain Lists & Drop Data Sources | ScopeFlux",
+    "twitter:description": "Every release date has a source: CZ.NIC, Backorder.sk, NameBio, SnapNames, Dynadot and RDAP. What each covers and its limits.",
+    "twitter:image": "https://scopeflux.io/og-image.png?v=2",
+    "twitter:image:alt": "ScopeFlux — expiring and dropping domains"
+   },
+   "links": [],
+   "canon": "https://scopeflux.io/sources",
+   "hreflang": {},
+   "h": [
+    [
+     "h1",
+     "Data youcan understand."
+    ],
+    [
+     "h2",
+     "Every date has a source."
+    ],
+    [
+     "h3",
+     "NameBio"
+    ],
+    [
+     "h3",
+     "SnapNames"
+    ],
+    [
+     "h3",
+     "Dynadot"
+    ],
+    [
+     "h3",
+     "Backorder.sk"
+    ],
+    [
+     "h3",
+     "Registro .it"
+    ],
+    [
+     "h3",
+     "auDA drop list"
+    ],
+    [
+     "h3",
+     "CZ.NIC"
+    ],
+    [
+     "h3",
+     "A fresh registration check"
+    ],
+    [
+     "h3",
+     "History, with its context"
+    ],
+    [
+     "h2",
+     "Notable drops, every Monday"
+    ]
+   ],
+   "imgs": [],
+   "a": [
+    {
+     "href": "#main-content",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/#recent",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/check-domain",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "/account/login?next=%2Fsources",
+     "rel": null
+    },
+    {
+     "href": "https://api.namebio.com/verisign-download",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "https://www.snapnames.com/",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "https://www.dynadot.com/market/backorder",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "https://www.backorder.sk/zadrzane",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "https://www.nic.it/en/droptime",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "https://www.identitydigital.au/domain-name-drop-list",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "https://www.nic.cz/files/nic/doc/Pravidla_registrace_CZ.pdf",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "https://data.iana.org/rdap/dns.json",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "https://rdap.identitydigital.services/rdap/",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "https://www.icann.org/resources/pages/domain-name-renewal-expiration-faqs-2018-12-07-en",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+     "rel": null
+    },
+    {
+     "href": "https://qrko.net/?ref=scopeflux",
+     "rel": "noopener"
+    }
+   ],
+   "ldjson": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"WebSite\",\"@id\":\"https://scopeflux.io/#website\",\"url\":\"https://scopeflux.io/\",\"name\":\"ScopeFlux\",\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\",\"inLanguage\":\"en\",\"publisher\":{\"@id\":\"https://scopeflux.io/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://scopeflux.io/#organization\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"logo\":\"https://scopeflux.io/icon-512.png\",\"email\":\"hello@scopeflux.io\"},{\"@type\":\"WebApplication\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"applicationCategory\":\"UtilitiesApplication\",\"operatingSystem\":\"Any\",\"isAccessibleForFree\":true,\"offers\":{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"EUR\"},\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\"}]}"
+   ],
+   "lang": "en",
+   "scripts": [
+    {
+     "src": null,
+     "defer": false,
+     "async": false,
+     "type": "application/json"
+    },
+    {
+     "src": "/assets/app.b93eba33d8.js",
+     "defer": true,
+     "async": false,
+     "type": null
+    },
+    {
+     "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+     "defer": false,
+     "async": false,
+     "type": "module"
+    }
+   ],
+   "css": [
+    "/assets/app.71d6b0903b.css"
+   ],
+   "word_count": 812,
+   "text_sample": "Expired Domain Lists & Drop Data Sources | ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Sources Sign in DATA SOURCES Data you can understand. Every date has a source. See what is verified and what remains an estimate. FOLLOW THE EVIDENCE Every date has a source. Explore the providers behind the catalogue, their coverage and the limits of each list. .COM / .NET DELETION LIST NameBio .com .net NameBio’s download of Verisign pending-delete names, each with the day it is due to be deleted from the .com/.net registry. Names in pending delete can no longer be renewed. The registry does not publish the hour, so ScopeFlux shows the day only. Retrieval time appears after the feed loads. Pending-delete download PENDING-DELETE LIST SnapNames .com .net .org .info .biz .us .cc .tv .co.uk .uk .org.uk The daily SnapNames deleting list. Its “Join By” value is SnapNames’ backorder deadline, not a registry time. ScopeFlux uses only its calendar day as the expected deletion day and never presents the deadline as a ",
+   "text": "Expired Domain Lists & Drop Data Sources | ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Sources Sign in DATA SOURCES Data you can understand. Every date has a source. See what is verified and what remains an estimate. FOLLOW THE EVIDENCE Every date has a source. Explore the providers behind the catalogue, their coverage and the limits of each list. .COM / .NET DELETION LIST NameBio .com .net NameBio’s download of Verisign pending-delete names, each with the day it is due to be deleted from the .com/.net registry. Names in pending delete can no longer be renewed. The registry does not publish the hour, so ScopeFlux shows the day only. Retrieval time appears after the feed loads. Pending-delete download PENDING-DELETE LIST SnapNames .com .net .org .info .biz .us .cc .tv .co.uk .uk .org.uk The daily SnapNames deleting list. Its “Join By” value is SnapNames’ backorder deadline, not a registry time. ScopeFlux uses only its calendar day as the expected deletion day and never presents the deadline as a release hour. Retrieval time appears after the feed loads. SnapNames deleting list GLOBAL BACKORDER LISTS Dynadot .io .app .xyz .me .pro .com .net .org .info .biz .us .cc .tv Public backorder listings for extensions without a pending-delete list (.io, .app, .xyz, .me, .pro), and a fallback for the others. Dynadot shows when its backorder closes, not when the registry deletes the name, so these dates are labelled as backorder estimates. ScopeFlux asks for names without numbers or hyphens and respects Dynadot’s rate limits. Retrieval time appears after the feed loads. Public backorder listings SLOVAK RELEASE LIST Backorder.sk .sk Held .sk domains with the day each one drops out of the SK-NIC registry. The source publishes only the day, so ScopeFlux shows the day without an hour. Retrieval time appears after the feed loads. Public release list OFFICIAL .IT DROP TIMES Registro .it .it The .it registry itself. Every night it publishes the names that entered pending delete the day before, as lists for the next cancellations at 09:00 and 16:00 Italian time. ScopeFlux shows the day and the registry’s cancellation time; names are free for registration right after it. Retrieval time appears after the feed loads. Drop time lists OFFICIAL .AU PURGE TIMES auDA drop list .com.au .au The .au registry’s drop lists of expired names and names deleted by their registrar, each with the time (UTC) from which it may be purged, up to about two weeks ahead. A name is purged in the next purge cycle after that time; until then a registrar can still restore a deleted name. Retrieval time appears after the feed loads. Domain name drop list OFFICIAL .CZ RELEASE DATES CZ.NIC .cz The .cz registry itself. CZ.NIC publishes expired .cz names about 15 days before they leave the registry. ScopeFlux shows only the day a name is released for ordinary registration; the registry first offers a priority right for one day, and a name is released only if nobody uses it. Retrieval time appears after the feed loads. CZ.NIC registration rules A fresh registration check Opening a domain queries RDAP where supported. IANA’s bootstrap directory locates registry endpoints, so the check also works for extensions outside the catalogue (for example .ai, via Identity Digital). .sk details use Backorder.sk. An unavailable record is never treated as proof of availability. IANA RDAP directory Identity Digital RDAP History, with its context Recently expired combines clearly labelled public deletion reports with observed listings whose projected release dates have passed, for up to 30 days. It grows as feeds are collected; there is no complete historical database for every extension. Original dates, retrieval times and attribution stay attached. A past release estimate does not confirm expiry, deletion or availability today. Expiration and availability are different events. A holder may renew or restore a domain. Registry rules vary, and another buyer may register it as soon as it drops. Confirm availability with a registrar. Read ICANN’s guide Notable drops, every Monday A short e-mail with the most interesting names expected to be released that week, only in the extensions you choose. Free, no account needed, unsubscribe with one click. E-mail address Subscribe Extensions: .com, .net, .org, .io Show extensions ▾ We send a confirmation e-mail first. See Privacy . ScopeFlux / Good names are worth watching. How it works Sources About Premium Privacy Contact Send feedback Also by us: QRko , free QR codes"
+  },
+  "https://scopeflux.io/about": {
+   "url": "https://scopeflux.io/about",
+   "status": 200,
+   "time": 0.733,
+   "bytes": 22524,
+   "location": null,
+   "in_sitemap": true,
+   "ctype": "text/html; charset=utf-8",
+   "title": "About ScopeFlux – Free Expired Domain Finder",
+   "metas": {
+    "viewport": "width=device-width, initial-scale=1",
+    "theme-color": "#0d1019",
+    "color-scheme": "dark",
+    "description": "ScopeFlux is a free expired domain finder: upcoming domain drops in one place, so you can compare extensions and see when a domain may become available.",
+    "application-name": "ScopeFlux",
+    "author": "ScopeFlux",
+    "creator": "ScopeFlux",
+    "category": "technology",
+    "format-detection": "telephone=no",
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1",
+    "og:title": "About ScopeFlux – Free Expired Domain Finder",
+    "og:description": "Upcoming domain releases in one place: discover names, compare extensions and see when a domain may free up.",
+    "og:url": "https://scopeflux.io/about",
+    "og:site_name": "ScopeFlux",
+    "og:locale": "en_GB",
+    "og:image": "https://scopeflux.io/og-image.png?v=2",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:image:alt": "ScopeFlux — expiring and dropping domains",
+    "og:type": "website",
+    "twitter:card": "summary_large_image",
+    "twitter:title": "About ScopeFlux – Free Expired Domain Finder",
+    "twitter:description": "Upcoming domain releases in one place: discover names, compare extensions and see when a domain may free up.",
+    "twitter:image": "https://scopeflux.io/og-image.png?v=2",
+    "twitter:image:alt": "ScopeFlux — expiring and dropping domains"
+   },
+   "links": [],
+   "canon": "https://scopeflux.io/about",
+   "hreflang": {},
+   "h": [
+    [
+     "h1",
+     "A good name.A new beginning."
+    ],
+    [
+     "h2",
+     "A name for whatyou’re building next."
+    ],
+    [
+     "h2",
+     "Your next name, in three steps."
+    ],
+    [
+     "h3",
+     "Find your direction"
+    ],
+    [
+     "h3",
+     "Understand the timing"
+    ],
+    [
+     "h3",
+     "Keep it on your radar"
+    ],
+    [
+     "h2",
+     "Discovery with context."
+    ],
+    [
+     "h2",
+     "What we are working on."
+    ],
+    [
+     "h2",
+     "Notable drops, every Monday"
+    ]
+   ],
+   "imgs": [],
+   "a": [
+    {
+     "href": "#main-content",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/#recent",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/check-domain",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "/account/login?next=%2Fabout",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+     "rel": null
+    },
+    {
+     "href": "https://qrko.net/?ref=scopeflux",
+     "rel": "noopener"
+    }
+   ],
+   "ldjson": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"WebSite\",\"@id\":\"https://scopeflux.io/#website\",\"url\":\"https://scopeflux.io/\",\"name\":\"ScopeFlux\",\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\",\"inLanguage\":\"en\",\"publisher\":{\"@id\":\"https://scopeflux.io/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://scopeflux.io/#organization\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"logo\":\"https://scopeflux.io/icon-512.png\",\"email\":\"hello@scopeflux.io\"},{\"@type\":\"WebApplication\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"applicationCategory\":\"UtilitiesApplication\",\"operatingSystem\":\"Any\",\"isAccessibleForFree\":true,\"offers\":{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"EUR\"},\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\"}]}"
+   ],
+   "lang": "en",
+   "scripts": [
+    {
+     "src": null,
+     "defer": false,
+     "async": false,
+     "type": "application/json"
+    },
+    {
+     "src": "/assets/app.b93eba33d8.js",
+     "defer": true,
+     "async": false,
+     "type": null
+    },
+    {
+     "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+     "defer": false,
+     "async": false,
+     "type": "module"
+    }
+   ],
+   "css": [
+    "/assets/app.71d6b0903b.css"
+   ],
+   "word_count": 454,
+   "text_sample": "About ScopeFlux – Free Expired Domain Finder Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / About Sign in ABOUT SCOPEFLUX A good name. A new beginning. Meet the project that helps you discover, understand and follow domain names. THE IDEA BEHIND SCOPEFLUX A name for what you’re building next. ScopeFlux brings upcoming domain releases into one place, so you can discover names, compare extensions and understand when a domain might become available. Built for founders, creators and anyone searching for a name for their next project. Explore upcoming releases .io .com .xyz A WORLD OF NAMES FROM DISCOVERY TO A DECISION Your next name, in three steps. 01 Find your direction Browse upcoming releases. Pick your extensions, search a keyword and narrow the list by date, length or premium potential. 02 Understand the timing Compare source-listed release estimates and countdowns. Recently expired lets you revisit names whose listed dates have passed. 03 Keep it on your radar Save names to your account and switch on emai",
+   "text": "About ScopeFlux – Free Expired Domain Finder Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / About Sign in ABOUT SCOPEFLUX A good name. A new beginning. Meet the project that helps you discover, understand and follow domain names. THE IDEA BEHIND SCOPEFLUX A name for what you’re building next. ScopeFlux brings upcoming domain releases into one place, so you can discover names, compare extensions and understand when a domain might become available. Built for founders, creators and anyone searching for a name for their next project. Explore upcoming releases .io .com .xyz A WORLD OF NAMES FROM DISCOVERY TO A DECISION Your next name, in three steps. 01 Find your direction Browse upcoming releases. Pick your extensions, search a keyword and narrow the list by date, length or premium potential. 02 Understand the timing Compare source-listed release estimates and countdowns. Recently expired lets you revisit names whose listed dates have passed. 03 Keep it on your radar Save names to your account and switch on email alerts: we write when a saved name is about to be released, changes in the registry or disappears from it. CLEAR DATES. HONEST EXPECTATIONS. Discovery with context. ScopeFlux is a discovery and monitoring tool. It does not register domains, place backorders or guarantee availability. Premium potential is a transparent name-quality heuristic, not a price appraisal. See every stage and fee Explore our sources 01 Registration expires The holder may still be able to renew. 02 Recovery or deletion stages The rules depend on the extension. 03 Possible release The source estimate may change. 04 Check current availability A registrar confirms whether you can register it. COMING SOON What we are working on. Alerts for saved searches. An email when new names that match your filters appear. Missing something? Send us your idea . Notable drops, every Monday A short e-mail with the most interesting names expected to be released that week, only in the extensions you choose. Free, no account needed, unsubscribe with one click. E-mail address Subscribe Extensions: .com, .net, .org, .io Show extensions ▾ We send a confirmation e-mail first. See Privacy . ScopeFlux / Good names are worth watching. How it works Sources About Premium Privacy Contact Send feedback Also by us: QRko , free QR codes"
+  },
+  "https://scopeflux.io/premium": {
+   "url": "https://scopeflux.io/premium",
+   "status": 200,
+   "time": 0.763,
+   "bytes": 24868,
+   "location": null,
+   "in_sitemap": true,
+   "ctype": "text/html; charset=utf-8",
+   "title": "Expired Domains API & CSV Export – ScopeFlux Premium",
+   "metas": {
+    "viewport": "width=device-width, initial-scale=1",
+    "theme-color": "#0d1019",
+    "color-scheme": "dark",
+    "description": "ScopeFlux Premium: an expired domains API with your own API keys and CSV export of every list, for .com, .net, .io, .co.uk, .it, .sk, .cz and 14 more extensions.",
+    "application-name": "ScopeFlux",
+    "author": "ScopeFlux",
+    "creator": "ScopeFlux",
+    "category": "technology",
+    "format-detection": "telephone=no",
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1",
+    "og:title": "Expired Domains API & CSV Export – ScopeFlux Premium",
+    "og:description": "Expired domains API and CSV export for 21 extensions, with your own API keys.",
+    "og:url": "https://scopeflux.io/premium",
+    "og:site_name": "ScopeFlux",
+    "og:locale": "en_GB",
+    "og:image": "https://scopeflux.io/og-image.png?v=2",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:image:alt": "ScopeFlux — expiring and dropping domains",
+    "og:type": "website",
+    "twitter:card": "summary_large_image",
+    "twitter:title": "Expired Domains API & CSV Export – ScopeFlux Premium",
+    "twitter:description": "Expired domains API and CSV export for 21 extensions, with your own API keys.",
+    "twitter:image": "https://scopeflux.io/og-image.png?v=2",
+    "twitter:image:alt": "ScopeFlux — expiring and dropping domains"
+   },
+   "links": [],
+   "canon": "https://scopeflux.io/premium",
+   "hreflang": {},
+   "h": [
+    [
+     "h1",
+     "Expired domains API.CSV export included."
+    ],
+    [
+     "h2",
+     "Free to browse. Premium to build with."
+    ],
+    [
+     "h3",
+     "Free"
+    ],
+    [
+     "h3",
+     "Premium"
+    ],
+    [
+     "h2",
+     "The ScopeFlux API."
+    ],
+    [
+     "h2",
+     "Notable drops, every Monday"
+    ]
+   ],
+   "imgs": [],
+   "a": [
+    {
+     "href": "#main-content",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/#recent",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/check-domain",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "/account/login?next=%2Fpremium",
+     "rel": null
+    },
+    {
+     "href": "/account/login?next=%2Fpremium",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+     "rel": null
+    },
+    {
+     "href": "https://qrko.net/?ref=scopeflux",
+     "rel": "noopener"
+    }
+   ],
+   "ldjson": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"WebSite\",\"@id\":\"https://scopeflux.io/#website\",\"url\":\"https://scopeflux.io/\",\"name\":\"ScopeFlux\",\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\",\"inLanguage\":\"en\",\"publisher\":{\"@id\":\"https://scopeflux.io/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://scopeflux.io/#organization\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"logo\":\"https://scopeflux.io/icon-512.png\",\"email\":\"hello@scopeflux.io\"},{\"@type\":\"WebApplication\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"applicationCategory\":\"UtilitiesApplication\",\"operatingSystem\":\"Any\",\"isAccessibleForFree\":true,\"offers\":{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"EUR\"},\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\"}]}"
+   ],
+   "lang": "en",
+   "scripts": [
+    {
+     "src": null,
+     "defer": false,
+     "async": false,
+     "type": "application/json"
+    },
+    {
+     "src": "/assets/app.b93eba33d8.js",
+     "defer": true,
+     "async": false,
+     "type": null
+    },
+    {
+     "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+     "defer": false,
+     "async": false,
+     "type": "module"
+    }
+   ],
+   "css": [
+    "/assets/app.71d6b0903b.css"
+   ],
+   "word_count": 534,
+   "text_sample": "Expired Domains API & CSV Export – ScopeFlux Premium Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Premium Sign in SCOPEFLUX PREMIUM Expired domains API. CSV export included. Pull upcoming and recently expired domains into your own website or app, and download the Expiring soon and Recently expired lists as CSV. Browsing and filtering stay free. PLANS Free to browse. Premium to build with. Everyone can browse and filter every list. Premium adds CSV downloads and an API, so other websites and apps can pull ScopeFlux data. Premium is a monthly or yearly subscription, paid securely with Stripe. FREE Free €0 Browse every expiring and recently expired list All filters and search Watchlist on all your devices Email alerts for your watchlist Domain expiration checks CSV download of every list, free until Premium opens Sign in with Google PREMIUM Premium Coming soon Everything in Free CSV download of the Expiring soon and Recently expired lists, with your filters API access with your own keys, for your website or a",
+   "text": "Expired Domains API & CSV Export – ScopeFlux Premium Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Premium Sign in SCOPEFLUX PREMIUM Expired domains API. CSV export included. Pull upcoming and recently expired domains into your own website or app, and download the Expiring soon and Recently expired lists as CSV. Browsing and filtering stay free. PLANS Free to browse. Premium to build with. Everyone can browse and filter every list. Premium adds CSV downloads and an API, so other websites and apps can pull ScopeFlux data. Premium is a monthly or yearly subscription, paid securely with Stripe. FREE Free €0 Browse every expiring and recently expired list All filters and search Watchlist on all your devices Email alerts for your watchlist Domain expiration checks CSV download of every list, free until Premium opens Sign in with Google PREMIUM Premium Coming soon Everything in Free CSV download of the Expiring soon and Recently expired lists, with your filters API access with your own keys, for your website or app 60 requests per minute and 10,000 per day per key Email alerts for saved searches Coming soon Premium opens soon. Want early access? Write to hello@scopeflux.io . API The ScopeFlux API. JSON over HTTPS, the same data as the website. Send your key in the Authorization header. Extensions: .com, .net, .org, .io, .app, .xyz, .info, .me, .biz, .us, .pro, .cc, .tv, .co.uk, .uk, .org.uk, .com.au, .au, .it, .cz, .sk. API keys are part of Premium. curl -H \"Authorization: Bearer sf_live_your_key\" \\ \"https://scopeflux.io/api/v1/domains?tld=com&period=7&limit=100\" GET /api/v1/domains?tld=com Upcoming releases of one extension, soonest first. page, limit (max 1000), q, len, nohyphen=1, nonumber=1, premium=premium, period=0|7, format=csv. GET /api/v1/recent?tld=sk Release estimates of the past 7 days. format=csv supported. GET /api/v1/check?domain=example.com Live registry check of one domain (20 per minute). GET /api/v1/tlds All extensions with their live source and last update. GET /api/v1/me Your key, plan and usage today. { \"data\": [{ \"domain\": \"example.com\", \"tld\": \"com\", \"releaseDate\": \"2026-10-30\", \"releaseLabel\": \"Registry deletion day · hour not published\", \"status\": \"Expected release\", \"source\": \"NameBio\", \"premiumCandidate\": false }], \"page\": 1, \"limit\": 100, \"hasMore\": true } Add format=csv to /domains or /recent for a CSV file. Errors return JSON with an error message and HTTP 400, 401, 403 or 429. Release dates are days: the sources publish no reliable release hour. Notable drops, every Monday A short e-mail with the most interesting names expected to be released that week, only in the extensions you choose. Free, no account needed, unsubscribe with one click. E-mail address Subscribe Extensions: .com, .net, .org, .io Show extensions ▾ We send a confirmation e-mail first. See Privacy . ScopeFlux / Good names are worth watching. How it works Sources About Premium Privacy Contact Send feedback Also by us: QRko , free QR codes"
+  },
+  "https://scopeflux.io/contact": {
+   "url": "https://scopeflux.io/contact",
+   "status": 200,
+   "time": 0.626,
+   "bytes": 17556,
+   "location": null,
+   "in_sitemap": true,
+   "ctype": "text/html; charset=utf-8",
+   "title": "Contact — ScopeFlux",
+   "metas": {
+    "viewport": "width=device-width, initial-scale=1",
+    "theme-color": "#0d1019",
+    "color-scheme": "dark",
+    "description": "Questions, corrections to a listing, ideas or data requests for ScopeFlux, the expiring-domains catalogue: write to hello@scopeflux.io.",
+    "application-name": "ScopeFlux",
+    "author": "ScopeFlux",
+    "creator": "ScopeFlux",
+    "category": "technology",
+    "format-detection": "telephone=no",
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1",
+    "og:title": "Contact — ScopeFlux",
+    "og:description": "Questions, corrections or data requests: hello@scopeflux.io.",
+    "og:url": "https://scopeflux.io/contact",
+    "og:site_name": "ScopeFlux",
+    "og:locale": "en_GB",
+    "og:image": "https://scopeflux.io/og-image.png?v=2",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:image:alt": "ScopeFlux — expiring and dropping domains",
+    "og:type": "website",
+    "twitter:card": "summary_large_image",
+    "twitter:title": "Contact — ScopeFlux",
+    "twitter:description": "Questions, corrections or data requests: hello@scopeflux.io.",
+    "twitter:image": "https://scopeflux.io/og-image.png?v=2",
+    "twitter:image:alt": "ScopeFlux — expiring and dropping domains"
+   },
+   "links": [],
+   "canon": "https://scopeflux.io/contact",
+   "hreflang": {},
+   "h": [
+    [
+     "h1",
+     "Say hello.Questions welcome."
+    ],
+    [
+     "h2",
+     "Get in touch."
+    ],
+    [
+     "h3",
+     "Operator"
+    ],
+    [
+     "h3",
+     "Using ScopeFlux data"
+    ],
+    [
+     "h2",
+     "Notable drops, every Monday"
+    ]
+   ],
+   "imgs": [],
+   "a": [
+    {
+     "href": "#main-content",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/#recent",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/check-domain",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "/account/login?next=%2Fcontact",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+     "rel": null
+    },
+    {
+     "href": "https://qrko.net/?ref=scopeflux",
+     "rel": "noopener"
+    }
+   ],
+   "ldjson": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"WebSite\",\"@id\":\"https://scopeflux.io/#website\",\"url\":\"https://scopeflux.io/\",\"name\":\"ScopeFlux\",\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\",\"inLanguage\":\"en\",\"publisher\":{\"@id\":\"https://scopeflux.io/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://scopeflux.io/#organization\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"logo\":\"https://scopeflux.io/icon-512.png\",\"email\":\"hello@scopeflux.io\"},{\"@type\":\"WebApplication\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"applicationCategory\":\"UtilitiesApplication\",\"operatingSystem\":\"Any\",\"isAccessibleForFree\":true,\"offers\":{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"EUR\"},\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\"}]}"
+   ],
+   "lang": "en",
+   "scripts": [
+    {
+     "src": null,
+     "defer": false,
+     "async": false,
+     "type": "application/json"
+    },
+    {
+     "src": "/assets/app.b93eba33d8.js",
+     "defer": true,
+     "async": false,
+     "type": null
+    },
+    {
+     "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+     "defer": false,
+     "async": false,
+     "type": "module"
+    }
+   ],
+   "css": [
+    "/assets/app.71d6b0903b.css"
+   ],
+   "word_count": 274,
+   "text_sample": "Contact — ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Contact Sign in GET IN TOUCH Say hello. Questions welcome. Write to hello@scopeflux.io. CONTACT Get in touch. Questions, corrections to a listing, ideas or data requests: write to hello@scopeflux.io . Operator Matúš Šturdík, Nová 407, Veľká Mača, Slovakia, IČO (company ID) 51628163 ScopeFlux shows release estimates from public sources. It cannot reserve, buy or transfer domains. To register a domain, use a registrar. Using ScopeFlux data The lists are for browsing on this website. Copying them automatically (scraping, bots or scripts) is not allowed and is blocked. To use the data in your own website or app, use the ScopeFlux API with an API key from ScopeFlux Premium. Notable drops, every Monday A short e-mail with the most interesting names expected to be released that week, only in the extensions you choose. Free, no account needed, unsubscribe with one click. E-mail address Subscribe Extensions: .com, .net, .org, .io Show extensions ▾ We ",
+   "text": "Contact — ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Contact Sign in GET IN TOUCH Say hello. Questions welcome. Write to hello@scopeflux.io. CONTACT Get in touch. Questions, corrections to a listing, ideas or data requests: write to hello@scopeflux.io . Operator Matúš Šturdík, Nová 407, Veľká Mača, Slovakia, IČO (company ID) 51628163 ScopeFlux shows release estimates from public sources. It cannot reserve, buy or transfer domains. To register a domain, use a registrar. Using ScopeFlux data The lists are for browsing on this website. Copying them automatically (scraping, bots or scripts) is not allowed and is blocked. To use the data in your own website or app, use the ScopeFlux API with an API key from ScopeFlux Premium. Notable drops, every Monday A short e-mail with the most interesting names expected to be released that week, only in the extensions you choose. Free, no account needed, unsubscribe with one click. E-mail address Subscribe Extensions: .com, .net, .org, .io Show extensions ▾ We send a confirmation e-mail first. See Privacy . ScopeFlux / Good names are worth watching. How it works Sources About Premium Privacy Contact Send feedback Also by us: QRko , free QR codes"
+  },
+  "https://scopeflux.io/privacy": {
+   "url": "https://scopeflux.io/privacy",
+   "status": 200,
+   "time": 0.397,
+   "bytes": 22264,
+   "location": null,
+   "in_sitemap": true,
+   "ctype": "text/html; charset=utf-8",
+   "title": "Privacy — ScopeFlux",
+   "metas": {
+    "viewport": "width=device-width, initial-scale=1",
+    "theme-color": "#0d1019",
+    "color-scheme": "dark",
+    "description": "What ScopeFlux stores and why: no analytics or tracking cookies, optional sign-in for the watchlist, and how to ask for your data to be deleted.",
+    "application-name": "ScopeFlux",
+    "author": "ScopeFlux",
+    "creator": "ScopeFlux",
+    "category": "technology",
+    "format-detection": "telephone=no",
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1",
+    "og:title": "Privacy — ScopeFlux",
+    "og:description": "No analytics or tracking cookies. What ScopeFlux stores, and how to have it deleted.",
+    "og:url": "https://scopeflux.io/privacy",
+    "og:site_name": "ScopeFlux",
+    "og:locale": "en_GB",
+    "og:image": "https://scopeflux.io/og-image.png?v=2",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:image:alt": "ScopeFlux — expiring and dropping domains",
+    "og:type": "website",
+    "twitter:card": "summary_large_image",
+    "twitter:title": "Privacy — ScopeFlux",
+    "twitter:description": "No analytics or tracking cookies. What ScopeFlux stores, and how to have it deleted.",
+    "twitter:image": "https://scopeflux.io/og-image.png?v=2",
+    "twitter:image:alt": "ScopeFlux — expiring and dropping domains"
+   },
+   "links": [],
+   "canon": "https://scopeflux.io/privacy",
+   "hreflang": {},
+   "h": [
+    [
+     "h1",
+     "Your data.Kept to a minimum."
+    ],
+    [
+     "h2",
+     "What ScopeFlux stores, and why."
+    ],
+    [
+     "h3",
+     "Who runs ScopeFlux"
+    ],
+    [
+     "h3",
+     "Browsing without an account"
+    ],
+    [
+     "h3",
+     "Visit statistics"
+    ],
+    [
+     "h3",
+     "Hosting"
+    ],
+    [
+     "h3",
+     "Watchlist and sign-in"
+    ],
+    [
+     "h3",
+     "Premium, API keys and payments"
+    ],
+    [
+     "h3",
+     "E-mail alerts"
+    ],
+    [
+     "h3",
+     "Newsletter"
+    ],
+    [
+     "h3",
+     "Your rights"
+    ],
+    [
+     "h3",
+     "Advertising"
+    ],
+    [
+     "h2",
+     "Notable drops, every Monday"
+    ]
+   ],
+   "imgs": [],
+   "a": [
+    {
+     "href": "#main-content",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/",
+     "rel": null
+    },
+    {
+     "href": "/#recent",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/check-domain",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/#watch",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "/account/login?next=%2Fprivacy",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io",
+     "rel": null
+    },
+    {
+     "href": "https://www.cloudflare.com/privacypolicy/",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "mailto:hello@scopeflux.io",
+     "rel": null
+    },
+    {
+     "href": "https://stripe.com/privacy",
+     "rel": "noreferrer"
+    },
+    {
+     "href": "mailto:hello@scopeflux.io",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/how-it-works",
+     "rel": null
+    },
+    {
+     "href": "/sources",
+     "rel": null
+    },
+    {
+     "href": "/about",
+     "rel": null
+    },
+    {
+     "href": "/premium",
+     "rel": null
+    },
+    {
+     "href": "/privacy",
+     "rel": null
+    },
+    {
+     "href": "/contact",
+     "rel": null
+    },
+    {
+     "href": "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+     "rel": null
+    },
+    {
+     "href": "https://qrko.net/?ref=scopeflux",
+     "rel": "noopener"
+    }
+   ],
+   "ldjson": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"WebSite\",\"@id\":\"https://scopeflux.io/#website\",\"url\":\"https://scopeflux.io/\",\"name\":\"ScopeFlux\",\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\",\"inLanguage\":\"en\",\"publisher\":{\"@id\":\"https://scopeflux.io/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://scopeflux.io/#organization\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"logo\":\"https://scopeflux.io/icon-512.png\",\"email\":\"hello@scopeflux.io\"},{\"@type\":\"WebApplication\",\"name\":\"ScopeFlux\",\"url\":\"https://scopeflux.io/\",\"applicationCategory\":\"UtilitiesApplication\",\"operatingSystem\":\"Any\",\"isAccessibleForFree\":true,\"offers\":{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"EUR\"},\"description\":\"Free expired domains list: expiring, pending delete and dropped domains in 21 extensions incl. .com, .io, .co.uk, .it, .sk and .cz, with estimated release days.\"}]}"
+   ],
+   "lang": "en",
+   "scripts": [
+    {
+     "src": null,
+     "defer": false,
+     "async": false,
+     "type": "application/json"
+    },
+    {
+     "src": "/assets/app.b93eba33d8.js",
+     "defer": true,
+     "async": false,
+     "type": null
+    },
+    {
+     "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+     "defer": false,
+     "async": false,
+     "type": "module"
+    }
+   ],
+   "css": [
+    "/assets/app.71d6b0903b.css"
+   ],
+   "word_count": 994,
+   "text_sample": "Privacy — ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Privacy Sign in YOUR DATA Your data. Kept to a minimum. What ScopeFlux stores, who processes it and how to ask for it to be deleted. PRIVACY What ScopeFlux stores, and why. Last updated 28 October 2026. Who runs ScopeFlux ScopeFlux is run by Matúš Šturdík, Nová 407, Veľká Mača, Slovakia, IČO (company ID) 51628163. This is the controller of your personal data. Questions about your data: hello@scopeflux.io . Browsing without an account You can use the catalogue, the history and the domain check without an account. ScopeFlux sets no analytics, advertising or tracking cookies and does not build a profile of you. When you check a domain, the name you typed is sent to public registration services (RDAP registries listed by IANA, and Backorder.sk for .sk details) to read its current status. ScopeFlux does not store which domains you looked up. Visit statistics To see how many people use the site, ScopeFlux uses Cloudflare Web Analytics. It counts pa",
+   "text": "Privacy — ScopeFlux Skip to content Scope Flux Menu YOUR DOMAIN MAP Expiring soon Discover upcoming releases Recently expired Revisit past release estimates Watchlist Follow your saved domain names 0 Check domain Look up a specific domain name How it works Expiry stages and fees Sources Providers, updates and coverage About Get to know ScopeFlux Premium API keys and CSV export Soon A good name has its moment. Save the domains you like and follow what changes. Build your watchlist Live sources · estimated dates Privacy Contact Workspace / Privacy Sign in YOUR DATA Your data. Kept to a minimum. What ScopeFlux stores, who processes it and how to ask for it to be deleted. PRIVACY What ScopeFlux stores, and why. Last updated 28 October 2026. Who runs ScopeFlux ScopeFlux is run by Matúš Šturdík, Nová 407, Veľká Mača, Slovakia, IČO (company ID) 51628163. This is the controller of your personal data. Questions about your data: hello@scopeflux.io . Browsing without an account You can use the catalogue, the history and the domain check without an account. ScopeFlux sets no analytics, advertising or tracking cookies and does not build a profile of you. When you check a domain, the name you typed is sent to public registration services (RDAP registries listed by IANA, and Backorder.sk for .sk details) to read its current status. ScopeFlux does not store which domains you looked up. Visit statistics To see how many people use the site, ScopeFlux uses Cloudflare Web Analytics. It counts page views and visits without cookies, without fingerprinting and without following you across other websites. The figures are only seen in aggregate. Hosting The site and its database are hosted by HostCreators (Slovakia) and delivered through Cloudflare. To deliver pages and protect the site, both process technical request data such as your IP address and browser type, and keep short-lived logs. See Cloudflare’s privacy policy . Watchlist and sign-in You can keep a watchlist without an account: it is then stored only in your browser (local storage) and never sent to ScopeFlux, except to check the names you saved. Signing in is optional. It keeps the watchlist on all your devices. Sign-in is done with your Google account: Google tells ScopeFlux your name, email address and a Google account ID, and ScopeFlux sets one sign-in cookie (sf_session) that is needed for the account to work. ScopeFlux never sees your Google password. To delete your account and everything saved with it, open the account menu and choose Delete account. ScopeFlux stores your account ID, name, email address and the domains you save, with their last checked status, in its database until you remove them. To delete your watchlist, remove the domains or write to hello@scopeflux.io . Premium, API keys and payments For signed-in accounts ScopeFlux stores the plan (Free or Premium). If you create API keys, ScopeFlux stores their names, a one-way hash of each key (never the key itself), when they were last used and how many requests were made per day, to enforce the limits. Usage counts are kept for 90 days. Premium is paid through Stripe. Stripe processes your card and billing details under its privacy policy ; ScopeFlux never sees your card number. ScopeFlux stores only the Stripe customer and subscription IDs, the subscription status and the end of the paid period. Deleting your account cancels an active subscription and removes your keys. E-mail alerts E-mail alerts are off until you switch them on for your watchlist (in the watchlist or the account menu). The legal basis is your consent, which you can withdraw at any time: switch alerts off in the account menu or the watchlist, or use the link at the end of every alert. ScopeFlux then sends no more alerts. Alerts only go to the e-mail address of your Google account, which Google has verified. ScopeFlux stores whether alerts are on, when the last alert was sent, how many deliveries in a row failed (alerts switch off after 3 refused deliveries) and which alerts were already sent (domain, type of alert, date) so you do not get the same alert twice. Sent-alert records are kept for 180 days; deleting your account removes all of these records. The e-mails are sent through the mail server of our hosting provider HostCreators. ScopeFlux does not track opens or clicks and sends no marketing e-mails. Newsletter You can subscribe to the weekly newsletter with any e-mail address, without an account. The legal basis is your consent. ScopeFlux first sends one confirmation e-mail and sends the newsletter only after you confirm with the link in it; an address that is not confirmed within 7 days is deleted. ScopeFlux stores the address, the extensions you chose, when you subscribed and confirmed, and which weekly issue was sent last. Every newsletter has an unsubscribe link (also offered by your mail app as one-click unsubscribe): it deletes the address right away. An address that refuses delivery 3 times in a row is deleted as well. The e-mails are sent from the hosting at HostCreators; ScopeFlux does not track opens or clicks. Your rights Under the GDPR you can ask what data is held about you, and ask for it to be corrected or deleted. Write to hello@scopeflux.io . You can also complain to the Slovak data protection authority (Úrad na ochranu osobných údajov SR). Advertising ScopeFlux shows no advertising today. If that changes, this page will be updated before any ad is shown, and ads will only load after you agree. Notable drops, every Monday A short e-mail with the most interesting names expected to be released that week, only in the extensions you choose. Free, no account needed, unsubscribe with one click. E-mail address Subscribe Extensions: .com, .net, .org, .io Show extensions ▾ We send a confirmation e-mail first. See Privacy . ScopeFlux / Good names are worth watching. How it works Sources About Premium Privacy Contact Send feedback Also by us: QRko , free QR codes"
+  },
+  "https://scopeflux.io/account/login?next=%2F": {
+   "url": "https://scopeflux.io/account/login?next=%2F",
+   "status": 302,
+   "time": 0.239,
+   "bytes": 0,
+   "location": "https://accounts.google.com/o/oauth2/v2/auth?client_id=126444549957-hqrl9mh7dt92jn4idcg1sa5gvkjj04n2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fscopeflux.io%2Faccount%2Fcallback&response_type=code&scope=openid%20email%20profile&state=pEiMNVlkYYV_fo6-ujzcc1phvlFScWYw&nonce=fIplxyDaeG7TUyPqWYpZzR2yaiXcVktr&prompt=select_account",
+   "in_sitemap": false,
+   "ctype": "text/html; charset=UTF-8"
+  },
+  "https://scopeflux.io/account/login?next=%2Fcheck-domain": {
+   "url": "https://scopeflux.io/account/login?next=%2Fcheck-domain",
+   "status": 302,
+   "time": 0.625,
+   "bytes": 0,
+   "location": "https://accounts.google.com/o/oauth2/v2/auth?client_id=126444549957-hqrl9mh7dt92jn4idcg1sa5gvkjj04n2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fscopeflux.io%2Faccount%2Fcallback&response_type=code&scope=openid%20email%20profile&state=da8Th04Ppe5Mfk-rBbrPDa5_68TjVz-D&nonce=eN-jKnO_lVOJGoCkq5sWUV9aoQQsvamy&prompt=select_account",
+   "in_sitemap": false,
+   "ctype": "text/html; charset=UTF-8"
+  },
+  "https://scopeflux.io/account/login?next=%2Fhow-it-works": {
+   "url": "https://scopeflux.io/account/login?next=%2Fhow-it-works",
+   "status": 302,
+   "time": 0.237,
+   "bytes": 0,
+   "location": "https://accounts.google.com/o/oauth2/v2/auth?client_id=126444549957-hqrl9mh7dt92jn4idcg1sa5gvkjj04n2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fscopeflux.io%2Faccount%2Fcallback&response_type=code&scope=openid%20email%20profile&state=rRmXJxGy6paDocxsPa9JHOcDfCZAAxdi&nonce=FR20X2QOX3EW4DoWD5FjDwoca3L92qdQ&prompt=select_account",
+   "in_sitemap": false,
+   "ctype": "text/html; charset=UTF-8"
+  },
+  "https://scopeflux.io/account/login?next=%2Fsources": {
+   "url": "https://scopeflux.io/account/login?next=%2Fsources",
+   "status": 302,
+   "time": 0.402,
+   "bytes": 0,
+   "location": "https://accounts.google.com/o/oauth2/v2/auth?client_id=126444549957-hqrl9mh7dt92jn4idcg1sa5gvkjj04n2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fscopeflux.io%2Faccount%2Fcallback&response_type=code&scope=openid%20email%20profile&state=-11BrpEZG21cvIj_Ii6z-g7o42Jjp_o6&nonce=W2Baamc8wl3-3SrfTaG_zbPIIiFN1XuQ&prompt=select_account",
+   "in_sitemap": false,
+   "ctype": "text/html; charset=UTF-8"
+  },
+  "https://scopeflux.io/account/login?next=%2Fabout": {
+   "url": "https://scopeflux.io/account/login?next=%2Fabout",
+   "status": 302,
+   "time": 0.287,
+   "bytes": 0,
+   "location": "https://accounts.google.com/o/oauth2/v2/auth?client_id=126444549957-hqrl9mh7dt92jn4idcg1sa5gvkjj04n2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fscopeflux.io%2Faccount%2Fcallback&response_type=code&scope=openid%20email%20profile&state=hynfgfCQaTUeE0_l9jvRpgA5sM-7whPF&nonce=-PfJobe-1iMVOZOdglhEfhkMnBQFq8YG&prompt=select_account",
+   "in_sitemap": false,
+   "ctype": "text/html; charset=UTF-8"
+  },
+  "https://scopeflux.io/account/login?next=%2Fpremium": {
+   "url": "https://scopeflux.io/account/login?next=%2Fpremium",
+   "status": 302,
+   "time": 0.521,
+   "bytes": 0,
+   "location": "https://accounts.google.com/o/oauth2/v2/auth?client_id=126444549957-hqrl9mh7dt92jn4idcg1sa5gvkjj04n2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fscopeflux.io%2Faccount%2Fcallback&response_type=code&scope=openid%20email%20profile&state=ssvZ4QPjH_U6mo2_dpyfoQoyOlt-sSv2&nonce=rMoathXUcxY9YLndUUuejQRDhEbiIelF&prompt=select_account",
+   "in_sitemap": false,
+   "ctype": "text/html; charset=UTF-8"
+  },
+  "https://scopeflux.io/account/login?next=%2Fcontact": {
+   "url": "https://scopeflux.io/account/login?next=%2Fcontact",
+   "status": 302,
+   "time": 0.242,
+   "bytes": 0,
+   "location": "https://accounts.google.com/o/oauth2/v2/auth?client_id=126444549957-hqrl9mh7dt92jn4idcg1sa5gvkjj04n2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fscopeflux.io%2Faccount%2Fcallback&response_type=code&scope=openid%20email%20profile&state=pET69J5WLj72iUfaQxH1lAndMHCzcsnI&nonce=sngY1L9-QTKmfFoXsX31pTPyBfX9Sv7T&prompt=select_account",
+   "in_sitemap": false,
+   "ctype": "text/html; charset=UTF-8"
+  },
+  "https://scopeflux.io/account/login?next=%2Fprivacy": {
+   "url": "https://scopeflux.io/account/login?next=%2Fprivacy",
+   "status": 302,
+   "time": 0.314,
+   "bytes": 0,
+   "location": "https://accounts.google.com/o/oauth2/v2/auth?client_id=126444549957-hqrl9mh7dt92jn4idcg1sa5gvkjj04n2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fscopeflux.io%2Faccount%2Fcallback&response_type=code&scope=openid%20email%20profile&state=wnMsqfvQDWFXgYjtfzZLvERU6hjDTwA7&nonce=PJ0LiMCHx_On8c0v9Anp2AIdfuhmQM1p&prompt=select_account",
+   "in_sitemap": false,
+   "ctype": "text/html; charset=UTF-8"
+  }
+ }
+}

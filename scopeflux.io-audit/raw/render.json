@@ -1,0 +1,573 @@
+[
+ {
+  "url": "https://scopeflux.io/",
+  "viewport": "desktop",
+  "wall": 4433,
+  "ttfb": 575.5999999999767,
+  "dcl": 1047.4000000000233,
+  "load": 1062.4000000000233,
+  "fcp": 900,
+  "lcp": 900,
+  "lcpEl": "H1. Expired & expiring domains.Upcoming domain drops.",
+  "cls": 0.000018208383084417137,
+  "tbt": 87,
+  "transferKB": 138,
+  "nreq": 8,
+  "renderedMainLinks": [
+   "/privacy",
+   "/how-it-works",
+   "/sources",
+   "/about",
+   "/premium",
+   "/privacy",
+   "/contact",
+   "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+   "https://qrko.net/?ref=scopeflux"
+  ],
+  "scrollW": 1366,
+  "vw": 1366,
+  "smallFontEls": 46,
+  "smallTaps": [
+   "Build your watchlist",
+   "Privacy",
+   "Contact",
+   "Sign in",
+   "Search upcoming domain listing",
+   "Clear",
+   "Minimum name length",
+   "Maximum name length",
+   "INPUT",
+   "INPUT",
+   "0-ad.com",
+   "0-entropy.com",
+   "0-hd.com",
+   "0-pinduoduo.com",
+   "00-adultlist.com"
+  ],
+  "nSmallTaps": 121,
+  "consoleErrors": [],
+  "failed": []
+ },
+ {
+  "url": "https://scopeflux.io/",
+  "viewport": "mobile",
+  "wall": 4162,
+  "ttfb": 487.19999999995343,
+  "dcl": 893.5,
+  "load": 899,
+  "fcp": 664,
+  "lcp": 664,
+  "lcpEl": "H1. Expired & expiring domains.Upcoming domain drops.",
+  "cls": 0,
+  "tbt": 0,
+  "transferKB": 138,
+  "nreq": 8,
+  "renderedMainLinks": [
+   "/privacy",
+   "/how-it-works",
+   "/sources",
+   "/about",
+   "/premium",
+   "/privacy",
+   "/contact",
+   "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+   "https://qrko.net/?ref=scopeflux"
+  ],
+  "scrollW": 390,
+  "vw": 390,
+  "smallFontEls": 16,
+  "smallTaps": [
+   "Sign in",
+   "Search upcoming domain listing",
+   "Data coverage",
+   "INPUT",
+   "Privacy",
+   "How it works",
+   "Sources",
+   "About",
+   "Premium",
+   "Privacy",
+   "Contact",
+   "Send feedback",
+   "Also by us: QRko, free QR code"
+  ],
+  "nSmallTaps": 13,
+  "consoleErrors": [],
+  "failed": []
+ },
+ {
+  "url": "https://scopeflux.io/check-domain",
+  "viewport": "desktop",
+  "wall": 4121,
+  "ttfb": 572.9000000000233,
+  "dcl": 855.5,
+  "load": 857.6000000000349,
+  "fcp": 728,
+  "lcp": 728,
+  "lcpEl": "H1. Domain expiration date checker.Know where it stands.",
+  "cls": 0,
+  "tbt": 0,
+  "transferKB": 126,
+  "nreq": 9,
+  "renderedMainLinks": [
+   "/privacy",
+   "/how-it-works",
+   "/sources",
+   "/about",
+   "/premium",
+   "/privacy",
+   "/contact",
+   "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+   "https://qrko.net/?ref=scopeflux"
+  ],
+  "scrollW": 1366,
+  "vw": 1366,
+  "smallFontEls": 13,
+  "smallTaps": [
+   "Build your watchlist",
+   "Privacy",
+   "Contact",
+   "Sign in",
+   "INPUT",
+   "Privacy",
+   "How it works",
+   "Sources",
+   "About",
+   "Premium",
+   "Privacy",
+   "Contact",
+   "Send feedback",
+   "Also by us: QRko, free QR code"
+  ],
+  "nSmallTaps": 14,
+  "consoleErrors": [
+   "Failed to load resource: the server responded with a status of 403 ()"
+  ],
+  "failed": [
+   {
+    "url": "https://scopeflux.io/api/domains?period=7",
+    "status": 403
+   }
+  ]
+ },
+ {
+  "url": "https://scopeflux.io/check-domain",
+  "viewport": "mobile",
+  "wall": 4635,
+  "ttfb": 909.7000000000116,
+  "dcl": 1269.5,
+  "load": 1271.7000000000116,
+  "fcp": 1100,
+  "lcp": 1100,
+  "lcpEl": "H1. Domain expiration date checker.Know where it stands.",
+  "cls": 0,
+  "tbt": 0,
+  "transferKB": 126,
+  "nreq": 9,
+  "renderedMainLinks": [
+   "/privacy",
+   "/how-it-works",
+   "/sources",
+   "/about",
+   "/premium",
+   "/privacy",
+   "/contact",
+   "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+   "https://qrko.net/?ref=scopeflux"
+  ],
+  "scrollW": 390,
+  "vw": 390,
+  "smallFontEls": 13,
+  "smallTaps": [
+   "Sign in",
+   "INPUT",
+   "Privacy",
+   "How it works",
+   "Sources",
+   "About",
+   "Premium",
+   "Privacy",
+   "Contact",
+   "Send feedback",
+   "Also by us: QRko, free QR code"
+  ],
+  "nSmallTaps": 11,
+  "consoleErrors": [
+   "Failed to load resource: the server responded with a status of 403 ()"
+  ],
+  "failed": [
+   {
+    "url": "https://scopeflux.io/api/domains?period=7",
+    "status": 403
+   }
+  ]
+ },
+ {
+  "url": "https://scopeflux.io/how-it-works",
+  "viewport": "desktop",
+  "wall": 4380,
+  "ttfb": 825,
+  "dcl": 1099.9000000000233,
+  "load": 1101.6999999999534,
+  "fcp": 1020,
+  "lcp": 1020,
+  "lcpEl": "H1. Expired is not free.Here is what happens.",
+  "cls": 0,
+  "tbt": 0,
+  "transferKB": 128,
+  "nreq": 9,
+  "renderedMainLinks": [
+   "https://www.icann.org/resources/pages/domain-name-renewal-expiration-faqs-2018-12-07-en",
+   "https://www.nic.cz/files/documents/Pravidla_aukci.pdf",
+   "https://sk-nic.sk/",
+   "/privacy",
+   "/how-it-works",
+   "/sources",
+   "/about",
+   "/premium",
+   "/privacy",
+   "/contact",
+   "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+   "https://qrko.net/?ref=scopeflux"
+  ],
+  "scrollW": 1366,
+  "vw": 1366,
+  "smallFontEls": 13,
+  "smallTaps": [
+   "Build your watchlist",
+   "Privacy",
+   "Contact",
+   "Sign in",
+   "ICANN renewal and expiration F",
+   "CZ.NIC auction rules",
+   "SK-NIC",
+   "INPUT",
+   "Privacy",
+   "How it works",
+   "Sources",
+   "About",
+   "Premium",
+   "Privacy",
+   "Contact"
+  ],
+  "nSmallTaps": 17,
+  "consoleErrors": [
+   "Failed to load resource: the server responded with a status of 403 ()"
+  ],
+  "failed": [
+   {
+    "url": "https://scopeflux.io/api/domains?period=7",
+    "status": 403
+   }
+  ]
+ },
+ {
+  "url": "https://scopeflux.io/how-it-works",
+  "viewport": "mobile",
+  "wall": 4368,
+  "ttfb": 730,
+  "dcl": 1066.4000000000233,
+  "load": 1068.9000000000233,
+  "fcp": 952,
+  "lcp": 1316,
+  "lcpEl": "H2. From expired to available, step by step.",
+  "cls": 0,
+  "tbt": 0,
+  "transferKB": 128,
+  "nreq": 9,
+  "renderedMainLinks": [
+   "https://www.icann.org/resources/pages/domain-name-renewal-expiration-faqs-2018-12-07-en",
+   "https://www.nic.cz/files/documents/Pravidla_aukci.pdf",
+   "https://sk-nic.sk/",
+   "/privacy",
+   "/how-it-works",
+   "/sources",
+   "/about",
+   "/premium",
+   "/privacy",
+   "/contact",
+   "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+   "https://qrko.net/?ref=scopeflux"
+  ],
+  "scrollW": 390,
+  "vw": 390,
+  "smallFontEls": 14,
+  "smallTaps": [
+   "Sign in",
+   "ICANN renewal and expiration F",
+   "CZ.NIC auction rules",
+   "SK-NIC",
+   "INPUT",
+   "Privacy",
+   "How it works",
+   "Sources",
+   "About",
+   "Premium",
+   "Privacy",
+   "Contact",
+   "Send feedback",
+   "Also by us: QRko, free QR code"
+  ],
+  "nSmallTaps": 14,
+  "consoleErrors": [
+   "Failed to load resource: the server responded with a status of 403 ()"
+  ],
+  "failed": [
+   {
+    "url": "https://scopeflux.io/api/domains?period=7",
+    "status": 403
+   }
+  ]
+ },
+ {
+  "url": "https://scopeflux.io/premium",
+  "viewport": "desktop",
+  "wall": 4007,
+  "ttfb": 403.19999999995343,
+  "dcl": 694.5,
+  "load": 696.6999999999534,
+  "fcp": 620,
+  "lcp": 620,
+  "lcpEl": "H1. Expired domains API.CSV export included.",
+  "cls": 0,
+  "tbt": 0,
+  "transferKB": 127,
+  "nreq": 9,
+  "renderedMainLinks": [
+   "/account/login?next=%2Fpremium",
+   "mailto:hello@scopeflux.io",
+   "/privacy",
+   "/how-it-works",
+   "/sources",
+   "/about",
+   "/premium",
+   "/privacy",
+   "/contact",
+   "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+   "https://qrko.net/?ref=scopeflux"
+  ],
+  "scrollW": 1366,
+  "vw": 1366,
+  "smallFontEls": 9,
+  "smallTaps": [
+   "Build your watchlist",
+   "Privacy",
+   "Contact",
+   "Sign in",
+   "hello@scopeflux.io",
+   "INPUT",
+   "Privacy",
+   "How it works",
+   "Sources",
+   "About",
+   "Premium",
+   "Privacy",
+   "Contact",
+   "Send feedback",
+   "Also by us: QRko, free QR code"
+  ],
+  "nSmallTaps": 15,
+  "consoleErrors": [
+   "Failed to load resource: the server responded with a status of 403 ()"
+  ],
+  "failed": [
+   {
+    "url": "https://scopeflux.io/api/domains?period=7",
+    "status": 403
+   }
+  ]
+ },
+ {
+  "url": "https://scopeflux.io/premium",
+  "viewport": "mobile",
+  "wall": 4320,
+  "ttfb": 723.9000000000233,
+  "dcl": 1050.3000000000466,
+  "load": 1053.3000000000466,
+  "fcp": 928,
+  "lcp": 1276,
+  "lcpEl": "P. Everyone can browse and filter every list. Premium adds CSV ",
+  "cls": 0,
+  "tbt": 0,
+  "transferKB": 127,
+  "nreq": 9,
+  "renderedMainLinks": [
+   "/account/login?next=%2Fpremium",
+   "mailto:hello@scopeflux.io",
+   "/privacy",
+   "/how-it-works",
+   "/sources",
+   "/about",
+   "/premium",
+   "/privacy",
+   "/contact",
+   "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+   "https://qrko.net/?ref=scopeflux"
+  ],
+  "scrollW": 390,
+  "vw": 390,
+  "smallFontEls": 9,
+  "smallTaps": [
+   "Sign in",
+   "hello@scopeflux.io",
+   "INPUT",
+   "Privacy",
+   "How it works",
+   "Sources",
+   "About",
+   "Premium",
+   "Privacy",
+   "Contact",
+   "Send feedback",
+   "Also by us: QRko, free QR code"
+  ],
+  "nSmallTaps": 12,
+  "consoleErrors": [
+   "Failed to load resource: the server responded with a status of 403 ()"
+  ],
+  "failed": [
+   {
+    "url": "https://scopeflux.io/api/domains?period=7",
+    "status": 403
+   }
+  ]
+ },
+ {
+  "url": "https://scopeflux.io/sources",
+  "viewport": "desktop",
+  "wall": 4004,
+  "ttfb": 412.29999999993015,
+  "dcl": 725.7999999999302,
+  "load": 727.8999999999069,
+  "fcp": 572,
+  "lcp": 940,
+  "lcpEl": "P. Public backorder listings for extensions without a pending-d",
+  "cls": 0,
+  "tbt": 0,
+  "transferKB": 128,
+  "nreq": 10,
+  "renderedMainLinks": [
+   "https://api.namebio.com/verisign-download",
+   "https://www.snapnames.com/",
+   "https://www.dynadot.com/market/backorder",
+   "https://www.backorder.sk/zadrzane",
+   "https://www.nic.it/en/droptime",
+   "https://www.identitydigital.au/domain-name-drop-list",
+   "https://www.nic.cz/files/nic/doc/Pravidla_registrace_CZ.pdf",
+   "https://data.iana.org/rdap/dns.json",
+   "https://rdap.identitydigital.services/rdap/",
+   "https://www.icann.org/resources/pages/domain-name-renewal-expiration-faqs-2018-12-07-en",
+   "/privacy",
+   "/how-it-works",
+   "/sources",
+   "/about",
+   "/premium",
+   "/privacy",
+   "/contact",
+   "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+   "https://qrko.net/?ref=scopeflux"
+  ],
+  "scrollW": 1366,
+  "vw": 1366,
+  "smallFontEls": 19,
+  "smallTaps": [
+   "Build your watchlist",
+   "Privacy",
+   "Contact",
+   "Sign in",
+   "Pending-delete download",
+   "SnapNames deleting list",
+   "Public backorder listings",
+   "Public release list",
+   "Drop time lists",
+   "Domain name drop list",
+   "CZ.NIC registration rules",
+   "IANA RDAP directory",
+   "Identity Digital RDAP",
+   "Read ICANN’s guide",
+   "INPUT"
+  ],
+  "nSmallTaps": 24,
+  "consoleErrors": [
+   "Failed to load resource: the server responded with a status of 403 ()",
+   "Failed to load resource: the server responded with a status of 403 ()"
+  ],
+  "failed": [
+   {
+    "url": "https://scopeflux.io/api/domains?period=7",
+    "status": 403
+   },
+   {
+    "url": "https://scopeflux.io/api/domains?view=recent&period=7",
+    "status": 403
+   }
+  ]
+ },
+ {
+  "url": "https://scopeflux.io/sources",
+  "viewport": "mobile",
+  "wall": 4092,
+  "ttfb": 466.9000000000233,
+  "dcl": 689.8000000000466,
+  "load": 691.5,
+  "fcp": 624,
+  "lcp": 976,
+  "lcpEl": "P. NameBio’s download of Verisign pending-delete names, each wi",
+  "cls": 0,
+  "tbt": 0,
+  "transferKB": 128,
+  "nreq": 10,
+  "renderedMainLinks": [
+   "https://api.namebio.com/verisign-download",
+   "https://www.snapnames.com/",
+   "https://www.dynadot.com/market/backorder",
+   "https://www.backorder.sk/zadrzane",
+   "https://www.nic.it/en/droptime",
+   "https://www.identitydigital.au/domain-name-drop-list",
+   "https://www.nic.cz/files/nic/doc/Pravidla_registrace_CZ.pdf",
+   "https://data.iana.org/rdap/dns.json",
+   "https://rdap.identitydigital.services/rdap/",
+   "https://www.icann.org/resources/pages/domain-name-renewal-expiration-faqs-2018-12-07-en",
+   "/privacy",
+   "/how-it-works",
+   "/sources",
+   "/about",
+   "/premium",
+   "/privacy",
+   "/contact",
+   "mailto:hello@scopeflux.io?subject=ScopeFlux%20beta%20feedback",
+   "https://qrko.net/?ref=scopeflux"
+  ],
+  "scrollW": 390,
+  "vw": 390,
+  "smallFontEls": 20,
+  "smallTaps": [
+   "Sign in",
+   "INPUT",
+   "Privacy",
+   "How it works",
+   "Sources",
+   "About",
+   "Premium",
+   "Privacy",
+   "Contact",
+   "Send feedback",
+   "Also by us: QRko, free QR code"
+  ],
+  "nSmallTaps": 11,
+  "consoleErrors": [
+   "Failed to load resource: the server responded with a status of 403 ()",
+   "Failed to load resource: the server responded with a status of 403 ()"
+  ],
+  "failed": [
+   {
+    "url": "https://scopeflux.io/api/domains?period=7",
+    "status": 403
+   },
+   {
+    "url": "https://scopeflux.io/api/domains?view=recent&period=7",
+    "status": 403
+   }
+  ]
+ }
+]
