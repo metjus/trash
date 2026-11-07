@@ -9,11 +9,13 @@ the part by `tolerance` on every side, so the printed part fits in it.
 import bmesh
 import bpy
 import collections
+import math
 import os
 
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, StringProperty
 from mathutils import Vector, geometry
 from mathutils.bvhtree import BVHTree
+from mathutils.kdtree import KDTree
 
 from . import paint
 
@@ -92,6 +94,12 @@ class BambuSplitSettings(bpy.types.PropertyGroup):
         name="Body Colour", default=0, min=0, max=64,
         description="Colour (number as in the Bambu Paint list) that becomes the body; the other "
                     "colours become parts. 0 = Auto: the colour with the largest painted area",
+        update=_changed)
+    min_thickness: FloatProperty(
+        name="Min Thickness", default=1.0, min=0.0, max=20.0, precision=2, step=10,
+        description="Cut Off colours: where the model is thinner than this (mm), e.g. thin tips "
+                    "and wisps, those bits are left out: they aren't in the part, and the body is "
+                    "closed under them, so it has no hole. 0 = cut everything",
         update=_changed)
     mm_per_unit: FloatProperty(
         name="1 Blender unit =", default=1.0, min=0.0001, max=10000.0, precision=3,
@@ -522,11 +530,11 @@ def _surface_body(src, cut_slots, pocket_depth, model, body_slot):
     return mesh
 
 
-def _cap(cycle):
-    """Triangles (index triples into cycle) closing a loop of vertices, wound
+def _cap(points):
+    """Triangles (index triples into points) closing a loop of points, wound
     along the loop (a -> b as listed)."""
-    n = len(cycle)
-    tris = geometry.tessellate_polygon([[v.co for v in cycle]])
+    n = len(points)
+    tris = geometry.tessellate_polygon([list(points)])
     if not tris:  # degenerate outline: fan from its centre instead
         return None
     along = None
@@ -544,12 +552,134 @@ def _cap(cycle):
     return [tuple(t) if along is not False else (t[0], t[2], t[1]) for t in tris]
 
 
-def _cut_off(bm, mat_index, body_slot):
-    """Cut colour `mat_index` away from `bm` (the body, changed in place) along
-    the colour's edge. Each hole is closed with a cap, and the removed faces,
-    closed by the same caps, are returned as a new closed BMesh, so the part and
-    the body meet exactly on the caps."""
-    faces = [f for f in bm.faces if f.material_index == mat_index]
+CAP_MAX_POINTS = 40_000  # inner points of one cap at most (they get sparser beyond)
+
+
+def _cap_quads(points):
+    """A tidy cap for a loop of points (Vectors, in order): inner points spaced
+    like the loop's edges, Delaunay triangles joined into quads, and heights
+    taken smoothly from the loop so the cap follows it.
+
+    Returns (inner points, faces) with faces as index lists (below len(points)
+    a loop point, from there an inner point), wound along the loop; or None
+    when the loop folds over itself seen along its average direction.
+    """
+    import numpy as np
+    n = len(points)
+    centre = sum(points, Vector()) / n
+    normal = Vector()
+    for i in range(n):
+        normal += (points[i] - centre).cross(points[(i + 1) % n] - centre)
+    if normal.length < 1e-12:
+        return None
+    normal.normalize()
+    u = normal.orthogonal().normalized()
+    w = normal.cross(u)
+    flat = [((p - centre).dot(u), (p - centre).dot(w)) for p in points]
+    height = [(p - centre).dot(normal) for p in points]
+    step = sorted((points[i] - points[(i + 1) % n]).length for i in range(n))[n // 2] or 1e-6
+
+    # inner points on a grid, inside the loop and not too close to it
+    xy = np.array(flat)
+    lo, hi = xy.min(0), xy.max(0)
+    while np.prod((hi - lo) / step) > CAP_MAX_POINTS:
+        step *= 1.5
+    gx, gy = np.arange(lo[0] + step / 2, hi[0], step), np.arange(lo[1] + step / 2, hi[1], step)
+    inner = np.zeros((0, 2))
+    if len(gx) and len(gy):
+        grid = np.column_stack([a.ravel() for a in np.meshgrid(gx, gy)])
+        x0, y0 = xy[:, 0], xy[:, 1]
+        x1, y1 = np.roll(x0, -1), np.roll(y0, -1)
+        inside = np.zeros(len(grid), bool)
+        for i in range(n):  # even-odd rule
+            crosses = (y0[i] > grid[:, 1]) != (y1[i] > grid[:, 1])
+            dy = y1[i] - y0[i]
+            x_at = x0[i] + (grid[:, 1] - y0[i]) * (x1[i] - x0[i]) / (dy if dy else 1e-30)
+            inside ^= crosses & (grid[:, 0] < x_at)
+        inner = grid[inside]
+    loop_kd = KDTree(n)
+    for i, (x, y) in enumerate(flat):
+        loop_kd.insert((x, y, 0.0), i)
+    loop_kd.balance()
+    inner = [(x, y) for x, y in inner.tolist() if loop_kd.find((x, y, 0.0))[2] > step * 0.5]
+
+    coords = [Vector(c) for c in flat + inner]
+    out = geometry.delaunay_2d_cdt(coords, [(i, (i + 1) % n) for i in range(n)], [list(range(n))],
+                                   1, step * 1e-5)
+    orig = out[3]
+    if any(len(o) != 1 for o in orig):
+        return None  # vertices merged or edges crossing: the loop folds over itself
+    index = [o[0] for o in orig]
+    tris = [[index[i] for i in f] for f in out[2]]
+    if len(tris) != n - 2 + 2 * len(inner):
+        return None
+
+    # 3D inner points: heights blended from the nearest loop points
+    lifted = []
+    k = min(8, n)
+    for x, y in inner:
+        total = weight = 0.0
+        for _co, i, d in loop_kd.find_n((x, y, 0.0), k):
+            wgt = 1.0 / max(d, 1e-9) ** 2
+            total += height[i] * wgt
+            weight += wgt
+        lifted.append(centre + u * x + w * y + normal * (total / weight))
+
+    # join triangles into quads, then wind the faces along the loop
+    bm = bmesh.new()
+    verts = [bm.verts.new(p) for p in list(points) + lifted]
+    for t in tris:
+        try:
+            bm.faces.new([verts[i] for i in t])
+        except ValueError:
+            pass
+    bm.normal_update()  # join_triangles compares face normals
+    bmesh.ops.join_triangles(bm, faces=bm.faces[:], angle_face_threshold=math.radians(60),
+                             angle_shape_threshold=math.radians(60))
+    bm.verts.index_update()
+    faces = [[v.index for v in f.verts] for f in bm.faces]
+    bm.free()
+    along = None
+    for f in faces:
+        for k_ in range(len(f)):
+            i, j = f[k_], f[(k_ + 1) % len(f)]
+            if i < n and j < n:
+                if j == (i + 1) % n:
+                    along = True
+                elif i == (j + 1) % n:
+                    along = False
+            if along is not None:
+                break
+        if along is not None:
+            break
+    if along is False:
+        faces = [f[::-1] for f in faces]
+    return lifted, faces
+
+
+def _is_thin(bvh, centre, normal, min_thickness):
+    """Whether the model is thinner than min_thickness at a face.
+
+    Looks round a point half that far below the face: surfaces facing each
+    other there (e.g. both sides of a thin fin, also when the face is on the
+    fin's narrow edge, or the tip of a strand) mean it is thin. A sharp edge of
+    a thick part only brings surfaces at an angle, so it doesn't count.
+    """
+    radius = min_thickness * 0.5
+    probe = centre - normal * radius
+    directions = []
+    for _co, n, _i, _d in bvh.find_nearest_range(probe, radius * 1.02):
+        for m in directions:
+            if n.dot(m) < -0.5:
+                return True
+        if all(n.dot(m) < 0.95 for m in directions):
+            directions.append(n)
+    return False
+
+
+def _rim_cycles(faces):
+    """Closed loops of vertices round the edge of a set of faces, each in the
+    faces' winding."""
     inside = set(faces)
     following = {}  # rim vertex -> next rim vertices, in the faces' winding
     for f in faces:
@@ -573,18 +703,88 @@ def _cut_off(bm, mat_index, body_slot):
             v = w
         if len(cycle) >= 3:
             cycles.append(cycle)
+    return cycles
 
-    caps = []  # (vertices, triangles along the rim)
-    for cycle in cycles:
-        tris = _cap(cycle)
-        if tris is None:
-            centre = sum((v.co for v in cycle), Vector()) / len(cycle)
-            middle = bm.verts.new(centre)
-            cycle = cycle + [middle]
-            m = len(cycle) - 1
-            tris = [(i, (i + 1) % m, m) for i in range(m)]
-        caps.append((cycle, tris))
 
+def _cap_shape(points):
+    """How to close a loop of points: (inner points, faces as index lists wound
+    along the loop), quads where it can, else triangles, else a fan."""
+    tidy = _cap_quads(points)
+    if tidy is not None:
+        return tidy
+    n = len(points)
+    tris = _cap(points)
+    if tris is not None:
+        return [], [list(t) for t in tris]
+    return [sum(points, Vector()) / n], [[i, (i + 1) % n, n] for i in range(n)]
+
+
+def _add_cap(bm, cycle, shape, reverse=False, material=None):
+    """Put a cap (from _cap_shape) on a loop of BMVerts of `bm`."""
+    inner, faces = shape
+    verts = list(cycle) + [bm.verts.new(p) for p in inner]
+    for f in faces:
+        try:
+            # reversed from the same first vertex: a quad that isn't flat keeps its
+            # diagonal, so part and body still meet exactly once split into triangles
+            order = [f[0]] + f[:0:-1] if reverse else f
+            face = bm.faces.new([verts[i] for i in order])
+        except ValueError:
+            continue
+        if material is not None:
+            face.material_index = material
+
+
+def _solid_faces(faces, bvh, min_thickness):
+    """The faces where the model is at least min_thickness thick, without the
+    little islands (under 4 faces) the thin bits leave behind."""
+    kept = {f for f in faces if not _is_thin(bvh, f.calc_center_median(), f.normal, min_thickness)}
+    seen, solid = set(), []
+    for f in faces:
+        if f not in kept or f in seen:
+            continue
+        island, stack = [], [f]
+        seen.add(f)
+        while stack:
+            g = stack.pop()
+            island.append(g)
+            for e in g.edges:
+                for h in e.link_faces:
+                    if h in kept and h not in seen:
+                        seen.add(h)
+                        stack.append(h)
+        if len(island) >= 4:
+            solid.extend(island)
+    return solid
+
+
+def _cut_off(bm, mat_index, body_slot, bvh=None, min_thickness=0.0):
+    """Cut colour `mat_index` away from `bm` (the body, changed in place) along
+    the colour's edge. Each hole is closed with a cap (quads where it can), and
+    the removed faces, closed by the same caps, are returned as a new closed
+    BMesh, so the part and the body meet exactly on the caps.
+
+    With `bvh` (of the whole model) and `min_thickness`, the bits where the
+    model is thinner than that (wisps, thin tips) are left out altogether: the
+    body is still capped along the whole colour edge, so it gets no hole, and
+    the part is capped where the thin bits came off.
+    Returns (part, number of faces left out as too thin).
+    """
+    faces = [f for f in bm.faces if f.material_index == mat_index]
+    solid = faces
+    if bvh is not None and min_thickness > 0:
+        solid = _solid_faces(faces, bvh, min_thickness)
+    dropped = len(faces) - len(solid)
+
+    # the body: the colour comes off, the holes are capped
+    body_caps = {}  # frozenset of rim vertex coords -> (cycle coords, cap shape)
+    body_cycles = []
+    for cycle in _rim_cycles(faces):
+        shape = _cap_shape([v.co.copy() for v in cycle])
+        body_cycles.append((cycle, shape))
+        body_caps[frozenset(v.co.to_tuple(6) for v in cycle)] = ([v.co.to_tuple(6) for v in cycle], shape)
+
+    # the part: the solid faces, closed by the same caps where the rim is the same
     part = bmesh.new()
     copies = {}
 
@@ -593,32 +793,41 @@ def _cut_off(bm, mat_index, body_slot):
             copies[v] = part.verts.new(v.co)
         return copies[v]
 
-    for f in faces:
+    for f in solid:
         try:
             part.faces.new([copy(v) for v in f.verts])
         except ValueError:
             pass
-    for cycle, tris in caps:
-        for a, b, c in tris:
-            try:
-                part.faces.new((copy(cycle[c]), copy(cycle[b]), copy(cycle[a])))  # against the rim
-            except ValueError:
-                pass
+    for cycle in _rim_cycles(part.faces[:]):
+        coords = [v.co.to_tuple(6) for v in cycle]
+        same = body_caps.get(frozenset(coords))
+        n = len(cycle)
+        if (same is not None and len(same[0]) == n
+                and same[0][(same[0].index(coords[0]) + 1) % n] == coords[1 % n]):
+            # the body's cap, re-indexed to this cycle's start (both run the same way)
+            order, (inner, cap_faces) = same[0], same[1]
+            shift = order.index(coords[0])
+            remap = {(shift + i) % n: i for i in range(n)}
+            cap_faces = [[remap.get(i, i) for i in f] for f in cap_faces]
+            _add_cap(part, cycle, (inner, cap_faces), reverse=True)
+        else:
+            _add_cap(part, cycle, _cap_shape([v.co.copy() for v in cycle]), reverse=True)
 
     bmesh.ops.delete(bm, geom=faces, context="FACES_ONLY")
-    for cycle, tris in caps:
-        for a, b, c in tris:
-            try:
-                bm.faces.new((cycle[a], cycle[b], cycle[c])).material_index = body_slot  # along the rim
-            except ValueError:
-                pass
+    for cycle, shape in body_cycles:
+        _add_cap(bm, cycle, shape, material=body_slot)
     bmesh.ops.delete(bm, geom=[e for e in bm.edges if not e.link_faces], context="EDGES")
     bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_edges], context="VERTS")
-    part.normal_update()
-    return part
+    if not part.faces:
+        part.free()
+        part = None
+    else:
+        part.normal_update()
+    return part, dropped
 
 
-def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True, only_ticked=True, body_out=None):
+def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True, only_ticked=True, body_out=None,
+                min_thickness=0.0):
     """Work out the body colour and every part, without changing anything.
 
     Returns (body_index, parts) where each part is a dict with index, name,
@@ -645,11 +854,17 @@ def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True, only_tic
     if cut_offs:
         bm = bmesh.new()
         bm.from_mesh(src)
+        whole = BVHTree.FromBMesh(bm) if min_thickness > 0 else None
         for index in cut_offs:
             mat = materials[index]
+            shape, dropped = _cut_off(bm, index, body_index, whole, min_thickness)
+            if shape is None:
+                continue  # all of it too thin: it is only left out
+            report = _report()
+            report["dropped"] = dropped
             parts.append({"index": index, "name": mat.name if mat else "Colour %d" % (index + 1),
-                          "material": mat, "shape": _cut_off(bm, index, body_index),
-                          "report": _report(), "area": areas[index], "cut_off": True})
+                          "material": mat, "shape": shape,
+                          "report": report, "area": areas[index], "cut_off": True})
         work = bpy.data.meshes.new("_bambu_body")
         for m in src.materials:
             work.materials.append(m)
@@ -770,7 +985,8 @@ def _body_colours(mesh, materials, body_index, cut_slots, keep_uncut):
     mesh.update()
 
 
-def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True, keep_uncut=True):
+def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True, keep_uncut=True,
+                 min_thickness=0.0):
     """Create the body and one part per other colour. Distances are in Blender units.
 
     Returns (collection, body, parts, warnings, body_index).
@@ -778,7 +994,8 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
     src = world_mesh(context, obj)
     materials = list(src.materials) or [None]
     body_out = []
-    body_index, all_infos = build_parts(src, tolerance, depth, body_choice, flat_bottom, body_out=body_out)
+    body_index, all_infos = build_parts(src, tolerance, depth, body_choice, flat_bottom, body_out=body_out,
+                                        min_thickness=min_thickness)
     if body_out and body_out[0] is not None:
         bpy.data.meshes.remove(src)
         src = body_out[0]  # the model with the Cut Off colours already cut away
@@ -806,6 +1023,8 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
     for info in all_infos:
         if not info["cut_off"]:
             continue
+        if info["report"].get("dropped"):
+            warnings.append((info["name"], "dropped", info["report"]["dropped"]))
         piece = _to_mesh(info["shape"], "%s %s" % (obj.name, info["name"]))
         _single_material(piece, info["material"])
         part = bpy.data.objects.new(piece.name, piece)
@@ -911,7 +1130,8 @@ class BAMBU_OT_split_colors(bpy.types.Operator):
         tolerance, depth = s.tolerance / s.mm_per_unit, s.depth / s.mm_per_unit
         try:
             coll, body, parts, warnings, body_index = split_colors(
-                context, obj, tolerance, depth, s.body_colour, s.flat_bottom, s.uncut == "KEEP")
+                context, obj, tolerance, depth, s.body_colour, s.flat_bottom, s.uncut == "KEEP",
+                s.min_thickness / s.mm_per_unit)
         except Exception:
             paint.record_error("split colours")
             self.report({"ERROR"}, "Could not split the colours. Use 'Copy Error' in the Bambu Paint panel")
@@ -934,6 +1154,9 @@ class BAMBU_OT_split_colors(bpy.types.Operator):
                 self.report({"WARNING"}, "%s: the model is only %.2f mm thick where the part needs "
                             "%.2f mm (with tolerance), it may go through. Use a smaller depth."
                             % (name, have * s.mm_per_unit, need * s.mm_per_unit))
+            elif kind == "dropped":
+                self.report({"INFO"}, "%s: %d face(s) thinner than %.2f mm left out"
+                            % (name, values, s.min_thickness))
             elif kind == "open":
                 self.report({"WARNING"}, "The body has %d open edges (the model overlaps itself, which the "
                             "flat-bottom cut can't fully handle). Turn off Flat Bottom for a clean cut." % values)
@@ -988,6 +1211,8 @@ def _draw_preview(layout, s):
     for part in state["parts"]:
         if part.get("cut_off"):
             box.label(text="%d %s: cut off whole" % (part["number"], part["name"]), icon="CHECKMARK")
+            if part.get("dropped"):
+                box.label(text="    %d too thin face(s) left out" % part["dropped"])
             continue
         deepest = part["deepest"] * mm - tol
         box.label(text="%d %s: %.2f–%.2f mm deep" % (part["number"], part["name"], s.depth, max(deepest, s.depth)),
@@ -1118,6 +1343,7 @@ class VIEW3D_PT_bambu_split(bpy.types.Panel):
         col = layout.column(align=True)
         col.prop(s, "tolerance", text="Tolerance (mm)")
         col.prop(s, "depth", text="Depth (mm)")
+        col.prop(s, "min_thickness", text="Cut Off Min Thickness (mm)")
         layout.prop(s, "mm_per_unit", text="1 Blender unit (mm)")
 
         layout.prop(s, "flat_bottom")

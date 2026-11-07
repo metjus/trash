@@ -299,6 +299,7 @@ class SplitTest(unittest.TestCase):
         obj = self.ponytail(2)
         total = self.volume(obj)
         self.s.flat_bottom = False
+        self.s.min_thickness = 0.0  # nothing left out, so the volumes add up
         self.assertEqual(bpy.ops.bambu.split_colors(), {"FINISHED"})
         body, tail = bpy.data.objects["Sphere body"], bpy.data.objects["Sphere Colour"]
         self.assertEqual(open_edges(body.data)[0], 0)
@@ -306,6 +307,61 @@ class SplitTest(unittest.TestCase):
         self.assertAlmostEqual(self.volume(body) + self.volume(tail), total, places=1)
         self.assertAlmostEqual(self.overlap_volume(tail, body), 0.0, places=3)
         self.assertEqual([m.name for m in tail.data.materials], ["Colour"])
+
+    def test_cut_off_caps_are_mostly_quads(self):
+        obj = self.ponytail(2)
+        self.s.flat_bottom = False
+        bpy.ops.bambu.split_colors()
+        body = bpy.data.objects["Sphere body"]
+        cap = [p for p in body.data.polygons if p.center.y < -18]  # the cap where the tail came off
+        self.assertTrue(cap)
+        quads = sum(1 for p in cap if len(p.vertices) == 4)
+        self.assertGreater(quads, 0.7 * len(cap))
+
+    def spike(self):
+        """A sphere with a spike tapering to a tip well under 1 mm, painted colour 2."""
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=20, segments=48, ring_count=24)
+        obj = bpy.context.object
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        region = [f for f in bm.faces if f.calc_center_median().z > 18.5]
+        for _ in range(8):
+            ret = bmesh.ops.extrude_face_region(bm, geom=region)
+            verts = [e for e in ret["geom"] if isinstance(e, bmesh.types.BMVert)]
+            bmesh.ops.delete(bm, geom=region, context="FACES_ONLY")
+            region = [e for e in ret["geom"] if isinstance(e, bmesh.types.BMFace)]
+            c = sum((v.co for v in verts), Vector()) / len(verts)
+            for v in verts:
+                v.co = c + (v.co - c) * 0.62 + Vector((0, 0, 3))
+        bm.to_mesh(obj.data)
+        bm.free()
+        for _ in range(2):
+            self.paint.add_color(obj)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 19 else 0
+        obj.data.materials[1].bambu_cut_mode = "CUT_OFF"
+        return obj
+
+    def test_cut_off_leaves_out_thin_tips(self):
+        self.spike()
+        self.s.flat_bottom = False
+        self.s.min_thickness = 1.0
+        self.assertEqual(bpy.ops.bambu.split_colors(), {"FINISHED"})
+        body, part = bpy.data.objects["Sphere body"], bpy.data.objects["Sphere Colour"]
+        self.assertEqual(open_edges(body.data)[0], 0)  # capped under the whole colour: no hole
+        self.assertEqual(open_edges(part.data)[0], 0)  # capped where the tip came off
+        self.assertLess(max(v.co.z for v in part.data.vertices), 40)  # the tip (up to 43) is gone
+        self.assertLess(max(v.co.z for v in body.data.vertices), 18.6)  # nothing left on the body
+        self.assertAlmostEqual(self.overlap_volume(part, body), 0.0, places=3)
+
+    def test_cut_off_min_thickness_zero_cuts_everything(self):
+        self.spike()
+        self.s.flat_bottom = False
+        self.s.min_thickness = 0.0
+        bpy.ops.bambu.split_colors()
+        part = bpy.data.objects["Sphere Colour"]
+        self.assertEqual(open_edges(part.data)[0], 0)
+        self.assertGreater(max(v.co.z for v in part.data.vertices), 43)
 
     def test_cut_off_with_flat_bottom_inlay_alongside(self):
         obj = self.ponytail(3)

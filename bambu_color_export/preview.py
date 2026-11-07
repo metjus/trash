@@ -60,7 +60,8 @@ def rebuild(context):
     src = split.world_mesh(context, obj)
     try:
         body_index, infos = split.build_parts(src, s.tolerance / s.mm_per_unit, s.depth / s.mm_per_unit,
-                                              s.body_colour, s.flat_bottom)
+                                              s.body_colour, s.flat_bottom,
+                                              min_thickness=s.min_thickness / s.mm_per_unit)
         materials = list(src.materials)
     finally:
         bpy.data.meshes.remove(src)
@@ -94,6 +95,7 @@ def rebuild(context):
             "through": bool(bad),
             "too_curved": report["too_curved"],
             "cut_off": info.get("cut_off", False),
+            "dropped": report.get("dropped", 0),
         })
     _redraw()
 
