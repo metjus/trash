@@ -8,7 +8,7 @@ the part by `tolerance` on every side, so the printed part fits in it.
 
 import bmesh
 import bpy
-from bpy.props import EnumProperty, FloatProperty, IntProperty
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
@@ -65,6 +65,11 @@ class BambuSplitSettings(bpy.types.PropertyGroup):
         name="Depth", default=1.0, min=0.1, max=100.0, precision=2, step=10,
         description="How deep each colour part goes into the model, in mm",
         update=_value_update)
+    flat_bottom: BoolProperty(
+        name="Flat Bottom", default=True,
+        description="Give each part a flat bottom (good bed adhesion, the part slides straight into "
+                    "its pocket). Depth is then the part's thinnest spot. Off: the bottom follows "
+                    "the surface at an even depth")
     body_colour: IntProperty(
         name="Body Colour", default=0, min=0, max=64,
         description="Colour (number as in the Bambu Paint list) that becomes the body; the other "
@@ -141,6 +146,92 @@ def _solid(patch, depth):
     return bm
 
 
+def _islands(patch):
+    """Lists of faces that are connected through edges."""
+    seen, islands = set(), []
+    for f in patch.faces:
+        if f.index in seen:
+            continue
+        seen.add(f.index)
+        stack, island = [f], []
+        while stack:
+            g = stack.pop()
+            island.append(g)
+            for e in g.edges:
+                for h in e.link_faces:
+                    if h.index not in seen:
+                        seen.add(h.index)
+                        stack.append(h)
+        islands.append(island)
+    return islands
+
+
+def _flat_solid(patch, depth, bvh=None, tolerance=0.0, eps=0.0):
+    """Closed solid per island: the patch as the top, straight walls along the
+    island's average normal and a flat bottom `depth` below its lowest point.
+
+    Returns (bmesh, too_curved, thickness_problem) where thickness_problem is
+    (model thickness, part depth + tolerance) at the worst spot, or None.
+    """
+    patch.faces.index_update()
+    bm = bmesh.new()
+    too_curved = False
+    worst = None
+    for island in _islands(patch):
+        normal = Vector()
+        for f in island:
+            normal += f.normal * f.calc_area()
+        if normal.length < 1e-12:
+            continue
+        normal.normalize()
+        if any(f.normal.dot(normal) < 0.0 for f in island):
+            too_curved = True  # the patch wraps round: a flat bottom can't sit under all of it
+        verts = {v for f in island for v in f.verts}
+        height = {v: v.co.dot(normal) for v in verts}
+        floor = min(height.values()) - depth
+
+        top = {v: bm.verts.new(v.co) for v in verts}
+        for f in island:
+            try:
+                bm.faces.new([top[v] for v in f.verts])
+            except ValueError:
+                pass
+        bottom = {}
+        rim = []
+        for f in island:
+            for e in f.edges:
+                if len(e.link_faces) == 1:
+                    rim.append(e)
+        for e in rim:
+            for v in e.verts:
+                if v not in bottom:
+                    bottom[v] = bm.verts.new(v.co - normal * (height[v] - floor))
+        floor_edges = []
+        for e in rim:
+            a, b = e.verts
+            try:
+                bm.faces.new((top[a], top[b], bottom[b], bottom[a]))
+            except ValueError:
+                pass
+            edge = bm.edges.get((bottom[a], bottom[b]))
+            if edge is not None:
+                floor_edges.append(edge)
+        if floor_edges:
+            bmesh.ops.triangle_fill(bm, use_beauty=True, use_dissolve=False,
+                                    edges=floor_edges, normal=-normal)
+
+        if bvh is not None:
+            for v in verts:
+                need = height[v] - floor + tolerance
+                loc, _n, _i, dist = bvh.ray_cast(v.co - normal * eps, -normal)
+                if loc is not None and dist + eps < need:
+                    if worst is None or need - (dist + eps) > worst[1] - worst[0]:
+                        worst = (dist + eps, need)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    bm.normal_update()
+    return bm, too_curved, worst
+
+
 def _grow(bm, dist):
     """Offset a closed solid outward by `dist` (even thickness)."""
     bm.normal_update()
@@ -174,7 +265,7 @@ def _boolean_solver():
     return "EXACT" if "EXACT" in items else next(iter(items))
 
 
-def split_colors(context, obj, tolerance, depth, body_choice=0):
+def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True):
     """Create the body and one part per other colour. Distances are in Blender units.
 
     Returns (collection, body, parts, warnings, body_index).
@@ -210,11 +301,19 @@ def split_colors(context, obj, tolerance, depth, body_choice=0):
         mat = materials[index]
         name = mat.name if mat else "Colour %d" % (index + 1)
         patch = _patch(src, index)
-        thin = thinnest_spot(patch, bvh, eps)
-        if thin is not None and thin < depth + tolerance:
-            warnings.append((name, thin))
+        if flat_bottom:
+            shape, too_curved, problem = _flat_solid(patch, depth, bvh, tolerance, eps)
+            if too_curved:
+                warnings.append((name, "curved", None))
+        else:
+            shape = _solid(patch, depth)
+            thin = thinnest_spot(patch, bvh, eps)
+            problem = (thin, depth + tolerance) if thin is not None and thin < depth + tolerance else None
+        if problem:
+            warnings.append((name, "thin", problem))
 
-        piece = _to_mesh(_solid(patch, depth), "%s %s" % (obj.name, name))
+        pocket = shape.copy()
+        piece = _to_mesh(shape, "%s %s" % (obj.name, name))
         if mat:
             piece.materials.append(mat)
         part = bpy.data.objects.new(piece.name, piece)
@@ -223,7 +322,6 @@ def split_colors(context, obj, tolerance, depth, body_choice=0):
 
         # The pocket: the part grown by the tolerance (a hair more when the
         # tolerance is 0, so the cut never lies exactly on the body surface).
-        pocket = _solid(patch, depth)
         _grow(pocket, max(tolerance, eps))
         patch.free()
         tmp = _to_mesh(pocket, "_bambu_pocket")
@@ -298,7 +396,7 @@ class BAMBU_OT_split_colors(bpy.types.Operator):
         tolerance, depth = s.tolerance / s.mm_per_unit, s.depth / s.mm_per_unit
         try:
             coll, body, parts, warnings, body_index = split_colors(
-                context, obj, tolerance, depth, s.body_colour)
+                context, obj, tolerance, depth, s.body_colour, s.flat_bottom)
         except Exception:
             paint.record_error("split colours")
             self.report({"ERROR"}, "Could not split the colours. Use 'Copy Error' in the Bambu Paint panel")
@@ -306,10 +404,15 @@ class BAMBU_OT_split_colors(bpy.types.Operator):
         if not parts:
             self.report({"WARNING"}, "Only one colour is used on the model, nothing to split")
             return {"FINISHED"}
-        for name, thin in warnings:
-            self.report({"WARNING"}, "%s: the model is only %.2f mm thick in places, the part "
-                        "(depth + tolerance %.2f mm) may go through. Use a smaller depth."
-                        % (name, thin * s.mm_per_unit, s.depth + s.tolerance))
+        for name, kind, values in warnings:
+            if kind == "thin":
+                have, need = values
+                self.report({"WARNING"}, "%s: the model is only %.2f mm thick where the part needs "
+                            "%.2f mm (with tolerance), it may go through. Use a smaller depth."
+                            % (name, have * s.mm_per_unit, need * s.mm_per_unit))
+            else:
+                self.report({"WARNING"}, "%s wraps round the model too far for a flat bottom: "
+                            "check the part, or split that colour into smaller areas." % name)
         if s.body_colour and body_index != s.body_colour - 1:
             self.report({"WARNING"}, "Colour %d isn't used on the model, the body is colour %d"
                         % (s.body_colour, body_index + 1))
@@ -346,6 +449,7 @@ class VIEW3D_PT_bambu_split(bpy.types.Panel):
         col.prop(s, "depth", text="Depth (mm)")
         layout.prop(s, "mm_per_unit", text="1 Blender unit (mm)")
 
+        layout.prop(s, "flat_bottom")
         layout.prop(s, "body_colour", text="Body Colour (0 = Auto)")
         if _can_split(obj):
             areas = colour_areas(obj.data)

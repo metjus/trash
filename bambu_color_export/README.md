@@ -94,7 +94,15 @@ pocket in the body that is *Tolerance* mm larger on every side.
 5. Click **Split Colours into Parts**. The result goes into a new collection
    "<model> parts"; the original is only hidden.
 
-If the model is thinner than depth + tolerance under a colour, you get a warning naming
+**Flat Bottom** (on by default) gives every part a flat bottom for good bed adhesion:
+the bottom is a plane square to the part's average direction, *Depth* mm below its lowest
+painted point (so *Depth* is the part's thinnest spot), and the walls run straight to it, so
+the part slides straight into its pocket. Each separate area of a colour (e.g. two eyes)
+gets its own flat bottom. Print the part flat side down. With Flat Bottom off, the bottom
+follows the surface at an even depth instead. A colour that wraps round the model too far
+for one flat bottom (more than about half a sphere) gets a warning.
+
+If the model is thinner than the part (+ tolerance) under a colour, you get a warning naming
 the colour: the part could go through, so use a smaller depth. Parts of two neighbouring
 colours touch each other without a gap. Export each part on its own (e.g. File → Export →
 STL with *Selection Only*).

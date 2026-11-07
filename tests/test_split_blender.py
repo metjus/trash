@@ -90,6 +90,58 @@ class SplitTest(unittest.TestCase):
             self.assertGreater(faces, 0, o.name)
             self.assertEqual(bad, 0, o.name)
 
+    def bottoms(self, part):
+        """Plane offsets of each same-normal face group of 4+ faces (the flat bottoms)."""
+        bm = bmesh.new()
+        bm.from_mesh(part.data)
+        groups = collections.defaultdict(list)
+        for f in bm.faces:
+            groups[tuple(round(c, 4) for c in f.normal)].append(f)
+        planes = {n: {round(v.co.dot(fs[0].normal), 4) for f in fs for v in f.verts}
+                  for n, fs in groups.items() if len(fs) >= 4}
+        bm.free()
+        return planes
+
+    def test_flat_bottom_cap(self):
+        obj = self.sphere(2)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 6 else 0
+        self.s.tolerance, self.s.depth = 0.2, 1.5
+        self.assertTrue(self.s.flat_bottom)
+        bpy.ops.bambu.split_colors()
+        part = bpy.data.objects["Sphere Colour"]
+        self.assertEqual(open_edges(part.data)[0], 0)
+        lowest = min(v.co.z for v in part.data.vertices if v.co.length > 9.999)
+        planes = self.bottoms(part)
+        self.assertIn((0.0, 0.0, -1.0), planes)
+        self.assertEqual(planes[(0.0, 0.0, -1.0)], {round(-(lowest - 1.5), 4)})
+
+    def test_flat_bottom_per_island_and_with_hole(self):
+        obj = self.sphere(3)
+        for p in obj.data.polygons:  # two eyes in colour 2, a ring round the pole in colour 3
+            eye = p.center.y < -8 and abs(abs(p.center.x) - 3) < 2 and abs(p.center.z) < 2
+            p.material_index = 1 if eye else (2 if 5 < p.center.z < 8.5 else 0)
+        bpy.ops.bambu.split_colors()
+        eyes = bpy.data.objects["Sphere Colour"]
+        ring = bpy.data.objects["Sphere Colour.001"]
+        # bottoms face into the model (+y for eyes on the -y side)
+        planes = {n: d for n, d in self.bottoms(eyes).items() if n[1] > 0.5}
+        self.assertEqual(len(planes), 2)  # one flat bottom per eye
+        self.assertTrue(all(len(offsets) == 1 for offsets in planes.values()))
+        for o in bpy.data.collections["Sphere parts"].objects:
+            self.assertEqual(open_edges(o.data)[0], 0, o.name)
+        self.assertEqual(len(self.bottoms(ring)[(0.0, 0.0, -1.0)]), 1)
+
+    def test_surface_following_bottom_still_available(self):
+        obj = self.sphere(2)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 6 else 0
+        self.s.flat_bottom = False
+        bpy.ops.bambu.split_colors()
+        part = bpy.data.objects["Sphere Colour"]
+        self.assertEqual(open_edges(part.data)[0], 0)
+        self.assertNotIn((0.0, 0.0, -1.0), self.bottoms(part))
+
     def paint_all(self, obj):
         # No face left in colour 1: colour 3 has the larger area.
         for p in obj.data.polygons:
