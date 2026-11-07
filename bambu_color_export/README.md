@@ -77,6 +77,25 @@ Notes: painting colours whole faces, so edges follow the mesh. Subdivide (or rem
 models for finer detail. Symmetry mirrors across the object's origin, so keep the origin
 on the model's centre line.
 
+## Split colours into parts (for single-colour printers, e.g. resin)
+Print each colour separately and assemble: the **Bambu Split Parts** panel (Bambu tab)
+turns a painted model into a **body** (colour 1) plus one **part** per other colour.
+Each part's top is the painted surface; it goes *Depth* mm into the model and sits in a
+pocket in the body that is *Tolerance* mm larger on every side.
+
+1. Select the painted mesh.
+2. Pick **Resin** (tolerance 0.05 mm, depth 1 mm) or **FDM** (0.2 mm, 1.5 mm), or type your
+   own values: editing either switches to **Custom** and your values stay.
+3. Check **1 Blender unit (mm)** so the model size shown matches the printed size; the
+   tolerance and depth are real millimetres at that size.
+4. Click **Split Colours into Parts**. The result goes into a new collection
+   "<model> parts"; the original is only hidden.
+
+If the model is thinner than depth + tolerance under a colour, you get a warning naming
+the colour: the part could go through, so use a smaller depth. Parts of two neighbouring
+colours touch each other without a gap. Export each part on its own (e.g. File → Export →
+STL with *Selection Only*).
+
 ## How it works
 All selected objects are merged (modifiers applied) into one mesh. Each triangle gets:
 - a colour from a standard 3MF colour group (`m:colorgroup`). Bambu Studio reads this and
