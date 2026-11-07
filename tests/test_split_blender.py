@@ -8,6 +8,7 @@ import unittest
 try:
     import bpy
     import bmesh
+    from mathutils import Vector
     from mathutils.bvhtree import BVHTree
 except ImportError:
     bpy = None
@@ -266,6 +267,70 @@ class SplitTest(unittest.TestCase):
         gaps = [bvh.find_nearest(v.co)[3] for v in part.data.vertices if v.co.length < 9.99]
         bm.free()
         self.assertAlmostEqual(min(gaps), 0.2, delta=0.01)
+
+    def ponytail(self, colours):
+        """A ball with a tail pulled out of it (one closed mesh); the tail is colour 2."""
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=20, segments=64, ring_count=32)
+        obj = bpy.context.object
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        region = [f for f in bm.faces if (f.calc_center_median() - Vector((0, -20, 0))).length < 7]
+        moved = [v for v in bmesh.ops.extrude_face_region(bm, geom=region)["geom"] if isinstance(v, bmesh.types.BMVert)]
+        bmesh.ops.translate(bm, verts=moved, vec=(0, -25, -10))
+        bmesh.ops.delete(bm, geom=[f for f in region if f.is_valid], context="FACES_ONLY")
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+        bm.to_mesh(obj.data)
+        bm.free()
+        for _ in range(colours):
+            self.paint.add_color(obj)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.y < -21 else 0
+        obj.data.materials[1].bambu_cut_mode = "CUT_OFF"
+        return obj
+
+    def volume(self, o):
+        bm = bmesh.new()
+        bm.from_mesh(o.data)
+        v = bm.calc_volume(signed=True)
+        bm.free()
+        return v
+
+    def test_cut_off_splits_the_model_exactly(self):
+        obj = self.ponytail(2)
+        total = self.volume(obj)
+        self.s.flat_bottom = False
+        self.assertEqual(bpy.ops.bambu.split_colors(), {"FINISHED"})
+        body, tail = bpy.data.objects["Sphere body"], bpy.data.objects["Sphere Colour"]
+        self.assertEqual(open_edges(body.data)[0], 0)
+        self.assertEqual(open_edges(tail.data)[0], 0)
+        self.assertAlmostEqual(self.volume(body) + self.volume(tail), total, places=1)
+        self.assertAlmostEqual(self.overlap_volume(tail, body), 0.0, places=3)
+        self.assertEqual([m.name for m in tail.data.materials], ["Colour"])
+
+    def test_cut_off_with_flat_bottom_inlay_alongside(self):
+        obj = self.ponytail(3)
+        for p in obj.data.polygons:  # a stripe on the other side, inlaid
+            if abs(p.center.z - 8) < 2 and p.center.y > 0:
+                p.material_index = 2
+        self.s.flat_bottom = True
+        bpy.ops.bambu.split_colors()
+        objects = {o.name: o for o in bpy.data.collections["Sphere parts"].objects}
+        self.assertEqual(sorted(objects), ["Sphere Colour", "Sphere Colour.001", "Sphere body"])
+        for o in objects.values():
+            self.assertEqual(open_edges(o.data)[0], 0, o.name)
+        self.assertAlmostEqual(self.overlap_volume(objects["Sphere Colour"], objects["Sphere body"]), 0.0, places=3)
+
+    def test_preview_marks_cut_off_parts(self):
+        from bambu_color_export import preview
+        self.ponytail(2)
+        preview.start(bpy.context)
+        try:
+            part = preview.summary()["parts"][0]
+            self.assertTrue(part["cut_off"])
+            self.assertFalse(part["through"])
+            self.assertTrue(part["positions"])
+        finally:
+            preview.stop()
 
     def test_export_parts_writes_closed_stl_per_part(self):
         obj = self.sphere(3)

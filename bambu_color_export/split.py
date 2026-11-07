@@ -12,7 +12,7 @@ import collections
 import os
 
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, StringProperty
-from mathutils import Vector
+from mathutils import Vector, geometry
 from mathutils.bvhtree import BVHTree
 
 from . import paint
@@ -126,6 +126,11 @@ def colour_areas(mesh):
 def wants_cut(mat):
     """Whether a colour is ticked to become a part (all are, by default)."""
     return mat is None or getattr(mat, "bambu_cut", True)
+
+
+def cut_mode(mat):
+    """"INLAY" (a part sitting in a pocket) or "CUT_OFF" (cut away whole)."""
+    return getattr(mat, "bambu_cut_mode", "INLAY") if mat else "INLAY"
 
 
 def pick_body(areas, choice):
@@ -517,31 +522,150 @@ def _surface_body(src, cut_slots, pocket_depth, model, body_slot):
     return mesh
 
 
-def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True, only_ticked=True):
+def _cap(cycle):
+    """Triangles (index triples into cycle) closing a loop of vertices, wound
+    along the loop (a -> b as listed)."""
+    n = len(cycle)
+    tris = geometry.tessellate_polygon([[v.co for v in cycle]])
+    if not tris:  # degenerate outline: fan from its centre instead
+        return None
+    along = None
+    for t in tris:
+        for k in range(3):
+            i, j = t[k], t[(k + 1) % 3]
+            if j == (i + 1) % n:
+                along = True
+            elif i == (j + 1) % n:
+                along = False
+            if along is not None:
+                break
+        if along is not None:
+            break
+    return [tuple(t) if along is not False else (t[0], t[2], t[1]) for t in tris]
+
+
+def _cut_off(bm, mat_index, body_slot):
+    """Cut colour `mat_index` away from `bm` (the body, changed in place) along
+    the colour's edge. Each hole is closed with a cap, and the removed faces,
+    closed by the same caps, are returned as a new closed BMesh, so the part and
+    the body meet exactly on the caps."""
+    faces = [f for f in bm.faces if f.material_index == mat_index]
+    inside = set(faces)
+    following = {}  # rim vertex -> next rim vertices, in the faces' winding
+    for f in faces:
+        for loop in f.loops:
+            if sum(1 for g in loop.edge.link_faces if g in inside) == 1:
+                following.setdefault(loop.vert, []).append(loop.link_loop_next.vert)
+    cycles = []
+    while following:
+        start = next(iter(following))
+        cycle, v = [start], start
+        while True:
+            outs = following.get(v)
+            if not outs:
+                break
+            w = outs.pop()
+            if not outs:
+                del following[v]
+            if w is start:
+                break
+            cycle.append(w)
+            v = w
+        if len(cycle) >= 3:
+            cycles.append(cycle)
+
+    caps = []  # (vertices, triangles along the rim)
+    for cycle in cycles:
+        tris = _cap(cycle)
+        if tris is None:
+            centre = sum((v.co for v in cycle), Vector()) / len(cycle)
+            middle = bm.verts.new(centre)
+            cycle = cycle + [middle]
+            m = len(cycle) - 1
+            tris = [(i, (i + 1) % m, m) for i in range(m)]
+        caps.append((cycle, tris))
+
+    part = bmesh.new()
+    copies = {}
+
+    def copy(v):
+        if v not in copies:
+            copies[v] = part.verts.new(v.co)
+        return copies[v]
+
+    for f in faces:
+        try:
+            part.faces.new([copy(v) for v in f.verts])
+        except ValueError:
+            pass
+    for cycle, tris in caps:
+        for a, b, c in tris:
+            try:
+                part.faces.new((copy(cycle[c]), copy(cycle[b]), copy(cycle[a])))  # against the rim
+            except ValueError:
+                pass
+
+    bmesh.ops.delete(bm, geom=faces, context="FACES_ONLY")
+    for cycle, tris in caps:
+        for a, b, c in tris:
+            try:
+                bm.faces.new((cycle[a], cycle[b], cycle[c])).material_index = body_slot  # along the rim
+            except ValueError:
+                pass
+    bmesh.ops.delete(bm, geom=[e for e in bm.edges if not e.link_faces], context="EDGES")
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_edges], context="VERTS")
+    part.normal_update()
+    return part
+
+
+def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True, only_ticked=True, body_out=None):
     """Work out the body colour and every part, without changing anything.
 
     Returns (body_index, parts) where each part is a dict with index, name,
     material, shape (a closed BMesh the caller must free) and report.
     body_index is None when fewer than two colours are used. With only_ticked,
     colours that aren't ticked to cut (wants_cut) are left out.
+
+    Cut Off colours are cut away first (part["cut_off"] is True); Inlay parts
+    are then worked out on what is left. When `body_out` is a list, the body
+    after the cut-offs (a new mesh, or None if nothing was cut off) is appended
+    to it for the caller to use and remove.
     """
     materials = list(src.materials) or [None]
     areas = colour_areas(src)
     body_index = pick_body(areas, body_choice)
     if body_index is None or sum(1 for a in areas if a > 0) < 2:
         return None, []
-    bvh = BVHTree.FromPolygons([v.co.copy() for v in src.vertices],
-                               [tuple(p.vertices) for p in src.polygons])
-    eps = max(depth, tolerance) * 1e-3
-    model = None if flat_bottom else model_normals(src)
+    wanted = [i for i in range(len(materials))
+              if i != body_index and areas[i] > 0 and (not only_ticked or wants_cut(materials[i]))]
+    cut_offs = [i for i in wanted if cut_mode(materials[i]) == "CUT_OFF"]
+
     parts = []
-    for index in range(len(materials)):
-        if index == body_index or areas[index] == 0:
-            continue
+    work = src
+    if cut_offs:
+        bm = bmesh.new()
+        bm.from_mesh(src)
+        for index in cut_offs:
+            mat = materials[index]
+            parts.append({"index": index, "name": mat.name if mat else "Colour %d" % (index + 1),
+                          "material": mat, "shape": _cut_off(bm, index, body_index),
+                          "report": _report(), "area": areas[index], "cut_off": True})
+        work = bpy.data.meshes.new("_bambu_body")
+        for m in src.materials:
+            work.materials.append(m)
+        bm.to_mesh(work)
+        bm.free()
+    if body_out is not None:
+        body_out.append(work if work is not src else None)
+
+    bvh = BVHTree.FromPolygons([v.co.copy() for v in work.vertices],
+                               [tuple(p.vertices) for p in work.polygons])
+    eps = max(depth, tolerance) * 1e-3
+    inlays = [i for i in wanted if i not in cut_offs]
+    model = None if flat_bottom or not inlays else model_normals(work)
+    for index in inlays:
         mat = materials[index]
-        if only_ticked and not wants_cut(mat):
-            continue
-        patch = _patch(src, index)
+        patch = _patch(work, index)
         if flat_bottom:
             shape, report = _flat_solid(patch, depth, bvh, tolerance, eps)
         else:
@@ -552,7 +676,10 @@ def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True, only_tic
             report = _surface_report(patch, bvh, depth, tolerance, eps, model)
         patch.free()
         parts.append({"index": index, "name": mat.name if mat else "Colour %d" % (index + 1),
-                      "material": mat, "shape": shape, "report": report, "area": areas[index]})
+                      "material": mat, "shape": shape, "report": report, "area": areas[index],
+                      "cut_off": False})
+    if work is not src and body_out is None:
+        bpy.data.meshes.remove(work)
     return body_index, parts
 
 
@@ -650,17 +777,22 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
     """
     src = world_mesh(context, obj)
     materials = list(src.materials) or [None]
-    body_index, infos = build_parts(src, tolerance, depth, body_choice, flat_bottom)
-    if not infos:
+    body_out = []
+    body_index, all_infos = build_parts(src, tolerance, depth, body_choice, flat_bottom, body_out=body_out)
+    if body_out and body_out[0] is not None:
+        bpy.data.meshes.remove(src)
+        src = body_out[0]  # the model with the Cut Off colours already cut away
+    if not all_infos:
         bpy.data.meshes.remove(src)
         return None, None, [], [], body_index
+    infos = [i for i in all_infos if not i["cut_off"]]  # the inlays
     eps = max(depth, tolerance) * 1e-3
-    if flat_bottom and _boolean_solver(len(src.polygons)) == "MANIFOLD":
+    if infos and flat_bottom and _boolean_solver(len(src.polygons)) == "MANIFOLD":
         # Big models are cut with the MANIFOLD solver, which refuses meshes
         # with holes: say so instead of making a body without pockets.
         holes = open_edges(src)
         if holes:
-            for info in infos:
+            for info in all_infos:
                 info["shape"].free()
             bpy.data.meshes.remove(src)
             return None, None, [], [("Model", "not_closed", holes)], body_index
@@ -671,6 +803,14 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
     coll.objects.link(body)
 
     parts, warnings = [], []
+    for info in all_infos:
+        if not info["cut_off"]:
+            continue
+        piece = _to_mesh(info["shape"], "%s %s" % (obj.name, info["name"]))
+        _single_material(piece, info["material"])
+        part = bpy.data.objects.new(piece.name, piece)
+        coll.objects.link(part)
+        parts.append(part)
     for info in infos:
         if info["report"]["too_curved"]:
             warnings.append((info["name"], "curved", None))
@@ -678,7 +818,9 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
             warnings.append((info["name"], "thin", info["report"]["worst"]))
     cut_slots = {info["index"] for info in infos}
 
-    if not flat_bottom:
+    if not infos:
+        cut = src  # only cut-offs: the body is done
+    elif not flat_bottom:
         # No boolean: the parts already sit `tolerance` inside their pockets and
         # neighbouring parts meet along shared walls, each pulled back by the
         # tolerance. Fast and safe on dense, self-overlapping sculpts.
@@ -730,7 +872,7 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
         if holes:
             warnings.append(("Body", "open", holes))
     cut.name = body.name
-    _body_colours(cut, materials, body_index, cut_slots, keep_uncut)
+    _body_colours(cut, materials, body_index, {i["index"] for i in all_infos}, keep_uncut)
 
     obj.hide_set(True)
     for o in context.selected_objects:
@@ -844,6 +986,9 @@ def _draw_preview(layout, s):
         return
     mm, tol = state["mm"], state["tolerance"]
     for part in state["parts"]:
+        if part.get("cut_off"):
+            box.label(text="%d %s: cut off whole" % (part["number"], part["name"]), icon="CHECKMARK")
+            continue
         deepest = part["deepest"] * mm - tol
         box.label(text="%d %s: %.2f–%.2f mm deep" % (part["number"], part["name"], s.depth, max(deepest, s.depth)),
                   icon="ERROR" if part["through"] or part["too_curved"] else "CHECKMARK")
@@ -940,6 +1085,9 @@ def _draw_cut_list(layout, s, obj, areas, body_index):
             row.label(text="%d  %s  (body)" % (i + 1, mat.name))
         else:
             row.prop(mat, "bambu_cut", text="%d  %s" % (i + 1, mat.name))
+            how = row.row(align=True)
+            how.enabled = mat.bambu_cut
+            how.prop(mat, "bambu_cut_mode", text="")
     box.prop(s, "uncut", expand=True)
 
 
@@ -963,8 +1111,8 @@ class VIEW3D_PT_bambu_split(bpy.types.Panel):
         obj = context.active_object
         layout.operator("import_mesh.bambu_3mf", text="Import Coloured 3MF…", icon="IMPORT")
         col = layout.column(align=True)
-        col.label(text="Each colour becomes a part that")
-        col.label(text="fits into a pocket in the body.")
+        col.label(text="Inlay: a part sits in a pocket.")
+        col.label(text="Cut Off: cut away whole (hair…).")
 
         layout.row().prop(s, "printer", expand=True)
         col = layout.column(align=True)
@@ -1018,9 +1166,17 @@ def register():
     bpy.types.Material.bambu_cut = BoolProperty(
         name="Cut", default=True, update=_changed,
         description="Cut this colour into its own part (untick to leave it on the body)")
+    bpy.types.Material.bambu_cut_mode = EnumProperty(
+        name="How",
+        items=[("INLAY", "Inlay", "A part Depth deep that sits in a pocket in the body, for colour "
+                                  "painted on a surface (eyes, stripes, patterns)"),
+               ("CUT_OFF", "Cut Off", "Cut away whole along the colour's edge, for parts that stick out "
+                                      "(hair, wings, a helmet); both sides get a matching closing face")],
+        default="INLAY", update=_changed)
 
 
 def unregister():
+    del bpy.types.Material.bambu_cut_mode
     del bpy.types.Material.bambu_cut
     del bpy.types.Scene.bambu_split
     for cls in reversed(classes):

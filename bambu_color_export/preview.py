@@ -93,6 +93,7 @@ def rebuild(context):
             "margin": report["margin"],
             "through": bool(bad),
             "too_curved": report["too_curved"],
+            "cut_off": info.get("cut_off", False),
         })
     _redraw()
 

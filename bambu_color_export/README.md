@@ -112,7 +112,13 @@ pocket in the body that is *Tolerance* mm larger on every side.
    largest painted area, usually colour 1 in a model painted here). The panel shows which
    colour it will be.
 5. Under **Colours to cut into parts**, tick the colours that should become parts (all are
-   ticked at first). Colours you untick stay on the body: **Keep Painted** leaves them
+   ticked at first) and choose for each how it is cut:
+   - **Inlay** (default): a part *Depth* mm thick that sits in a pocket in the body, for
+     colour painted on a surface (eyes, stripes, patterns);
+   - **Cut Off**: the colour is cut away whole along its edge, for parts that stick out
+     (hair, wings, a helmet). The hole on both sides is closed with the same face, so
+     part and body fit exactly and can be glued; no depth or tolerance is involved.
+    Colours you untick stay on the body: **Keep Painted** leaves them
    painted (e.g. print the body with the AMS and only the ticked colours as separate
    parts), **Body Colour** turns them into the body colour.
 6. Click **Preview** to see the parts before splitting: they are drawn see-through in the
