@@ -115,10 +115,15 @@ class PaintSession:
         import numpy as np
         self.obj = obj
         mesh = obj.data
-        bm = bmesh.new()
-        bm.from_mesh(mesh)
-        self.bvh = BVHTree.FromBMesh(bm)
-        bm.free()
+        if not any(m.show_viewport for m in obj.modifiers) and mesh.shape_keys is None:
+            # Straight from the object (in C, no copy): faces and positions are
+            # the mesh's own when nothing deforms or rebuilds it.
+            self.bvh = BVHTree.FromObject(obj, bpy.context.evaluated_depsgraph_get())
+        else:
+            bm = bmesh.new()
+            bm.from_mesh(mesh)
+            self.bvh = BVHTree.FromBMesh(bm)
+            bm.free()
         self.count = len(mesh.polygons)
         mat = np.empty(self.count, np.int32)
         mesh.polygons.foreach_get("material_index", mat)
