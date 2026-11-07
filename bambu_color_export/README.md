@@ -131,7 +131,15 @@ gets its own flat bottom. Print the part flat side down. With Flat Bottom off, t
 follows the surface at an even depth instead. A colour that wraps round the model too far
 for one flat bottom (more than about half a sphere) gets a warning.
 
-Neighbouring parts get the tolerance between them too: the part with the larger painted
+**With Flat Bottom off** the cut needs no boolean: the body is built straight from the
+model (its faces minus the cut colours, plus each pocket's floor and walls) and every
+part is the pocket's shape pulled in by the tolerance, its top flush with the surface.
+It is fast and safe even on dense sculpts made of overlapping pieces. Parts of
+neighbouring colours meet with twice the tolerance between them.
+
+**With Flat Bottom on** the pockets are cut with a boolean: the exact solver up to
+50,000 faces, the fast MANIFOLD solver above that (it needs a closed mesh, otherwise
+you're told to turn Flat Bottom off). Neighbouring parts get the tolerance between them too: the part with the larger painted
 area stays whole and the smaller one is trimmed where they meet (the preview shows parts
 before this trimming).
 

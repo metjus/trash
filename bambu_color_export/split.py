@@ -20,6 +20,7 @@ from . import paint
 # printer -> (tolerance mm, depth mm) filled in when a preset is picked
 PRESETS = {"RESIN": (0.05, 1.0), "FDM": (0.2, 1.5)}
 MAX_SHELL = 3.0  # cap on even-thickness scaling at very sharp corners
+KIND_BOTTOM, KIND_TOP, KIND_RIM = 0, 1, 2  # vertices of a part made by _solid
 _updating = False
 
 
@@ -184,11 +185,15 @@ def _solid(patch, depth, model=None):
     the patch's open edges. `model` (from model_normals) makes neighbouring
     parts share their wall directions."""
     bm = bmesh.new()
+    kind = bm.verts.layers.int.new("kind")  # KIND_BOTTOM / KIND_TOP / KIND_RIM
+    rim = {v for e in patch.edges if len(e.link_faces) == 1 for v in e.verts}
     top, bottom = {}, {}
     for v in patch.verts:
         normal, shell = _inward(patch, v, model)
         top[v] = bm.verts.new(v.co)
+        top[v][kind] = KIND_RIM if v in rim else KIND_TOP
         bottom[v] = bm.verts.new(v.co - normal * depth * shell)
+        bottom[v][kind] = KIND_BOTTOM
     for f in patch.faces:
         for verts in ([top[v] for v in f.verts], [bottom[v] for v in reversed(f.verts)]):
             try:
@@ -393,9 +398,25 @@ def _to_mesh(bm, name):
     return mesh
 
 
-def _boolean_solver():
+EXACT_MAX_FACES = 50_000  # above this the exact solver can need tens of GB and crash Blender
+
+
+def _boolean_solver(faces=0):
+    """EXACT for small meshes (best with overlapping shells); MANIFOLD, which is
+    fast and light, for big ones."""
     items = {i.identifier for i in bpy.types.BooleanModifier.bl_rna.properties["solver"].enum_items}
+    if "MANIFOLD" in items and faces > EXACT_MAX_FACES:
+        return "MANIFOLD"
     return "EXACT" if "EXACT" in items else next(iter(items))
+
+
+def open_edges(mesh):
+    """Edges not shared by exactly two faces (0 for a closed, printable solid)."""
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    count = sum(1 for e in bm.edges if len(e.link_faces) != 2)
+    bm.free()
+    return count
 
 
 def world_mesh(context, obj):
@@ -405,6 +426,94 @@ def world_mesh(context, obj):
     mesh.transform(obj.matrix_world)
     if obj.matrix_world.determinant() < 0:
         mesh.flip_normals()
+    return mesh
+
+
+def _shrink_part(bm, dist):
+    """Pull a part made by _solid in by `dist`: walls and bottom move inward at
+    least `dist` from every face around them, while the top stays on the model
+    surface (its rim only slides inward along the surface)."""
+    if dist <= 0:
+        return
+    kind = bm.verts.layers.int.get("kind")
+    bm.normal_update()
+    top_faces = {f for f in bm.faces if all(v[kind] != KIND_BOTTOM for v in f.verts)}
+    moves = []
+    for v in bm.verts:
+        if v[kind] == KIND_TOP:
+            continue
+        normals = [f.normal for f in v.link_faces]
+        move = -v.normal * dist
+        for _ in range(8):
+            worst = max(normals, key=move.dot)  # the face this vertex is pulled in from least
+            short = move.dot(worst) + dist
+            if short <= dist * 1e-3:
+                break
+            move -= worst * short
+        if move.length > dist * MAX_SHELL:
+            move *= dist * MAX_SHELL / move.length
+        if v[kind] == KIND_RIM:
+            up = Vector()
+            for f in v.link_faces:
+                if f in top_faces:
+                    up += f.normal
+            if up.length > 1e-12:
+                up.normalize()
+                move -= up * move.dot(up)
+        moves.append((v, move))
+    for v, move in moves:
+        v.co += move
+
+
+def _surface_body(src, cut_slots, pocket_depth, model, body_slot):
+    """The body for surface-following parts, built without a boolean: the model
+    minus the cut colours' faces, plus each pocket's floor (those faces pushed
+    `pocket_depth` inward along the model's normals) and walls round the edge of
+    the cut area, joined to the model's own vertices so it stays closed."""
+    normals, shells = model
+    bm = bmesh.new()
+    bm.from_mesh(src)
+    bm.verts.ensure_lookup_table()
+    cut = [f for f in bm.faces if f.material_index in cut_slots]
+    cut_set = set(cut)
+    floor = {}
+
+    def low(v):
+        if v not in floor:
+            i = v.index
+            floor[v] = bm.verts.new(v.co - normals[i] * pocket_depth * shells[i])
+        return floor[v]
+
+    # walls along the edge of the cut area, wound like the cut face so they
+    # join the neighbouring body face (which runs the other way)
+    rims = []
+    for f in cut:
+        for loop in f.loops:
+            linked = loop.edge.link_faces
+            if len(linked) == 1 or any(g not in cut_set for g in linked):
+                rims.append((loop.vert, loop.link_loop_next.vert))
+    floors = [[low(v) for v in f.verts] for f in cut]  # floor faces keep the cut faces' winding
+    added = []
+    for verts in floors:
+        try:
+            added.append(bm.faces.new(verts))
+        except ValueError:
+            pass
+    for a, b in rims:
+        try:
+            added.append(bm.faces.new((a, b, low(b), low(a))))
+        except ValueError:
+            pass
+    for f in added:
+        f.material_index = body_slot
+    bmesh.ops.delete(bm, geom=cut, context="FACES_ONLY")
+    bmesh.ops.delete(bm, geom=[e for e in bm.edges if not e.link_faces], context="EDGES")
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_edges], context="VERTS")
+    mesh = bpy.data.meshes.new("body")
+    for m in src.materials:
+        mesh.materials.append(m)
+    bm.to_mesh(mesh)
+    bm.free()
     return mesh
 
 
@@ -436,7 +545,10 @@ def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True, only_tic
         if flat_bottom:
             shape, report = _flat_solid(patch, depth, bvh, tolerance, eps)
         else:
-            shape = _solid(patch, depth, model)
+            # the pocket is depth + tolerance deep; the part, pulled in by the
+            # tolerance, is `depth` thick with its top flush with the surface
+            shape = _solid(patch, depth + tolerance, model)
+            _shrink_part(shape, tolerance)
             report = _surface_report(patch, bvh, depth, tolerance, eps, model)
         patch.free()
         parts.append({"index": index, "name": mat.name if mat else "Colour %d" % (index + 1),
@@ -480,7 +592,7 @@ def _subtract(context, target, cutter_bm, material=None):
     context.scene.collection.objects.link(cutter)
     mod = target.modifiers.new("Bambu cut", "BOOLEAN")
     mod.operation = "DIFFERENCE"
-    mod.solver = _boolean_solver()
+    mod.solver = _boolean_solver(len(target.data.polygons) + len(cutter_mesh.polygons))
     mod.object = cutter
     if hasattr(mod, "use_self"):
         mod.use_self = True  # pockets of neighbouring colours overlap inside the cutter
@@ -508,6 +620,29 @@ def _single_material(mesh, mat):
     mesh.update()
 
 
+def _body_colours(mesh, materials, body_index, cut_slots, keep_uncut):
+    """Colours of the body: with keep_uncut, colours that weren't cut stay
+    painted and everything else (pocket walls, leftovers of cut colours) is the
+    body colour; otherwise it's all body colour. Unused slots are dropped."""
+    if not keep_uncut:
+        _single_material(mesh, materials[body_index])
+        return
+    slots = len(mesh.materials)
+    body_slot = next((i for i, m in enumerate(mesh.materials) if m == materials[body_index]), body_index)
+    indices = [0] * len(mesh.polygons)
+    mesh.polygons.foreach_get("material_index", indices)
+    indices = [body_slot if i in cut_slots or i >= slots else i for i in indices]
+    # Keep only the colours the body still shows, body colour first.
+    used = sorted(set(indices), key=lambda i: (i != body_slot, i))
+    remap = {old: new for new, old in enumerate(used)}
+    kept = [mesh.materials[i] for i in used]
+    mesh.materials.clear()
+    for m in kept:
+        mesh.materials.append(m)
+    mesh.polygons.foreach_set("material_index", [remap[i] for i in indices])
+    mesh.update()
+
+
 def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True, keep_uncut=True):
     """Create the body and one part per other colour. Distances are in Blender units.
 
@@ -520,6 +655,15 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
         bpy.data.meshes.remove(src)
         return None, None, [], [], body_index
     eps = max(depth, tolerance) * 1e-3
+    if flat_bottom and _boolean_solver(len(src.polygons)) == "MANIFOLD":
+        # Big models are cut with the MANIFOLD solver, which refuses meshes
+        # with holes: say so instead of making a body without pockets.
+        holes = open_edges(src)
+        if holes:
+            for info in infos:
+                info["shape"].free()
+            bpy.data.meshes.remove(src)
+            return None, None, [], [("Model", "not_closed", holes)], body_index
 
     coll = bpy.data.collections.new("%s parts" % obj.name)
     context.scene.collection.children.link(coll)
@@ -527,65 +671,66 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
     coll.objects.link(body)
 
     parts, warnings = [], []
-    # All pockets go into one cutter: one boolean with every pocket keeps the
-    # body closed where colours meet (separate booleans can leave tiny holes).
-    # Bigger parts come first and stay whole; each smaller part is trimmed by
-    # the pockets made so far, so neighbouring parts never overlap and keep
-    # the tolerance between them too.
-    pockets = bmesh.new()
-    for info in sorted(infos, key=lambda i: -i["area"]):
-        name, mat, shape, report = info["name"], info["material"], info["shape"], info["report"]
-        if report["too_curved"]:
-            warnings.append((name, "curved", None))
-        if report["worst"]:
-            warnings.append((name, "thin", report["worst"]))
+    for info in infos:
+        if info["report"]["too_curved"]:
+            warnings.append((info["name"], "curved", None))
+        if info["report"]["worst"]:
+            warnings.append((info["name"], "thin", info["report"]["worst"]))
+    cut_slots = {info["index"] for info in infos}
 
-        # The pocket: the part grown by the tolerance (a hair more when the
-        # tolerance is 0, so the cut never lies exactly on the body surface).
-        pocket = shape.copy()
-        _grow(pocket, max(tolerance, eps))
-
-        piece = _to_mesh(shape, "%s %s" % (obj.name, name))
-        part = bpy.data.objects.new(piece.name, piece)
-        coll.objects.link(part)
-        if pockets.faces:
-            piece = _subtract(context, part, pockets.copy())
-            _clean(piece, eps * 0.1)
-        _single_material(piece, mat)
-        if piece.polygons:
+    if not flat_bottom:
+        # No boolean: the parts already sit `tolerance` inside their pockets and
+        # neighbouring parts meet along shared walls, each pulled back by the
+        # tolerance. Fast and safe on dense, self-overlapping sculpts.
+        for info in infos:
+            piece = _to_mesh(info["shape"], "%s %s" % (obj.name, info["name"]))
+            _single_material(piece, info["material"])
+            part = bpy.data.objects.new(piece.name, piece)
+            coll.objects.link(part)
             parts.append(part)
-        else:
-            warnings.append((name, "covered", None))
-            bpy.data.objects.remove(part)
-            bpy.data.meshes.remove(piece)
-
-        tmp = _to_mesh(pocket, "_bambu_pocket")
-        pockets.from_mesh(tmp)  # appends to the shared cutter
-        bpy.data.meshes.remove(tmp)
-
-    cut = _subtract(context, body, pockets, materials[body_index])
-    _clean(cut, eps * 0.1)
-    cut.name = body.name
-    if keep_uncut:
-        # Colours that weren't cut stay painted; anything left of a cut colour
-        # and the pocket walls are the body colour.
-        cut_slots = {info["index"] for info in infos}
-        slots = len(cut.materials)
-        body_slot = next((i for i, m in enumerate(cut.materials) if m == materials[body_index]), body_index)
-        indices = [0] * len(cut.polygons)
-        cut.polygons.foreach_get("material_index", indices)
-        indices = [body_slot if i in cut_slots or i >= slots else i for i in indices]
-        # Keep only the colours the body still shows, body colour first.
-        used = sorted(set(indices), key=lambda i: (i != body_slot, i))
-        remap = {old: new for new, old in enumerate(used)}
-        kept = [cut.materials[i] for i in used]
-        cut.materials.clear()
-        for m in kept:
-            cut.materials.append(m)
-        cut.polygons.foreach_set("material_index", [remap[i] for i in indices])
-        cut.update()
+        cut = _surface_body(src, cut_slots, depth + tolerance, model_normals(src), body_index)
+        old = body.data
+        body.data = cut
+        bpy.data.meshes.remove(old)
     else:
-        _single_material(cut, materials[body_index])
+        # All pockets go into one cutter: one boolean with every pocket keeps the
+        # body closed where colours meet (separate booleans can leave tiny holes).
+        # Bigger parts come first and stay whole; each smaller part is trimmed by
+        # the pockets made so far, so neighbouring parts never overlap and keep
+        # the tolerance between them too.
+        pockets = bmesh.new()
+        for info in sorted(infos, key=lambda i: -i["area"]):
+            name, mat, shape = info["name"], info["material"], info["shape"]
+            # The pocket: the part grown by the tolerance (a hair more when the
+            # tolerance is 0, so the cut never lies exactly on the body surface).
+            pocket = shape.copy()
+            _grow(pocket, max(tolerance, eps))
+
+            piece = _to_mesh(shape, "%s %s" % (obj.name, name))
+            part = bpy.data.objects.new(piece.name, piece)
+            coll.objects.link(part)
+            if pockets.faces:
+                piece = _subtract(context, part, pockets.copy())
+                _clean(piece, eps * 0.1)
+            _single_material(piece, mat)
+            if piece.polygons:
+                parts.append(part)
+            else:
+                warnings.append((name, "covered", None))
+                bpy.data.objects.remove(part)
+                bpy.data.meshes.remove(piece)
+
+            tmp = _to_mesh(pocket, "_bambu_pocket")
+            pockets.from_mesh(tmp)  # appends to the shared cutter
+            bpy.data.meshes.remove(tmp)
+
+        cut = _subtract(context, body, pockets, materials[body_index])
+        _clean(cut, eps * 0.1)
+        holes = open_edges(cut)
+        if holes:
+            warnings.append(("Body", "open", holes))
+    cut.name = body.name
+    _body_colours(cut, materials, body_index, cut_slots, keep_uncut)
 
     obj.hide_set(True)
     for o in context.selected_objects:
@@ -629,6 +774,12 @@ class BAMBU_OT_split_colors(bpy.types.Operator):
             paint.record_error("split colours")
             self.report({"ERROR"}, "Could not split the colours. Use 'Copy Error' in the Bambu Paint panel")
             return {"CANCELLED"}
+        if not parts and any(kind == "not_closed" for _n, kind, _v in warnings):
+            holes = next(v for _n, kind, v in warnings if kind == "not_closed")
+            self.report({"ERROR"}, "This model has %d open edges, so a Flat Bottom cut can't be made on a "
+                        "model this big. Turn off Flat Bottom (it needs no boolean and handles any mesh)."
+                        % holes)
+            return {"CANCELLED"}
         if not parts:
             if body_index is None:
                 self.report({"WARNING"}, "Only one colour is used on the model, nothing to split")
@@ -641,6 +792,9 @@ class BAMBU_OT_split_colors(bpy.types.Operator):
                 self.report({"WARNING"}, "%s: the model is only %.2f mm thick where the part needs "
                             "%.2f mm (with tolerance), it may go through. Use a smaller depth."
                             % (name, have * s.mm_per_unit, need * s.mm_per_unit))
+            elif kind == "open":
+                self.report({"WARNING"}, "The body has %d open edges (the model overlaps itself, which the "
+                            "flat-bottom cut can't fully handle). Turn off Flat Bottom for a clean cut." % values)
             elif kind == "covered":
                 self.report({"WARNING"}, "%s is completely covered by neighbouring colours' parts, "
                             "no part was made for it." % name)

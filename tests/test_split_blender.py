@@ -224,6 +224,49 @@ class SplitTest(unittest.TestCase):
             objects.append(o)
         self.assertAlmostEqual(self.overlap_volume(*objects), 0.0, places=3)
 
+    def test_big_open_model_flat_bottom_refuses_without_changes(self):
+        # Big models use the MANIFOLD solver, which can't cut meshes with holes.
+        obj = self.sphere(2)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 6 else 0
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        bm.faces.ensure_lookup_table()
+        bmesh.ops.delete(bm, geom=[bm.faces[0]], context="FACES_ONLY")  # punch a hole
+        bm.to_mesh(obj.data)
+        bm.free()
+        limit = self.split.EXACT_MAX_FACES
+        self.split.EXACT_MAX_FACES = 0  # treat this small sphere as big
+        try:
+            with self.assertRaises(RuntimeError):  # reported as an error
+                bpy.ops.bambu.split_colors()
+        finally:
+            self.split.EXACT_MAX_FACES = limit
+        self.assertNotIn("Sphere parts", bpy.data.collections)
+        self.assertFalse(obj.hide_get())
+        self.s.flat_bottom = False  # the boolean-free cut handles it
+        self.assertEqual(bpy.ops.bambu.split_colors(), {"FINISHED"})
+
+    def test_surface_cut_is_closed_and_exact(self):
+        obj = self.sphere(3)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 6 else (2 if p.center.x > 6 else 0)
+        self.s.tolerance, self.s.depth, self.s.flat_bottom = 0.2, 1.5, False
+        bpy.ops.bambu.split_colors()
+        objects = {o.name: o for o in bpy.data.collections["Sphere parts"].objects}
+        for o in objects.values():
+            self.assertEqual(open_edges(o.data)[0], 0, o.name)
+        body = objects["Sphere body"]
+        for name in ("Sphere Colour", "Sphere Colour.001"):
+            self.assertAlmostEqual(self.overlap_volume(objects[name], body), 0.0, places=3)
+        bm = bmesh.new()
+        bm.from_mesh(body.data)
+        bvh = BVHTree.FromBMesh(bm)
+        part = objects["Sphere Colour"]
+        gaps = [bvh.find_nearest(v.co)[3] for v in part.data.vertices if v.co.length < 9.99]
+        bm.free()
+        self.assertAlmostEqual(min(gaps), 0.2, delta=0.01)
+
     def test_export_parts_writes_closed_stl_per_part(self):
         obj = self.sphere(3)
         for p in obj.data.polygons:
