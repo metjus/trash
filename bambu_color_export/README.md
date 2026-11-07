@@ -79,7 +79,7 @@ on the model's centre line.
 
 ## Split colours into parts (for single-colour printers, e.g. resin)
 Print each colour separately and assemble: the **Bambu Split Parts** panel (Bambu tab)
-turns a painted model into a **body** (colour 1) plus one **part** per other colour.
+turns a painted model into a **body** plus one **part** per other colour.
 Each part's top is the painted surface; it goes *Depth* mm into the model and sits in a
 pocket in the body that is *Tolerance* mm larger on every side.
 
@@ -88,7 +88,10 @@ pocket in the body that is *Tolerance* mm larger on every side.
    own values: editing either switches to **Custom** and your values stay.
 3. Check **1 Blender unit (mm)** so the model size shown matches the printed size; the
    tolerance and depth are real millimetres at that size.
-4. Click **Split Colours into Parts**. The result goes into a new collection
+4. **Body Colour** picks the colour that becomes the body (0 = Auto: colour 1, or, when
+   the whole model is painted and colour 1 isn't used, the colour with the largest painted
+   area). The panel shows which colour it will be.
+5. Click **Split Colours into Parts**. The result goes into a new collection
    "<model> parts"; the original is only hidden.
 
 If the model is thinner than depth + tolerance under a colour, you get a warning naming

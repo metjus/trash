@@ -8,7 +8,7 @@ the part by `tolerance` on every side, so the printed part fits in it.
 
 import bmesh
 import bpy
-from bpy.props import EnumProperty, FloatProperty
+from bpy.props import EnumProperty, FloatProperty, IntProperty
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
@@ -65,6 +65,11 @@ class BambuSplitSettings(bpy.types.PropertyGroup):
         name="Depth", default=1.0, min=0.1, max=100.0, precision=2, step=10,
         description="How deep each colour part goes into the model, in mm",
         update=_value_update)
+    body_colour: IntProperty(
+        name="Body Colour", default=0, min=0, max=64,
+        description="Colour (number as in the Bambu Paint list) that becomes the body; the other "
+                    "colours become parts. 0 = Auto: colour 1, or the colour with the largest "
+                    "painted area when colour 1 isn't used")
     mm_per_unit: FloatProperty(
         name="1 Blender unit =", default=1.0, min=0.0001, max=10000.0, precision=3,
         description="Millimetres per Blender unit in the printed model. Check the model size below")
@@ -73,6 +78,30 @@ class BambuSplitSettings(bpy.types.PropertyGroup):
 # ---------------------------------------------------------------------------
 # Geometry
 # ---------------------------------------------------------------------------
+
+def colour_areas(mesh):
+    """Painted area per material slot."""
+    areas = [0.0] * max(len(mesh.materials), 1)
+    for p in mesh.polygons:
+        if p.material_index < len(areas):
+            areas[p.material_index] += p.area
+    return areas
+
+
+def pick_body(areas, choice):
+    """Slot index of the body colour, or None if nothing is painted.
+
+    choice is 1-based (0 = Auto): a chosen colour that isn't used falls back
+    to Auto, which is colour 1 if used, else the colour with the largest area.
+    """
+    if not any(areas):
+        return None
+    if 0 < choice <= len(areas) and areas[choice - 1] > 0:
+        return choice - 1
+    if areas[0] > 0:
+        return 0
+    return max(range(len(areas)), key=lambda i: areas[i])
+
 
 def _patch(mesh, mat_index):
     """BMesh with only the faces of one colour (world space mesh)."""
@@ -145,21 +174,22 @@ def _boolean_solver():
     return "EXACT" if "EXACT" in items else next(iter(items))
 
 
-def split_colors(context, obj, tolerance, depth):
-    """Create the body and one part per colour. Distances are in Blender units.
+def split_colors(context, obj, tolerance, depth, body_choice=0):
+    """Create the body and one part per other colour. Distances are in Blender units.
 
-    Returns (collection, body, parts, warnings).
+    Returns (collection, body, parts, warnings, body_index).
     """
     depsgraph = context.evaluated_depsgraph_get()
     src = bpy.data.meshes.new_from_object(obj.evaluated_get(depsgraph))
     src.transform(obj.matrix_world)
     if obj.matrix_world.determinant() < 0:
         src.flip_normals()
-    materials = list(src.materials)
-    counts = [0] * len(materials)
-    for p in src.polygons:
-        if p.material_index < len(counts):
-            counts[p.material_index] += 1
+    materials = list(src.materials) or [None]
+    areas = colour_areas(src)
+    body_index = pick_body(areas, body_choice)
+    if body_index is None or sum(1 for a in areas if a > 0) < 2:
+        bpy.data.meshes.remove(src)
+        return None, None, [], [], body_index
 
     bvh = BVHTree.FromPolygons([v.co.copy() for v in src.vertices],
                                [tuple(p.vertices) for p in src.polygons])
@@ -174,8 +204,8 @@ def split_colors(context, obj, tolerance, depth):
     # All pockets go into one cutter: one boolean with every pocket keeps the
     # body closed where colours meet (separate booleans can leave tiny holes).
     pockets = bmesh.new()
-    for index in range(1, len(materials)):
-        if counts[index] == 0:
+    for index in range(len(materials)):
+        if index == body_index or areas[index] == 0:
             continue
         mat = materials[index]
         name = mat.name if mat else "Colour %d" % (index + 1)
@@ -205,7 +235,7 @@ def split_colors(context, obj, tolerance, depth):
         bpy.data.objects.remove(body)
         bpy.data.meshes.remove(src)
         bpy.data.collections.remove(coll)
-        return None, None, [], []
+        return None, None, [], [], body_index
 
     cutter = bpy.data.objects.new("_bambu_pockets", _to_mesh(pockets, "_bambu_pockets"))
     coll.objects.link(cutter)
@@ -225,11 +255,11 @@ def split_colors(context, obj, tolerance, depth):
     bpy.data.objects.remove(cutter)
     bpy.data.meshes.remove(cutter_mesh)
 
-    # The body is printed in the base colour only.
+    # The body is printed in the body colour only.
     cut.name = body.name
     cut.materials.clear()
-    if materials and materials[0]:
-        cut.materials.append(materials[0])
+    if materials[body_index]:
+        cut.materials.append(materials[body_index])
     cut.polygons.foreach_set("material_index", [0] * len(cut.polygons))
     cut.update()
 
@@ -239,7 +269,7 @@ def split_colors(context, obj, tolerance, depth):
     for o in [body] + parts:
         o.select_set(True)
     context.view_layer.objects.active = body
-    return coll, body, parts, warnings
+    return coll, body, parts, warnings, body_index
 
 
 # ---------------------------------------------------------------------------
@@ -267,20 +297,24 @@ class BAMBU_OT_split_colors(bpy.types.Operator):
             bpy.ops.object.mode_set(mode="OBJECT")
         tolerance, depth = s.tolerance / s.mm_per_unit, s.depth / s.mm_per_unit
         try:
-            coll, body, parts, warnings = split_colors(context, obj, tolerance, depth)
+            coll, body, parts, warnings, body_index = split_colors(
+                context, obj, tolerance, depth, s.body_colour)
         except Exception:
             paint.record_error("split colours")
             self.report({"ERROR"}, "Could not split the colours. Use 'Copy Error' in the Bambu Paint panel")
             return {"CANCELLED"}
         if not parts:
-            self.report({"WARNING"}, "Only the base colour is used, nothing to split")
+            self.report({"WARNING"}, "Only one colour is used on the model, nothing to split")
             return {"FINISHED"}
         for name, thin in warnings:
             self.report({"WARNING"}, "%s: the model is only %.2f mm thick in places, the part "
                         "(depth + tolerance %.2f mm) may go through. Use a smaller depth."
                         % (name, thin * s.mm_per_unit, s.depth + s.tolerance))
-        self.report({"INFO"}, "Created '%s': body + %d part(s), tolerance %.3f mm, depth %.2f mm"
-                    % (coll.name, len(parts), s.tolerance, s.depth))
+        if s.body_colour and body_index != s.body_colour - 1:
+            self.report({"WARNING"}, "Colour %d isn't used on the model, the body is colour %d"
+                        % (s.body_colour, body_index + 1))
+        self.report({"INFO"}, "Created '%s': body (colour %d) + %d part(s), tolerance %.3f mm, depth %.2f mm"
+                    % (coll.name, body_index + 1, len(parts), s.tolerance, s.depth))
         return {"FINISHED"}
 
 
@@ -304,7 +338,7 @@ class VIEW3D_PT_bambu_split(bpy.types.Panel):
         obj = context.active_object
         col = layout.column(align=True)
         col.label(text="Each colour becomes a part that")
-        col.label(text="fits into a pocket in colour 1.")
+        col.label(text="fits into a pocket in the body.")
 
         layout.row().prop(s, "printer", expand=True)
         col = layout.column(align=True)
@@ -312,6 +346,20 @@ class VIEW3D_PT_bambu_split(bpy.types.Panel):
         col.prop(s, "depth", text="Depth (mm)")
         layout.prop(s, "mm_per_unit", text="1 Blender unit (mm)")
 
+        layout.prop(s, "body_colour", text="Body Colour (0 = Auto)")
+        if _can_split(obj):
+            areas = colour_areas(obj.data)
+            index = pick_body(areas, s.body_colour)
+            if index is None or sum(1 for a in areas if a > 0) < 2:
+                layout.label(text="Only one colour used, nothing to split", icon="INFO")
+            else:
+                mat = obj.material_slots[index].material
+                why = ("largest area" if index != 0 and s.body_colour != index + 1 else
+                       "chosen" if s.body_colour == index + 1 else "colour 1")
+                if s.body_colour and s.body_colour != index + 1:
+                    why = "colour %d not used, %s" % (s.body_colour, why)
+                layout.label(text="Body: %d %s (%s)" % (index + 1, mat.name if mat else "", why),
+                             icon="MESH_UVSPHERE")
         if obj is not None and obj.type == "MESH":
             size = Vector(obj.dimensions) * s.mm_per_unit
             layout.label(text="Model: %.1f × %.1f × %.1f mm" % tuple(size), icon="OBJECT_DATA")

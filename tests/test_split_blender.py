@@ -90,6 +90,50 @@ class SplitTest(unittest.TestCase):
             self.assertGreater(faces, 0, o.name)
             self.assertEqual(bad, 0, o.name)
 
+    def paint_all(self, obj):
+        # No face left in colour 1: colour 3 has the larger area.
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 3 else 2
+
+    def test_fully_painted_uses_largest_colour_as_body(self):
+        obj = self.sphere(3)
+        self.paint_all(obj)
+        self.s.printer = "FDM"
+        self.assertEqual(self.split.pick_body(self.split.colour_areas(obj.data), 0), 2)
+        bpy.ops.bambu.split_colors()
+        objects = {o.name: o for o in bpy.data.collections["Sphere parts"].objects}
+        self.assertEqual(sorted(objects), ["Sphere Colour", "Sphere body"])
+        body = objects["Sphere body"]
+        self.assertEqual([m.name for m in body.data.materials], ["Colour.001"])
+        bad, faces = open_edges(body.data)
+        self.assertEqual(bad, 0)
+        self.assertGreater(faces, 0)
+
+    def test_chosen_body_colour(self):
+        obj = self.sphere(3)
+        self.paint_all(obj)
+        self.s.body_colour = 2
+        bpy.ops.bambu.split_colors()
+        objects = {o.name: o for o in bpy.data.collections["Sphere parts"].objects}
+        self.assertEqual(sorted(objects), ["Sphere Colour.001", "Sphere body"])
+        self.assertEqual([m.name for m in objects["Sphere body"].data.materials], ["Colour"])
+
+    def test_pick_body_rules(self):
+        pick = self.split.pick_body
+        self.assertEqual(pick([5.0, 1.0, 9.0], 0), 0)    # colour 1 used -> colour 1
+        self.assertEqual(pick([0.0, 1.0, 9.0], 0), 2)    # else the largest area
+        self.assertEqual(pick([5.0, 1.0, 9.0], 2), 1)    # chosen colour
+        self.assertEqual(pick([5.0, 0.0, 9.0], 2), 0)    # chosen but unused -> auto
+        self.assertIsNone(pick([0.0, 0.0], 0))
+
+    def test_single_colour_creates_nothing(self):
+        obj = self.sphere(3)
+        for p in obj.data.polygons:
+            p.material_index = 2
+        bpy.ops.bambu.split_colors()
+        self.assertFalse(obj.hide_get())
+        self.assertNotIn("Sphere parts", bpy.data.collections)
+
     def test_thin_model_warns(self):
         bpy.ops.mesh.primitive_cube_add(size=10)
         obj = bpy.context.object
