@@ -79,6 +79,12 @@ add-on and Blender versions) to the clipboard, ready to paste into a bug report.
 painting, **Stop Painting** sits at the top of the panel. The add-on version is shown at
 the bottom of the Bambu Paint panel.
 
+Dense sculpts: painting starts in about a second even on a million faces, and while you
+drag, the painted faces are drawn straight on top of the model; the model itself is
+updated once when you let go (they may look a little flatter until then). Fill and
+Smooth prepare their data the first time they are used (about a second on a million
+faces).
+
 Notes: painting colours whole faces, so edges follow the mesh. Subdivide (or remesh) low-poly
 models for finer detail. Symmetry mirrors across the object's origin, so keep the origin
 on the model's centre line.

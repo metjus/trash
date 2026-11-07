@@ -10,6 +10,7 @@ import math
 import traceback
 
 import blf
+import bmesh
 import bpy
 import gpu
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, PointerProperty, StringProperty
@@ -17,7 +18,6 @@ from bpy_extras import view3d_utils
 from gpu_extras.batch import batch_for_shader
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
-from mathutils.kdtree import KDTree
 
 # Events passed on to Blender while painting, so the view can still be navigated.
 NAV_EVENTS = {
@@ -64,6 +64,7 @@ VERSION = _read_version()
 
 _running = None  # the active BAMBU_OT_paint operator, if any
 _draw_handle = None  # its viewport draw callback
+_overlay_handle = None  # draws a stroke's faces until the mesh is updated
 ERROR_TEXT = "Bambu Paint Error"
 _last_error = None  # kept in memory too: text blocks can't be created while drawing
 
@@ -84,47 +85,123 @@ def symmetry_signs(sym_x, sym_y, sym_z):
     return [Vector(signs) for signs in itertools.product(*axes)]
 
 
+def loop_faces(mesh):
+    """numpy array: the face each loop (face corner) belongs to."""
+    import numpy as np
+    count = len(mesh.polygons)
+    starts = np.empty(count, np.int32)
+    totals = np.empty(count, np.int32)
+    mesh.polygons.foreach_get("loop_start", starts)
+    mesh.polygons.foreach_get("loop_total", totals)
+    if count and starts[0] == 0 and np.array_equal(starts[1:], np.cumsum(totals)[:-1]):
+        return np.repeat(np.arange(count, dtype=np.int32), totals)  # the usual, contiguous layout
+    faces = np.empty(len(mesh.loops), np.int32)
+    for f, (st, tot) in enumerate(zip(starts.tolist(), totals.tolist())):
+        faces[st:st + tot] = f
+    return faces
+
+
 class PaintSession:
-    """Paints material indices onto one mesh's faces, in object local space."""
+    """Paints material indices onto one mesh's faces, in object local space.
+
+    Built for dense sculpts: start-up only builds a BVH tree (in C); what Fill
+    and Smooth need is worked out with numpy the first time they're used.
+    Changes go to the mesh at once but are only pushed to the viewport by
+    flush(); until then they are listed in `changes` so the operator can draw
+    them itself, which keeps strokes smooth on millions of faces.
+    """
 
     def __init__(self, obj):
+        import numpy as np
         self.obj = obj
         mesh = obj.data
-        polys = mesh.polygons
-        self.bvh = BVHTree.FromPolygons([v.co.copy() for v in mesh.vertices],
-                                        [tuple(p.vertices) for p in polys])
-        self.kd = KDTree(len(polys))
-        for p in polys:
-            self.kd.insert(p.center, p.index)
-        self.kd.balance()
-        self.normals = [p.normal.copy() for p in polys]
-
-        edge_faces = {}
-        for p in polys:
-            for key in p.edge_keys:
-                edge_faces.setdefault(key, []).append(p.index)
-        # neighbors[face] = [(other_face, edge_key), ...]
-        self.neighbors = [[] for _ in polys]
-        for key, faces in edge_faces.items():
-            for a in faces:
-                self.neighbors[a].extend((b, key) for b in faces if b != a)
-        self.marked_sharp = {e.key for e in mesh.edges if getattr(e, "use_edge_sharp", False)}
-
-        # Faces sharing at least one vertex, and face areas, for edge smoothing.
-        vert_faces = [[] for _ in mesh.vertices]
-        for p in polys:
-            for v in p.vertices:
-                vert_faces[v].append(p.index)
-        self.vneighbors = []
-        for p in polys:
-            near = {f for v in p.vertices for f in vert_faces[v]}
-            near.discard(p.index)
-            self.vneighbors.append(tuple(near))
-        self.areas = [p.area for p in polys]
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+        self.bvh = BVHTree.FromBMesh(bm)
+        bm.free()
+        self.count = len(mesh.polygons)
+        mat = np.empty(self.count, np.int32)
+        mesh.polygons.foreach_get("material_index", mat)
+        self.mat = mat.tolist()  # material index per face, kept in step with the mesh
+        self._normals = self._areas = self._edges = self._verts = None
 
         self.undo_stack = []
         self.stroke = None
         self.dirty = False
+        self.changes = []  # (face, colour) not yet pushed to the viewport
+
+    # -- data worked out when first needed ------------------------------------
+
+    def normals(self):
+        if self._normals is None:
+            import numpy as np
+            n = np.empty(self.count * 3)
+            self.obj.data.polygons.foreach_get("normal", n)
+            self._normals = n.reshape(-1, 3).tolist()
+        return self._normals
+
+    def areas(self):
+        if self._areas is None:
+            import numpy as np
+            a = np.empty(self.count)
+            self.obj.data.polygons.foreach_get("area", a)
+            self._areas = a.tolist()
+        return self._areas
+
+    def edge_graph(self):
+        """Faces across each edge: (start, neighbour faces, edges, sharp edges),
+        the neighbours of face f being entries start[f]:start[f + 1]."""
+        if self._edges is None:
+            import numpy as np
+            mesh = self.obj.data
+            loop_edge = np.empty(len(mesh.loops), np.int32)
+            mesh.loops.foreach_get("edge_index", loop_edge)
+            order = np.argsort(loop_edge, kind="stable")
+            edges, faces = loop_edge[order], loop_faces(mesh)[order]
+            shared = edges[1:] == edges[:-1]
+            fa, fb, edge = faces[:-1][shared], faces[1:][shared], edges[1:][shared]
+            src = np.concatenate([fa, fb])
+            dst = np.concatenate([fb, fa])
+            via = np.concatenate([edge, edge])
+            order = np.argsort(src, kind="stable")
+            start = np.zeros(self.count + 1, np.int64)
+            start[1:] = np.cumsum(np.bincount(src, minlength=self.count))
+            sharp = set()
+            try:
+                flags = np.zeros(len(mesh.edges), bool)
+                mesh.edges.foreach_get("use_edge_sharp", flags)
+                sharp = set(np.nonzero(flags)[0].tolist())
+            except (AttributeError, TypeError, RuntimeError):
+                pass
+            self._edges = (start.tolist(), dst[order].tolist(), via[order].tolist(), sharp)
+        return self._edges
+
+    def vertex_graph(self):
+        """(face corner starts, corner vertices, vertex starts, faces per vertex)."""
+        if self._verts is None:
+            import numpy as np
+            mesh = self.obj.data
+            loop_vert = np.empty(len(mesh.loops), np.int32)
+            mesh.loops.foreach_get("vertex_index", loop_vert)
+            fstart = np.empty(self.count, np.int64)
+            mesh.polygons.foreach_get("loop_start", fstart)
+            totals = np.empty(self.count, np.int64)
+            mesh.polygons.foreach_get("loop_total", totals)
+            corner_start = np.append(fstart, fstart[-1] + totals[-1]) if self.count else np.zeros(1, np.int64)
+            order = np.argsort(loop_vert, kind="stable")
+            vstart = np.zeros(len(mesh.vertices) + 1, np.int64)
+            vstart[1:] = np.cumsum(np.bincount(loop_vert, minlength=len(mesh.vertices)))
+            self._verts = (corner_start.tolist(), loop_vert.tolist(), vstart.tolist(),
+                           loop_faces(mesh)[order].tolist())
+        return self._verts
+
+    def refresh(self):
+        """Re-read the faces' colours after the mesh was changed elsewhere."""
+        import numpy as np
+        mat = np.empty(self.count, np.int32)
+        self.obj.data.polygons.foreach_get("material_index", mat)
+        self.mat = mat.tolist()
+        self.changes = []
 
     # -- strokes / undo ----------------------------------------------------
 
@@ -142,15 +219,17 @@ class PaintSession:
         polys = self.obj.data.polygons
         for face, old in self.undo_stack.pop().items():
             polys[face].material_index = old
+            self.mat[face] = old
         self.dirty = True
         self.flush()
         return True
 
     def flush(self):
-        """Push pending face changes to the viewport."""
+        """Push the face changes to the viewport (a full mesh update)."""
         if self.dirty:
             self.obj.data.update()
             self.dirty = False
+        self.changes = []
 
     def remove_colour(self, index):
         """Keep undo history valid after material slot `index` was removed:
@@ -160,15 +239,19 @@ class PaintSession:
         for stroke in self.undo_stack + ([self.stroke] if self.stroke else []):
             for face, old in stroke.items():
                 stroke[face] = remap(old)
+        self.refresh()
 
     def _apply(self, faces, mat_index):
         polys = self.obj.data.polygons
+        mat = self.mat
         for face in faces:
-            old = polys[face].material_index
+            old = mat[face]
             if old != mat_index:
                 if self.stroke is not None:
                     self.stroke.setdefault(face, old)
                 polys[face].material_index = mat_index
+                mat[face] = mat_index
+                self.changes.append((face, mat_index))
                 self.dirty = True
 
     # -- tools -------------------------------------------------------------
@@ -188,15 +271,15 @@ class PaintSession:
                 yield loc, nrm, idx
 
     def brush(self, point, normal, face, radius, mat_index, signs):
-        """Paint faces whose centre is within radius and that face the brush."""
+        """Paint the faces within radius that face the brush."""
         self._apply(self._brush_faces(point, normal, face, radius, signs), mat_index)
 
     def _brush_faces(self, point, normal, face, radius, signs):
         faces = set()
         for p, n, f in self._mirrored(point, normal, face, signs):
             faces.add(f)
-            for _co, idx, _dist in self.kd.find_range(p, radius):
-                if self.normals[idx].dot(n) > 0.0:
+            for _co, nrm, idx, _dist in self.bvh.find_nearest_range(p, radius):
+                if nrm.dot(n) > 0.0:
                     faces.add(idx)
         return faces
 
@@ -208,15 +291,25 @@ class PaintSession:
         brush change, so the rest of the model is left alone.
         """
         region = self._brush_faces(point, normal, face, radius, signs)
-        polys = self.obj.data.polygons
+        corner_start, corner_vert, vstart, vfaces = self.vertex_graph()
+        areas = self.areas()
+        mat = self.mat
+        near = {}
+        for f in region:
+            touching = set()
+            for k in range(corner_start[f], corner_start[f + 1]):
+                v = corner_vert[k]
+                touching.update(vfaces[vstart[v]:vstart[v + 1]])
+            touching.discard(f)
+            near[f] = touching
         for _ in range(iterations):
             changes = {}
             for f in region:
-                current = polys[f].material_index
-                votes = {current: self.areas[f]}
-                for g in self.vneighbors[f]:
-                    c = polys[g].material_index
-                    votes[c] = votes.get(c, 0.0) + self.areas[g]
+                current = mat[f]
+                votes = {current: areas[f]}
+                for g in near[f]:
+                    c = mat[g]
+                    votes[c] = votes.get(c, 0.0) + areas[g]
                 # ties keep the current colour
                 best = max(votes, key=lambda c: (votes[c], c == current))
                 if best != current:
@@ -239,22 +332,25 @@ class PaintSession:
         self._apply(faces, mat_index)
 
     def _region(self, seed, same_colour=True, max_angle=None):
-        polys = self.obj.data.polygons
-        target = polys[seed].material_index
+        start, neighbour, via, sharp = self.edge_graph()
+        mat = self.mat
+        target = mat[seed]
         min_dot = math.cos(max_angle) if max_angle is not None else None
-        normals = self.normals
+        normals = self.normals() if min_dot is not None else None
         seen = {seed}
         stack = [seed]
         while stack:
             face = stack.pop()
-            for nb, edge in self.neighbors[face]:
+            for k in range(start[face], start[face + 1]):
+                nb = neighbour[k]
                 if nb in seen:
                     continue
-                if same_colour and polys[nb].material_index != target:
+                if same_colour and mat[nb] != target:
                     continue
-                if min_dot is not None and (normals[face].dot(normals[nb]) < min_dot
-                                            or edge in self.marked_sharp):
-                    continue
+                if min_dot is not None:
+                    a, b = normals[face], normals[nb]
+                    if a[0] * b[0] + a[1] * b[1] + a[2] * b[2] < min_dot or via[k] in sharp:
+                        continue
                 seen.add(nb)
                 stack.append(nb)
         return seen
@@ -316,7 +412,7 @@ def _sync_handler(scene, depsgraph):
 def stop_painting():
     """End painting mode and remove every handler. Safe to call at any time,
     also when the session's data has become invalid."""
-    global _running, _draw_handle
+    global _running, _draw_handle, _overlay_handle
     op, _running = _running, None
     if op is not None:
         try:
@@ -324,12 +420,13 @@ def stop_painting():
             op.session.flush()
         except Exception:
             pass
-    if _draw_handle is not None:
-        try:
-            bpy.types.SpaceView3D.draw_handler_remove(_draw_handle, "WINDOW")
-        except Exception:
-            pass
-        _draw_handle = None
+    for handle in (_draw_handle, _overlay_handle):
+        if handle is not None:
+            try:
+                bpy.types.SpaceView3D.draw_handler_remove(handle, "WINDOW")
+            except Exception:
+                pass
+    _draw_handle = _overlay_handle = None
     if _sync_handler in bpy.app.handlers.depsgraph_update_post:
         bpy.app.handlers.depsgraph_update_post.remove(_sync_handler)
     try:
@@ -648,7 +745,7 @@ class BAMBU_OT_paint(bpy.types.Operator):
             return {"CANCELLED"}
 
     def _invoke(self, context):
-        global _running, _draw_handle
+        global _running, _draw_handle, _overlay_handle
         obj = context.active_object
         if obj.mode != "OBJECT":
             bpy.ops.object.mode_set(mode="OBJECT")
@@ -674,6 +771,8 @@ class BAMBU_OT_paint(bpy.types.Operator):
             shading.color_type = "MATERIAL"
 
         _draw_handle = bpy.types.SpaceView3D.draw_handler_add(_draw_brush, (self,), "WINDOW", "POST_PIXEL")
+        _overlay_handle = bpy.types.SpaceView3D.draw_handler_add(_draw_stroke, (self,), "WINDOW", "POST_VIEW")
+        self._stroke_batches, self._stroke_drawn = [], 0
         bpy.app.handlers.depsgraph_update_post.append(_sync_handler)
         _running = self
         context.window_manager.modal_handler_add(self)
@@ -737,7 +836,10 @@ class BAMBU_OT_paint(bpy.types.Operator):
             for i in range(1, n + 1):
                 self._dab((self.last[0] + dx * i / n, self.last[1] + dy * i / n), erase)
         self.last = coord
-        self.session.flush()
+        if self.settings.tool == "FILL":
+            self.session.flush()  # a single click: show it right away
+        # Brush and Smooth strokes are drawn by _draw_stroke; the mesh itself is
+        # updated once, when the stroke ends (a full update is slow on dense meshes).
 
     def _update_status(self, context):
         s = self.settings
@@ -798,6 +900,7 @@ class BAMBU_OT_paint(bpy.types.Operator):
             elif event.value == "RELEASE":
                 self.painting = False
                 self.session.end_stroke()
+                self.session.flush()
             return {"RUNNING_MODAL"}
 
         if not press:
@@ -858,6 +961,55 @@ def _draw_controls(op):
     blf.position(font, x, y + 4 * scale, 0)
     blf.draw(font, "Bambu Paint: " + state)
     blf.disable(font, blf.SHADOW)
+
+
+def _draw_stroke(op):
+    """Draw the faces painted since the mesh was last updated, in their new
+    colour, slightly above the surface. New faces go into a new small batch,
+    so each redraw only does the work for what changed."""
+    if _running is not op:
+        return
+    try:
+        session = op.session
+        changes = session.changes
+        if len(changes) < op._stroke_drawn:  # flushed: the mesh shows it now
+            op._stroke_batches, op._stroke_drawn = [], 0
+        if not changes:
+            return
+        shader = gpu.shader.from_builtin("SMOOTH_COLOR")
+        if len(changes) > op._stroke_drawn:
+            from . import material_linear_color
+            obj = session.obj
+            mesh = obj.data
+            verts, polys = mesh.vertices, mesh.polygons
+            lift = max(obj.dimensions) / max(max(abs(c) for c in obj.scale), 1e-9) * 2e-4
+            slots = obj.material_slots
+            rgba = {}
+            positions, colours = [], []
+            for face, colour in changes[op._stroke_drawn:]:
+                if colour not in rgba:
+                    mat = slots[colour].material if colour < len(slots) else None
+                    rgba[colour] = (*(material_linear_color(mat) if mat else (0.8, 0.8, 0.8)), 1.0)
+                poly = polys[face]
+                up = poly.normal * lift
+                cos = [verts[i].co + up for i in poly.vertices]
+                for k in range(1, len(cos) - 1):
+                    positions.extend((cos[0], cos[k], cos[k + 1]))
+                colours.extend([rgba[colour]] * (3 * (len(cos) - 2)))
+            op._stroke_batches.append(batch_for_shader(shader, "TRIS", {"pos": positions, "color": colours}))
+            op._stroke_drawn = len(changes)
+        gpu.matrix.push()
+        gpu.matrix.multiply_matrix(session.obj.matrix_world)
+        gpu.state.depth_test_set("LESS_EQUAL")
+        gpu.state.face_culling_set("NONE")
+        shader.bind()
+        for batch in op._stroke_batches:
+            batch.draw(shader)
+        gpu.state.depth_test_set("NONE")
+        gpu.matrix.pop()
+    except Exception:
+        record_error("drawing the stroke")
+        stop_painting()
 
 
 def _draw_brush(op):
