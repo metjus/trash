@@ -91,7 +91,12 @@ pocket in the body that is *Tolerance* mm larger on every side.
 4. **Body Colour** picks the colour that becomes the body (0 = Auto: colour 1, or, when
    the whole model is painted and colour 1 isn't used, the colour with the largest painted
    area). The panel shows which colour it will be.
-5. Click **Split Colours into Parts**. The result goes into a new collection
+5. Click **Preview** to see the parts before splitting: they are drawn see-through in the
+   model, tinted **red** where a part would go through. For each colour the panel lists how
+   deep the part goes (from *Depth* at its thinnest to its deepest spot) and how much
+   model is left beyond it, or by how much it goes through. The preview follows every
+   change to the settings, the painting and the selection, and adds nothing to the file.
+6. Click **Split Colours into Parts** (this also ends the preview). The result goes into a new collection
    "<model> parts"; the original is only hidden.
 
 **Flat Bottom** (on by default) gives every part a flat bottom for good bed adhesion:

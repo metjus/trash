@@ -26,6 +26,7 @@ _updating = False
 
 def _preset_update(self, context):
     global _updating
+    _changed(self, context)
     values = PRESETS.get(self.printer)
     if values is None or _updating:
         return
@@ -36,9 +37,15 @@ def _preset_update(self, context):
         _updating = False
 
 
+def _changed(self, context):
+    from . import preview
+    preview.schedule()
+
+
 def _value_update(self, context):
     # Editing a value by hand switches the preset to Custom.
     global _updating
+    _changed(self, context)
     values = PRESETS.get(self.printer)
     if _updating or values is None:
         return
@@ -69,15 +76,18 @@ class BambuSplitSettings(bpy.types.PropertyGroup):
         name="Flat Bottom", default=True,
         description="Give each part a flat bottom (good bed adhesion, the part slides straight into "
                     "its pocket). Depth is then the part's thinnest spot. Off: the bottom follows "
-                    "the surface at an even depth")
+                    "the surface at an even depth",
+        update=_changed)
     body_colour: IntProperty(
         name="Body Colour", default=0, min=0, max=64,
         description="Colour (number as in the Bambu Paint list) that becomes the body; the other "
                     "colours become parts. 0 = Auto: colour 1, or the colour with the largest "
-                    "painted area when colour 1 isn't used")
+                    "painted area when colour 1 isn't used",
+        update=_changed)
     mm_per_unit: FloatProperty(
         name="1 Blender unit =", default=1.0, min=0.0001, max=10000.0, precision=3,
-        description="Millimetres per Blender unit in the printed model. Check the model size below")
+        description="Millimetres per Blender unit in the printed model. Check the model size below",
+        update=_changed)
 
 
 # ---------------------------------------------------------------------------
@@ -166,17 +176,40 @@ def _islands(patch):
     return islands
 
 
+def _report():
+    """What a part looks like against the model, for warnings and the preview.
+
+    worst: (model thickness, part depth + tolerance) at the worst spot or None;
+    bad: positions of painted vertices where the part would go through;
+    deepest: the part's greatest depth; margin: the smallest spare model
+    thickness beyond the part and tolerance (negative = goes through).
+    """
+    return {"too_curved": False, "worst": None, "bad": set(), "deepest": 0.0, "margin": None}
+
+
+def _check(report, co, need, have):
+    report["deepest"] = max(report["deepest"], need)
+    if have is None:
+        return
+    spare = have - need
+    if report["margin"] is None or spare < report["margin"]:
+        report["margin"] = spare
+    if spare < 0:
+        report["bad"].add(co.to_tuple(5))
+        worst = report["worst"]
+        if worst is None or need - have > worst[1] - worst[0]:
+            report["worst"] = (have, need)
+
+
 def _flat_solid(patch, depth, bvh=None, tolerance=0.0, eps=0.0):
     """Closed solid per island: the patch as the top, straight walls along the
     island's average normal and a flat bottom `depth` below its lowest point.
 
-    Returns (bmesh, too_curved, thickness_problem) where thickness_problem is
-    (model thickness, part depth + tolerance) at the worst spot, or None.
+    Returns (bmesh, report), see _report().
     """
     patch.faces.index_update()
     bm = bmesh.new()
-    too_curved = False
-    worst = None
+    report = _report()
     for island in _islands(patch):
         normal = Vector()
         for f in island:
@@ -185,7 +218,7 @@ def _flat_solid(patch, depth, bvh=None, tolerance=0.0, eps=0.0):
             continue
         normal.normalize()
         if any(f.normal.dot(normal) < 0.0 for f in island):
-            too_curved = True  # the patch wraps round: a flat bottom can't sit under all of it
+            report["too_curved"] = True  # it wraps round: a flat bottom can't sit under all of it
         verts = {v for f in island for v in f.verts}
         height = {v: v.co.dot(normal) for v in verts}
         floor = min(height.values()) - depth
@@ -222,14 +255,11 @@ def _flat_solid(patch, depth, bvh=None, tolerance=0.0, eps=0.0):
 
         if bvh is not None:
             for v in verts:
-                need = height[v] - floor + tolerance
                 loc, _n, _i, dist = bvh.ray_cast(v.co - normal * eps, -normal)
-                if loc is not None and dist + eps < need:
-                    if worst is None or need - (dist + eps) > worst[1] - worst[0]:
-                        worst = (dist + eps, need)
+                _check(report, v.co, height[v] - floor + tolerance, None if loc is None else dist + eps)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     bm.normal_update()
-    return bm, too_curved, worst
+    return bm, report
 
 
 def _grow(bm, dist):
@@ -238,6 +268,16 @@ def _grow(bm, dist):
     moves = [(v, v.normal * dist * min(v.calc_shell_factor(), MAX_SHELL)) for v in bm.verts]
     for v, move in moves:
         v.co += move
+
+
+def _surface_report(patch, bvh, depth, tolerance, eps):
+    """_report() for the surface-following part: depth + tolerance everywhere,
+    measured inward along each vertex normal."""
+    report = _report()
+    for v in patch.verts:
+        loc, _n, _i, dist = bvh.ray_cast(v.co - v.normal * eps, -v.normal)
+        _check(report, v.co, depth + tolerance, None if loc is None else dist + eps)
+    return report
 
 
 def thinnest_spot(patch, bvh, eps):
@@ -265,25 +305,59 @@ def _boolean_solver():
     return "EXACT" if "EXACT" in items else next(iter(items))
 
 
+def world_mesh(context, obj):
+    """The object's evaluated mesh (modifiers applied) in world space, as a new mesh."""
+    depsgraph = context.evaluated_depsgraph_get()
+    mesh = bpy.data.meshes.new_from_object(obj.evaluated_get(depsgraph))
+    mesh.transform(obj.matrix_world)
+    if obj.matrix_world.determinant() < 0:
+        mesh.flip_normals()
+    return mesh
+
+
+def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True):
+    """Work out the body colour and every part, without changing anything.
+
+    Returns (body_index, parts) where each part is a dict with index, name,
+    material, shape (a closed BMesh the caller must free) and report.
+    body_index is None when fewer than two colours are used.
+    """
+    materials = list(src.materials) or [None]
+    areas = colour_areas(src)
+    body_index = pick_body(areas, body_choice)
+    if body_index is None or sum(1 for a in areas if a > 0) < 2:
+        return None, []
+    bvh = BVHTree.FromPolygons([v.co.copy() for v in src.vertices],
+                               [tuple(p.vertices) for p in src.polygons])
+    eps = max(depth, tolerance) * 1e-3
+    parts = []
+    for index in range(len(materials)):
+        if index == body_index or areas[index] == 0:
+            continue
+        mat = materials[index]
+        patch = _patch(src, index)
+        if flat_bottom:
+            shape, report = _flat_solid(patch, depth, bvh, tolerance, eps)
+        else:
+            shape = _solid(patch, depth)
+            report = _surface_report(patch, bvh, depth, tolerance, eps)
+        patch.free()
+        parts.append({"index": index, "name": mat.name if mat else "Colour %d" % (index + 1),
+                      "material": mat, "shape": shape, "report": report})
+    return body_index, parts
+
+
 def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True):
     """Create the body and one part per other colour. Distances are in Blender units.
 
     Returns (collection, body, parts, warnings, body_index).
     """
-    depsgraph = context.evaluated_depsgraph_get()
-    src = bpy.data.meshes.new_from_object(obj.evaluated_get(depsgraph))
-    src.transform(obj.matrix_world)
-    if obj.matrix_world.determinant() < 0:
-        src.flip_normals()
+    src = world_mesh(context, obj)
     materials = list(src.materials) or [None]
-    areas = colour_areas(src)
-    body_index = pick_body(areas, body_choice)
-    if body_index is None or sum(1 for a in areas if a > 0) < 2:
+    body_index, infos = build_parts(src, tolerance, depth, body_choice, flat_bottom)
+    if not infos:
         bpy.data.meshes.remove(src)
         return None, None, [], [], body_index
-
-    bvh = BVHTree.FromPolygons([v.co.copy() for v in src.vertices],
-                               [tuple(p.vertices) for p in src.polygons])
     eps = max(depth, tolerance) * 1e-3
 
     coll = bpy.data.collections.new("%s parts" % obj.name)
@@ -295,22 +369,12 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
     # All pockets go into one cutter: one boolean with every pocket keeps the
     # body closed where colours meet (separate booleans can leave tiny holes).
     pockets = bmesh.new()
-    for index in range(len(materials)):
-        if index == body_index or areas[index] == 0:
-            continue
-        mat = materials[index]
-        name = mat.name if mat else "Colour %d" % (index + 1)
-        patch = _patch(src, index)
-        if flat_bottom:
-            shape, too_curved, problem = _flat_solid(patch, depth, bvh, tolerance, eps)
-            if too_curved:
-                warnings.append((name, "curved", None))
-        else:
-            shape = _solid(patch, depth)
-            thin = thinnest_spot(patch, bvh, eps)
-            problem = (thin, depth + tolerance) if thin is not None and thin < depth + tolerance else None
-        if problem:
-            warnings.append((name, "thin", problem))
+    for info in infos:
+        name, mat, shape, report = info["name"], info["material"], info["shape"], info["report"]
+        if report["too_curved"]:
+            warnings.append((name, "curved", None))
+        if report["worst"]:
+            warnings.append((name, "thin", report["worst"]))
 
         pocket = shape.copy()
         piece = _to_mesh(shape, "%s %s" % (obj.name, name))
@@ -323,17 +387,9 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
         # The pocket: the part grown by the tolerance (a hair more when the
         # tolerance is 0, so the cut never lies exactly on the body surface).
         _grow(pocket, max(tolerance, eps))
-        patch.free()
         tmp = _to_mesh(pocket, "_bambu_pocket")
         pockets.from_mesh(tmp)  # appends to the shared cutter
         bpy.data.meshes.remove(tmp)
-
-    if not parts:
-        pockets.free()
-        bpy.data.objects.remove(body)
-        bpy.data.meshes.remove(src)
-        bpy.data.collections.remove(coll)
-        return None, None, [], [], body_index
 
     cutter = bpy.data.objects.new("_bambu_pockets", _to_mesh(pockets, "_bambu_pockets"))
     coll.objects.link(cutter)
@@ -389,6 +445,8 @@ class BAMBU_OT_split_colors(bpy.types.Operator):
         return paint._running is None and _can_split(context.active_object)
 
     def execute(self, context):
+        from . import preview
+        preview.stop()
         s = context.scene.bambu_split
         obj = context.active_object
         if obj.mode != "OBJECT":
@@ -419,6 +477,55 @@ class BAMBU_OT_split_colors(bpy.types.Operator):
         self.report({"INFO"}, "Created '%s': body (colour %d) + %d part(s), tolerance %.3f mm, depth %.2f mm"
                     % (coll.name, body_index + 1, len(parts), s.tolerance, s.depth))
         return {"FINISHED"}
+
+
+class BAMBU_OT_split_preview(bpy.types.Operator):
+    """Show the parts the split would make, see-through in the model (red: goes through)"""
+    bl_idname = "bambu.split_preview"
+    bl_label = "Preview"
+
+    def execute(self, context):
+        from . import preview
+        try:
+            if preview.is_on():
+                preview.stop()
+            else:
+                preview.start(context)
+        except Exception:
+            paint.record_error("split preview")
+            preview.stop()
+            self.report({"ERROR"}, "Could not show the preview. Use 'Copy Error' in the Bambu Paint panel")
+            return {"CANCELLED"}
+        return {"FINISHED"}
+
+
+def _draw_preview(layout, s):
+    from . import preview
+    row = layout.row(align=True)
+    on = preview.is_on()
+    row.operator(BAMBU_OT_split_preview.bl_idname, text="Hide Preview" if on else "Preview",
+                 icon="HIDE_OFF" if on else "HIDE_ON", depress=on)
+    if not on:
+        return
+    state = preview.summary()
+    box = layout.box().column(align=True)
+    if state["message"]:
+        box.label(text=state["message"], icon="INFO")
+        return
+    mm, tol = state["mm"], state["tolerance"]
+    for part in state["parts"]:
+        deepest = part["deepest"] * mm - tol
+        box.label(text="%d %s: %.2f–%.2f mm deep" % (part["number"], part["name"], s.depth, max(deepest, s.depth)),
+                  icon="ERROR" if part["through"] or part["too_curved"] else "CHECKMARK")
+        if part["through"]:
+            note = "goes through by %.2f mm (red)" % (-part["margin"] * mm)
+        elif part["margin"] is not None:
+            note = "fits, %.2f mm of model left" % (part["margin"] * mm)
+        else:
+            note = "fits"
+        if part["too_curved"]:
+            note += ", wraps round too far"
+        box.label(text="    " + note)
 
 
 class VIEW3D_PT_bambu_split(bpy.types.Panel):
@@ -469,6 +576,7 @@ class VIEW3D_PT_bambu_split(bpy.types.Panel):
             layout.label(text="Model: %.1f × %.1f × %.1f mm" % tuple(size), icon="OBJECT_DATA")
         if not _can_split(obj):
             layout.label(text="Select a painted mesh (2+ colours)", icon="INFO")
+        _draw_preview(layout, s)
         row = layout.row()
         row.scale_y = 1.3
         row.operator(BAMBU_OT_split_colors.bl_idname, icon="MOD_BOOLEAN")
@@ -477,6 +585,7 @@ class VIEW3D_PT_bambu_split(bpy.types.Panel):
 classes = (
     BambuSplitSettings,
     BAMBU_OT_split_colors,
+    BAMBU_OT_split_preview,
     VIEW3D_PT_bambu_split,
 )
 

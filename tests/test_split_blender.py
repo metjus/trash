@@ -142,6 +142,40 @@ class SplitTest(unittest.TestCase):
         self.assertEqual(open_edges(part.data)[0], 0)
         self.assertNotIn((0.0, 0.0, -1.0), self.bottoms(part))
 
+    def test_preview_shows_parts_and_red_where_too_deep(self):
+        from bambu_color_export import preview
+        obj = self.sphere(2)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 6 else 0
+        self.s.tolerance, self.s.depth = 0.2, 1.5
+        bpy.ops.bambu.split_preview()
+        try:
+            self.assertTrue(preview.is_on())
+            part = preview.summary()["parts"][0]
+            self.assertFalse(part["through"])
+            self.assertNotIn(preview.RED, part["colours"])
+            self.assertEqual(len(bpy.data.meshes), 1)  # nothing added to the file
+
+            self.s.depth = 15.0  # into a 20 mm sphere from a 4 mm high cap: goes through
+            preview._rebuild_later()
+            part = preview.summary()["parts"][0]
+            self.assertTrue(part["through"])
+            self.assertLess(part["margin"], 0)
+            self.assertIn(preview.RED, part["colours"])
+        finally:
+            preview.stop()
+        self.assertFalse(preview.is_on())
+        self.assertNotIn(preview._on_depsgraph, bpy.app.handlers.depsgraph_update_post)
+
+    def test_split_turns_preview_off(self):
+        from bambu_color_export import preview
+        obj = self.sphere(2)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 6 else 0
+        bpy.ops.bambu.split_preview()
+        bpy.ops.bambu.split_colors()
+        self.assertFalse(preview.is_on())
+
     def paint_all(self, obj):
         # No face left in colour 1: colour 3 has the larger area.
         for p in obj.data.polygons:
