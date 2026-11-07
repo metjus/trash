@@ -206,6 +206,24 @@ class SplitTest(unittest.TestCase):
         bm.free()
         self.assertGreater(gap, 0.195)
 
+    def test_surface_parts_meet_without_overlap(self):
+        # Neighbouring parts use the model's normals, so their walls meet exactly
+        # and even the untrimmed parts (what the preview draws) don't overlap.
+        obj = self.sphere(3)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 6 else (2 if p.center.x > 6 else 0)
+        src = self.split.world_mesh(bpy.context, obj)
+        _body, parts = self.split.build_parts(src, 0.2, 1.5, 0, flat_bottom=False)
+        objects = []
+        for info in parts:
+            mesh = bpy.data.meshes.new(info["name"])
+            info["shape"].to_mesh(mesh)
+            info["shape"].free()
+            o = bpy.data.objects.new(info["name"], mesh)
+            bpy.context.scene.collection.objects.link(o)
+            objects.append(o)
+        self.assertAlmostEqual(self.overlap_volume(*objects), 0.0, places=3)
+
     def test_export_parts_writes_closed_stl_per_part(self):
         obj = self.sphere(3)
         for p in obj.data.polygons:

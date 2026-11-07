@@ -143,25 +143,52 @@ def pick_body(areas, choice):
 
 
 def _patch(mesh, mat_index):
-    """BMesh with only the faces of one colour (world space mesh)."""
+    """BMesh with only the faces of one colour (world space mesh). Each vertex
+    remembers its index in `mesh` in the "orig" layer."""
     bm = bmesh.new()
     bm.from_mesh(mesh)
+    orig = bm.verts.layers.int.new("orig")
+    for v in bm.verts:
+        v[orig] = v.index
     bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.material_index != mat_index], context="FACES")
     bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
     bm.normal_update()
     return bm
 
 
-def _solid(patch, depth):
+def model_normals(mesh):
+    """Vertex normals and even-thickness factors of the whole model. Parts use
+    these rather than their own, so two colours that meet push their shared
+    edge in the same direction and their walls meet without overlapping."""
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    bm.normal_update()
+    normals = [v.normal.copy() for v in bm.verts]
+    shells = [min(v.calc_shell_factor(), MAX_SHELL) for v in bm.verts]
+    bm.free()
+    return normals, shells
+
+
+def _inward(patch, v, model):
+    """Inward direction (scaled for even thickness) of a patch vertex."""
+    if model is not None:
+        normals, shells = model
+        i = v[patch.verts.layers.int["orig"]]
+        return normals[i], shells[i]
+    return v.normal, min(v.calc_shell_factor(), MAX_SHELL)
+
+
+def _solid(patch, depth, model=None):
     """Closed solid: the patch as the top, a copy moved `depth` inward (against
     the surface normals, with even thickness) as the bottom, and walls along
-    the patch's open edges."""
+    the patch's open edges. `model` (from model_normals) makes neighbouring
+    parts share their wall directions."""
     bm = bmesh.new()
     top, bottom = {}, {}
     for v in patch.verts:
-        shell = min(v.calc_shell_factor(), MAX_SHELL)
+        normal, shell = _inward(patch, v, model)
         top[v] = bm.verts.new(v.co)
-        bottom[v] = bm.verts.new(v.co - v.normal * depth * shell)
+        bottom[v] = bm.verts.new(v.co - normal * depth * shell)
     for f in patch.faces:
         for verts in ([top[v] for v in f.verts], [bottom[v] for v in reversed(f.verts)]):
             try:
@@ -335,12 +362,13 @@ def _grow(bm, dist):
         v.co += move
 
 
-def _surface_report(patch, bvh, depth, tolerance, eps):
+def _surface_report(patch, bvh, depth, tolerance, eps, model=None):
     """_report() for the surface-following part: depth + tolerance everywhere,
     measured inward along each vertex normal."""
     report = _report()
     for v in patch.verts:
-        have = thickness(bvh, v.co - v.normal * eps, -v.normal, eps)
+        normal, _shell = _inward(patch, v, model)
+        have = thickness(bvh, v.co - normal * eps, -normal, eps)
         _check(report, v.co, depth + tolerance, None if have is None else have + eps)
     return report
 
@@ -396,6 +424,7 @@ def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True, only_tic
     bvh = BVHTree.FromPolygons([v.co.copy() for v in src.vertices],
                                [tuple(p.vertices) for p in src.polygons])
     eps = max(depth, tolerance) * 1e-3
+    model = None if flat_bottom else model_normals(src)
     parts = []
     for index in range(len(materials)):
         if index == body_index or areas[index] == 0:
@@ -407,8 +436,8 @@ def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True, only_tic
         if flat_bottom:
             shape, report = _flat_solid(patch, depth, bvh, tolerance, eps)
         else:
-            shape = _solid(patch, depth)
-            report = _surface_report(patch, bvh, depth, tolerance, eps)
+            shape = _solid(patch, depth, model)
+            report = _surface_report(patch, bvh, depth, tolerance, eps, model)
         patch.free()
         parts.append({"index": index, "name": mat.name if mat else "Colour %d" % (index + 1),
                       "material": mat, "shape": shape, "report": report, "area": areas[index]})
