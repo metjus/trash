@@ -1,4 +1,5 @@
 import os
+import struct
 import sys
 import tempfile
 import unittest
@@ -84,6 +85,24 @@ class ObjTest(unittest.TestCase):
         self.assertIn("usemtl F1_Body\nf 1 3 4", obj_text)
         self.assertIn("usemtl F2_Eyes\nf 1 2 3", obj_text)
         self.assertIn("newmtl F2_Eyes\nKa 0 0 0\nKd 0 0 0", mtl_text)
+
+
+class StlTest(unittest.TestCase):
+    def test_binary_stl(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "part.stl")
+            writers.write_stl(path, VERTS, TRIS, "part")
+            with open(path, "rb") as f:
+                data = f.read()
+        self.assertEqual(struct.unpack("<I", data[80:84])[0], 2)
+        self.assertEqual(len(data), 84 + 2 * 50)
+        normal_and_first = struct.unpack("<6f", data[84:108])
+        self.assertEqual(normal_and_first, (0.0, 0.0, 1.0, 0.0, 0.0, 0.0))
+
+    def test_safe_filename(self):
+        self.assertEqual(writers.safe_filename("Cat body"), "Cat body")
+        self.assertEqual(writers.safe_filename('Ear: left/right?'), "Ear_ left_right_")
+        self.assertEqual(writers.safe_filename(" .. "), "part")
 
 
 if __name__ == "__main__":

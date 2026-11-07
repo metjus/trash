@@ -8,6 +8,7 @@ Geometry is passed as one merged triangle mesh:
 """
 
 import os
+import struct
 import zipfile
 from dataclasses import dataclass, field
 from xml.sax.saxutils import escape, quoteattr
@@ -142,3 +143,25 @@ def write_obj(path, vertices, triangles, tri_color, palette, object_name="Model"
             a, b, c = triangles[t]
             f.write("f %d %d %d\n" % (a + 1, b + 1, c + 1))
     return mtl_path
+
+
+def write_stl(path, vertices, triangles, name="Model"):
+    """Write a binary STL (millimetres, one solid)."""
+    header = ("Blender Bambu Color Export: %s" % name).encode("ascii", "replace")[:80].ljust(80, b" ")
+    with open(path, "wb") as f:
+        f.write(header)
+        f.write(struct.pack("<I", len(triangles)))
+        for a, b, c in triangles:
+            p0, p1, p2 = vertices[a], vertices[b], vertices[c]
+            u = (p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2])
+            v = (p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2])
+            n = (u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0])
+            length = (n[0] ** 2 + n[1] ** 2 + n[2] ** 2) ** 0.5 or 1.0
+            f.write(struct.pack("<12fH", n[0] / length, n[1] / length, n[2] / length,
+                                *p0, *p1, *p2, 0))
+
+
+def safe_filename(name):
+    """A file name made from an object name, valid on Windows, macOS and Linux."""
+    cleaned = "".join("_" if ch in '<>:"/\\|?*' or ord(ch) < 32 else ch for ch in name).strip(" .")
+    return cleaned or "part"

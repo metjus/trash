@@ -107,10 +107,17 @@ gets its own flat bottom. Print the part flat side down. With Flat Bottom off, t
 follows the surface at an even depth instead. A colour that wraps round the model too far
 for one flat bottom (more than about half a sphere) gets a warning.
 
+Neighbouring parts get the tolerance between them too: the part with the larger painted
+area stays whole and the smaller one is trimmed where they meet (the preview shows parts
+before this trimming).
+
+**Export Parts** saves every selected object to its own file in a folder you pick, named
+after the object: **STL** for any slicer (e.g. resin slicers) or **3MF** with the part's
+colour for Bambu Studio. Sizes are in millimetres using *1 Blender unit (mm)*. Right after
+a split the body and all parts are selected, so one click exports them all.
+
 If the model is thinner than the part (+ tolerance) under a colour, you get a warning naming
-the colour: the part could go through, so use a smaller depth. Parts of two neighbouring
-colours touch each other without a gap. Export each part on its own (e.g. File → Export →
-STL with *Selection Only*).
+the colour: the part could go through, so use a smaller depth.
 
 ## How it works
 All selected objects are merged (modifiers applied) into one mesh. Each triangle gets:

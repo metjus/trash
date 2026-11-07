@@ -8,7 +8,10 @@ the part by `tolerance` on every side, so the printed part fits in it.
 
 import bmesh
 import bpy
-from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty
+import collections
+import os
+
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, StringProperty
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
@@ -263,9 +266,27 @@ def _flat_solid(patch, depth, bvh=None, tolerance=0.0, eps=0.0):
 
 
 def _grow(bm, dist):
-    """Offset a closed solid outward by `dist` (even thickness)."""
+    """Offset a closed solid outward by at least `dist` from every face.
+
+    Each vertex starts along its normal and is pushed further out until it
+    lies `dist` beyond the plane of every face around it, so the gap holds
+    at corners too (an average normal alone falls short where a straight
+    wall meets a curved top).
+    """
     bm.normal_update()
-    moves = [(v, v.normal * dist * min(v.calc_shell_factor(), MAX_SHELL)) for v in bm.verts]
+    moves = []
+    for v in bm.verts:
+        normals = [f.normal for f in v.link_faces]
+        move = v.normal * dist
+        for _ in range(8):
+            worst = min(normals, key=move.dot)
+            short = dist - move.dot(worst)
+            if short <= dist * 1e-3:
+                break
+            move += worst * short
+        if move.length > dist * MAX_SHELL:
+            move *= dist * MAX_SHELL / move.length
+        moves.append((v, move))
     for v, move in moves:
         v.co += move
 
@@ -343,8 +364,66 @@ def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True):
             report = _surface_report(patch, bvh, depth, tolerance, eps)
         patch.free()
         parts.append({"index": index, "name": mat.name if mat else "Colour %d" % (index + 1),
-                      "material": mat, "shape": shape, "report": report})
+                      "material": mat, "shape": shape, "report": report, "area": areas[index]})
     return body_index, parts
+
+
+def _clean(mesh, dist):
+    """Tidy a boolean result for slicers, which join vertices by position: merge
+    coincident vertices, dissolve zero-area faces, triangulate and drop
+    triangle pairs that sit on top of each other (an inner double layer)."""
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=dist)
+    bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=dist)
+    # Triangles, as a slicer sees them: a folded n-gon can hide a doubled triangle.
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    bm.verts.index_update()
+    same = collections.defaultdict(list)
+    for f in bm.faces:
+        same[frozenset(v.index for v in f.verts)].append(f)
+    doubled = [f for faces in same.values() if len(faces) > 1 for f in faces]
+    if doubled:
+        bmesh.ops.delete(bm, geom=doubled, context="FACES_ONLY")
+    bmesh.ops.delete(bm, geom=[e for e in bm.edges if not e.link_faces], context="EDGES")
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_edges], context="VERTS")
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    bm.to_mesh(mesh)
+    bm.free()
+    mesh.update()
+
+
+def _subtract(context, target, cutter_bm):
+    """Cut the closed solid `cutter_bm` (freed here) out of `target` with an exact
+    boolean that also handles overlaps inside the cutter."""
+    cutter = bpy.data.objects.new("_bambu_cutter", _to_mesh(cutter_bm, "_bambu_cutter"))
+    context.scene.collection.objects.link(cutter)
+    mod = target.modifiers.new("Bambu cut", "BOOLEAN")
+    mod.operation = "DIFFERENCE"
+    mod.solver = _boolean_solver()
+    mod.object = cutter
+    if hasattr(mod, "use_self"):
+        mod.use_self = True  # pockets of neighbouring colours overlap inside the cutter
+    context.view_layer.update()
+    depsgraph = context.evaluated_depsgraph_get()
+    cut = bpy.data.meshes.new_from_object(target.evaluated_get(depsgraph))
+    target.modifiers.remove(mod)
+    old = target.data
+    target.data = cut
+    if old.users == 0:
+        bpy.data.meshes.remove(old)
+    cutter_mesh = cutter.data
+    bpy.data.objects.remove(cutter)
+    bpy.data.meshes.remove(cutter_mesh)
+    return cut
+
+
+def _single_material(mesh, mat):
+    mesh.materials.clear()
+    if mat:
+        mesh.materials.append(mat)
+    mesh.polygons.foreach_set("material_index", [0] * len(mesh.polygons))
+    mesh.update()
 
 
 def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True):
@@ -368,54 +447,46 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
     parts, warnings = [], []
     # All pockets go into one cutter: one boolean with every pocket keeps the
     # body closed where colours meet (separate booleans can leave tiny holes).
+    # Bigger parts come first and stay whole; each smaller part is trimmed by
+    # the pockets made so far, so neighbouring parts never overlap and keep
+    # the tolerance between them too.
     pockets = bmesh.new()
-    for info in infos:
+    for info in sorted(infos, key=lambda i: -i["area"]):
         name, mat, shape, report = info["name"], info["material"], info["shape"], info["report"]
         if report["too_curved"]:
             warnings.append((name, "curved", None))
         if report["worst"]:
             warnings.append((name, "thin", report["worst"]))
 
-        pocket = shape.copy()
-        piece = _to_mesh(shape, "%s %s" % (obj.name, name))
-        if mat:
-            piece.materials.append(mat)
-        part = bpy.data.objects.new(piece.name, piece)
-        coll.objects.link(part)
-        parts.append(part)
-
         # The pocket: the part grown by the tolerance (a hair more when the
         # tolerance is 0, so the cut never lies exactly on the body surface).
+        pocket = shape.copy()
         _grow(pocket, max(tolerance, eps))
+
+        piece = _to_mesh(shape, "%s %s" % (obj.name, name))
+        part = bpy.data.objects.new(piece.name, piece)
+        coll.objects.link(part)
+        if pockets.faces:
+            piece = _subtract(context, part, pockets.copy())
+            _clean(piece, eps * 0.1)
+        _single_material(piece, mat)
+        if piece.polygons:
+            parts.append(part)
+        else:
+            warnings.append((name, "covered", None))
+            bpy.data.objects.remove(part)
+            bpy.data.meshes.remove(piece)
+
         tmp = _to_mesh(pocket, "_bambu_pocket")
         pockets.from_mesh(tmp)  # appends to the shared cutter
         bpy.data.meshes.remove(tmp)
 
-    cutter = bpy.data.objects.new("_bambu_pockets", _to_mesh(pockets, "_bambu_pockets"))
-    coll.objects.link(cutter)
-    mod = body.modifiers.new("Bambu pockets", "BOOLEAN")
-    mod.operation = "DIFFERENCE"
-    mod.solver = _boolean_solver()
-    mod.object = cutter
-    if hasattr(mod, "use_self"):
-        mod.use_self = True  # pockets of neighbouring colours overlap inside the cutter
-    context.view_layer.update()
-    depsgraph = context.evaluated_depsgraph_get()
-    cut = bpy.data.meshes.new_from_object(body.evaluated_get(depsgraph))
-    body.modifiers.clear()
-    body.data = cut
-    bpy.data.meshes.remove(src)
-    cutter_mesh = cutter.data
-    bpy.data.objects.remove(cutter)
-    bpy.data.meshes.remove(cutter_mesh)
+    cut = _subtract(context, body, pockets)
+    _clean(cut, eps * 0.1)
 
     # The body is printed in the body colour only.
     cut.name = body.name
-    cut.materials.clear()
-    if materials[body_index]:
-        cut.materials.append(materials[body_index])
-    cut.polygons.foreach_set("material_index", [0] * len(cut.polygons))
-    cut.update()
+    _single_material(cut, materials[body_index])
 
     obj.hide_set(True)
     for o in context.selected_objects:
@@ -468,6 +539,9 @@ class BAMBU_OT_split_colors(bpy.types.Operator):
                 self.report({"WARNING"}, "%s: the model is only %.2f mm thick where the part needs "
                             "%.2f mm (with tolerance), it may go through. Use a smaller depth."
                             % (name, have * s.mm_per_unit, need * s.mm_per_unit))
+            elif kind == "covered":
+                self.report({"WARNING"}, "%s is completely covered by neighbouring colours' parts, "
+                            "no part was made for it." % name)
             else:
                 self.report({"WARNING"}, "%s wraps round the model too far for a flat bottom: "
                             "check the part, or split that colour into smaller areas." % name)
@@ -528,6 +602,69 @@ def _draw_preview(layout, s):
         box.label(text="    " + note)
 
 
+def _export_targets(context):
+    return [o for o in context.selected_objects if o.type == "MESH" and o.visible_get()]
+
+
+class BAMBU_OT_export_parts(bpy.types.Operator):
+    """Save every selected part to its own file in a folder (after a split, the body and
+    all parts are selected), in millimetres"""
+    bl_idname = "bambu.export_parts"
+    bl_label = "Export Parts"
+
+    directory: StringProperty(subtype="DIR_PATH")
+    filter_folder: BoolProperty(default=True, options={"HIDDEN"})
+    file_format: EnumProperty(
+        name="Format",
+        items=[("STL", "STL", "One STL per part (any slicer, e.g. resin slicers)"),
+               ("3MF", "3MF", "One 3MF per part, with the part's colour (Bambu Studio)")],
+        default="STL")
+
+    @classmethod
+    def poll(cls, context):
+        return bool(_export_targets(context))
+
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {"RUNNING_MODAL"}
+
+    def draw(self, context):
+        self.layout.prop(self, "file_format", expand=True)
+
+    def execute(self, context):
+        from . import collect_geometry, material_srgb, writers
+        from .writers import PaletteEntry
+        folder = bpy.path.abspath(self.directory)
+        if not folder or not os.path.isdir(folder):
+            self.report({"ERROR"}, "Choose a folder to save the parts in")
+            return {"CANCELLED"}
+        scale = context.scene.bambu_split.mm_per_unit
+        ext = "." + self.file_format.lower()
+        written = []
+        try:
+            for obj in _export_targets(context):
+                vertices, triangles, _mats = collect_geometry(context, [obj], scale)
+                if not triangles:
+                    continue
+                path = os.path.join(folder, writers.safe_filename(obj.name) + ext)
+                if self.file_format == "STL":
+                    writers.write_stl(path, vertices, triangles, obj.name)
+                else:
+                    mat = obj.active_material
+                    entry = PaletteEntry(mat.name if mat else obj.name, material_srgb(mat), 1)
+                    writers.write_3mf(path, vertices, triangles, [0] * len(triangles), [entry], obj.name)
+                written.append(os.path.basename(path))
+        except Exception:
+            paint.record_error("export parts")
+            self.report({"ERROR"}, "Export failed. Use 'Copy Error' in the Bambu Paint panel")
+            return {"CANCELLED"}
+        if not written:
+            self.report({"WARNING"}, "The selected objects have no faces")
+            return {"CANCELLED"}
+        self.report({"INFO"}, "Saved %d file(s) to %s: %s" % (len(written), folder, ", ".join(written)))
+        return {"FINISHED"}
+
+
 class VIEW3D_PT_bambu_split(bpy.types.Panel):
     bl_label = "Bambu Split Parts"
     bl_space_type = "VIEW_3D"
@@ -580,12 +717,17 @@ class VIEW3D_PT_bambu_split(bpy.types.Panel):
         row = layout.row()
         row.scale_y = 1.3
         row.operator(BAMBU_OT_split_colors.bl_idname, icon="MOD_BOOLEAN")
+        count = len(_export_targets(context))
+        layout.operator(BAMBU_OT_export_parts.bl_idname, icon="EXPORT",
+                        text="Export %d Selected Part%s…" % (count, "" if count == 1 else "s")
+                        if count else "Export Parts (select them first)")
 
 
 classes = (
     BambuSplitSettings,
     BAMBU_OT_split_colors,
     BAMBU_OT_split_preview,
+    BAMBU_OT_export_parts,
     VIEW3D_PT_bambu_split,
 )
 

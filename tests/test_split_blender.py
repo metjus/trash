@@ -2,6 +2,7 @@
 import collections
 import os
 import sys
+import tempfile
 import unittest
 
 try:
@@ -76,7 +77,7 @@ class SplitTest(unittest.TestCase):
         gaps = [bvh.find_nearest(v.co)[3] for v in part.data.vertices if v.co.length < 9.999]
         bm.free()
         self.assertTrue(gaps)
-        self.assertGreater(min(gaps), 0.18)
+        self.assertGreater(min(gaps), 0.195)
         self.assertLess(sorted(gaps)[len(gaps) // 2], 0.22)
 
     def test_neighbouring_colours_keep_body_closed(self):
@@ -175,6 +176,55 @@ class SplitTest(unittest.TestCase):
         bpy.ops.bambu.split_preview()
         bpy.ops.bambu.split_colors()
         self.assertFalse(preview.is_on())
+
+    def overlap_volume(self, a, b):
+        tmp = bpy.data.objects.new("tmp", a.data.copy())
+        bpy.context.scene.collection.objects.link(tmp)
+        mod = tmp.modifiers.new("i", "BOOLEAN")
+        mod.operation, mod.solver, mod.object = "INTERSECT", "EXACT", b
+        bpy.context.view_layer.update()
+        mesh = bpy.data.meshes.new_from_object(tmp.evaluated_get(bpy.context.evaluated_depsgraph_get()))
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+        volume = bm.calc_volume()
+        bm.free()
+        bpy.data.objects.remove(tmp)
+        return volume
+
+    def test_neighbouring_parts_do_not_overlap_and_keep_tolerance(self):
+        obj = self.sphere(3)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 6 else (2 if p.center.x > 6 else 0)
+        self.s.tolerance, self.s.depth = 0.2, 2.0
+        bpy.ops.bambu.split_colors()
+        a, b = bpy.data.objects["Sphere Colour"], bpy.data.objects["Sphere Colour.001"]
+        self.assertAlmostEqual(self.overlap_volume(a, b), 0.0, places=3)
+        bm = bmesh.new()
+        bm.from_mesh(b.data)
+        bvh = BVHTree.FromBMesh(bm)
+        gap = min(bvh.find_nearest(v.co)[3] for v in a.data.vertices)
+        bm.free()
+        self.assertGreater(gap, 0.195)
+
+    def test_export_parts_writes_closed_stl_per_part(self):
+        obj = self.sphere(3)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 6 else (2 if p.center.x > 6 else 0)
+        bpy.ops.bambu.split_colors()
+        with tempfile.TemporaryDirectory() as folder:
+            self.assertEqual(bpy.ops.bambu.export_parts(directory=folder, file_format="3MF"), {"FINISHED"})
+            self.assertEqual(len(os.listdir(folder)), 3)
+            self.assertEqual(bpy.ops.bambu.export_parts(directory=folder, file_format="STL"), {"FINISHED"})
+            files = sorted(f for f in os.listdir(folder) if f.endswith(".stl"))
+            self.assertEqual(files, ["Sphere Colour.001.stl", "Sphere Colour.stl", "Sphere body.stl"])
+            for name in files:
+                bpy.ops.wm.stl_import(filepath=os.path.join(folder, name))
+                imported = bpy.context.selected_objects[0]
+                bm = bmesh.new()
+                bm.from_mesh(imported.data)
+                bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
+                self.assertEqual(sum(1 for e in bm.edges if len(e.link_faces) != 2), 0, name)
+                bm.free()
 
     def paint_all(self, obj):
         # No face left in colour 1: colour 3 has the larger area.
