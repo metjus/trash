@@ -81,6 +81,12 @@ class BambuSplitSettings(bpy.types.PropertyGroup):
                     "its pocket). Depth is then the part's thinnest spot. Off: the bottom follows "
                     "the surface at an even depth",
         update=_changed)
+    uncut: EnumProperty(
+        name="Uncut Colours",
+        items=[("KEEP", "Keep Painted", "Colours that aren't cut stay painted on the body, e.g. to "
+                                        "print the body with the AMS and the cut colours as parts"),
+               ("BODY", "Body Colour", "Colours that aren't cut become the body colour")],
+        default="KEEP", update=_changed)
     body_colour: IntProperty(
         name="Body Colour", default=0, min=0, max=64,
         description="Colour (number as in the Bambu Paint list) that becomes the body; the other "
@@ -99,11 +105,27 @@ class BambuSplitSettings(bpy.types.PropertyGroup):
 
 def colour_areas(mesh):
     """Painted area per material slot."""
-    areas = [0.0] * max(len(mesh.materials), 1)
-    for p in mesh.polygons:
-        if p.material_index < len(areas):
-            areas[p.material_index] += p.area
-    return areas
+    slots = max(len(mesh.materials), 1)
+    count = len(mesh.polygons)
+    try:
+        import numpy as np
+        index = np.empty(count, dtype=np.int32)
+        area = np.empty(count, dtype=np.float64)
+        mesh.polygons.foreach_get("material_index", index)
+        mesh.polygons.foreach_get("area", area)
+        keep = index < slots
+        return np.bincount(index[keep], weights=area[keep], minlength=slots)[:slots].tolist()
+    except ImportError:
+        areas = [0.0] * slots
+        for p in mesh.polygons:
+            if p.material_index < slots:
+                areas[p.material_index] += p.area
+        return areas
+
+
+def wants_cut(mat):
+    """Whether a colour is ticked to become a part (all are, by default)."""
+    return mat is None or getattr(mat, "bambu_cut", True)
 
 
 def pick_body(areas, choice):
@@ -336,12 +358,13 @@ def world_mesh(context, obj):
     return mesh
 
 
-def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True):
+def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True, only_ticked=True):
     """Work out the body colour and every part, without changing anything.
 
     Returns (body_index, parts) where each part is a dict with index, name,
     material, shape (a closed BMesh the caller must free) and report.
-    body_index is None when fewer than two colours are used.
+    body_index is None when fewer than two colours are used. With only_ticked,
+    colours that aren't ticked to cut (wants_cut) are left out.
     """
     materials = list(src.materials) or [None]
     areas = colour_areas(src)
@@ -356,6 +379,8 @@ def build_parts(src, tolerance, depth, body_choice=0, flat_bottom=True):
         if index == body_index or areas[index] == 0:
             continue
         mat = materials[index]
+        if only_ticked and not wants_cut(mat):
+            continue
         patch = _patch(src, index)
         if flat_bottom:
             shape, report = _flat_solid(patch, depth, bvh, tolerance, eps)
@@ -393,10 +418,14 @@ def _clean(mesh, dist):
     mesh.update()
 
 
-def _subtract(context, target, cutter_bm):
+def _subtract(context, target, cutter_bm, material=None):
     """Cut the closed solid `cutter_bm` (freed here) out of `target` with an exact
-    boolean that also handles overlaps inside the cutter."""
-    cutter = bpy.data.objects.new("_bambu_cutter", _to_mesh(cutter_bm, "_bambu_cutter"))
+    boolean that also handles overlaps inside the cutter. The new faces (the
+    pocket walls) get `material`."""
+    cutter_mesh = _to_mesh(cutter_bm, "_bambu_cutter")
+    if material:
+        cutter_mesh.materials.append(material)
+    cutter = bpy.data.objects.new("_bambu_cutter", cutter_mesh)
     context.scene.collection.objects.link(cutter)
     mod = target.modifiers.new("Bambu cut", "BOOLEAN")
     mod.operation = "DIFFERENCE"
@@ -404,6 +433,8 @@ def _subtract(context, target, cutter_bm):
     mod.object = cutter
     if hasattr(mod, "use_self"):
         mod.use_self = True  # pockets of neighbouring colours overlap inside the cutter
+    if material and hasattr(mod, "material_mode"):
+        mod.material_mode = "TRANSFER"  # walls take the cutter's material, matched to the target's slot
     context.view_layer.update()
     depsgraph = context.evaluated_depsgraph_get()
     cut = bpy.data.meshes.new_from_object(target.evaluated_get(depsgraph))
@@ -426,7 +457,7 @@ def _single_material(mesh, mat):
     mesh.update()
 
 
-def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True):
+def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True, keep_uncut=True):
     """Create the body and one part per other colour. Distances are in Blender units.
 
     Returns (collection, body, parts, warnings, body_index).
@@ -481,12 +512,29 @@ def split_colors(context, obj, tolerance, depth, body_choice=0, flat_bottom=True
         pockets.from_mesh(tmp)  # appends to the shared cutter
         bpy.data.meshes.remove(tmp)
 
-    cut = _subtract(context, body, pockets)
+    cut = _subtract(context, body, pockets, materials[body_index])
     _clean(cut, eps * 0.1)
-
-    # The body is printed in the body colour only.
     cut.name = body.name
-    _single_material(cut, materials[body_index])
+    if keep_uncut:
+        # Colours that weren't cut stay painted; anything left of a cut colour
+        # and the pocket walls are the body colour.
+        cut_slots = {info["index"] for info in infos}
+        slots = len(cut.materials)
+        body_slot = next((i for i, m in enumerate(cut.materials) if m == materials[body_index]), body_index)
+        indices = [0] * len(cut.polygons)
+        cut.polygons.foreach_get("material_index", indices)
+        indices = [body_slot if i in cut_slots or i >= slots else i for i in indices]
+        # Keep only the colours the body still shows, body colour first.
+        used = sorted(set(indices), key=lambda i: (i != body_slot, i))
+        remap = {old: new for new, old in enumerate(used)}
+        kept = [cut.materials[i] for i in used]
+        cut.materials.clear()
+        for m in kept:
+            cut.materials.append(m)
+        cut.polygons.foreach_set("material_index", [remap[i] for i in indices])
+        cut.update()
+    else:
+        _single_material(cut, materials[body_index])
 
     obj.hide_set(True)
     for o in context.selected_objects:
@@ -525,13 +573,16 @@ class BAMBU_OT_split_colors(bpy.types.Operator):
         tolerance, depth = s.tolerance / s.mm_per_unit, s.depth / s.mm_per_unit
         try:
             coll, body, parts, warnings, body_index = split_colors(
-                context, obj, tolerance, depth, s.body_colour, s.flat_bottom)
+                context, obj, tolerance, depth, s.body_colour, s.flat_bottom, s.uncut == "KEEP")
         except Exception:
             paint.record_error("split colours")
             self.report({"ERROR"}, "Could not split the colours. Use 'Copy Error' in the Bambu Paint panel")
             return {"CANCELLED"}
         if not parts:
-            self.report({"WARNING"}, "Only one colour is used on the model, nothing to split")
+            if body_index is None:
+                self.report({"WARNING"}, "Only one colour is used on the model, nothing to split")
+            else:
+                self.report({"WARNING"}, "No colour is ticked to cut, nothing to split")
             return {"FINISHED"}
         for name, kind, values in warnings:
             if kind == "thin":
@@ -632,8 +683,7 @@ class BAMBU_OT_export_parts(bpy.types.Operator):
         self.layout.prop(self, "file_format", expand=True)
 
     def execute(self, context):
-        from . import collect_geometry, material_srgb, writers
-        from .writers import PaletteEntry
+        from . import NO_MATERIAL, build_palette, collect_geometry, writers
         folder = bpy.path.abspath(self.directory)
         if not folder or not os.path.isdir(folder):
             self.report({"ERROR"}, "Choose a folder to save the parts in")
@@ -650,9 +700,11 @@ class BAMBU_OT_export_parts(bpy.types.Operator):
                 if self.file_format == "STL":
                     writers.write_stl(path, vertices, triangles, obj.name)
                 else:
-                    mat = obj.active_material
-                    entry = PaletteEntry(mat.name if mat else obj.name, material_srgb(mat), 1)
-                    writers.write_3mf(path, vertices, triangles, [0] * len(triangles), [entry], obj.name)
+                    # Keep every colour on the object (a body can keep painted colours).
+                    used = list({(m.name if m else ""): m for m in _mats}.values())
+                    palette, index_of = build_palette(used, 0.02)
+                    tri_color = [index_of[m.name if m else NO_MATERIAL] for m in _mats]
+                    writers.write_3mf(path, vertices, triangles, tri_color, palette, obj.name)
                 written.append(os.path.basename(path))
         except Exception:
             paint.record_error("export parts")
@@ -663,6 +715,27 @@ class BAMBU_OT_export_parts(bpy.types.Operator):
             return {"CANCELLED"}
         self.report({"INFO"}, "Saved %d file(s) to %s: %s" % (len(written), folder, ", ".join(written)))
         return {"FINISHED"}
+
+
+def _draw_cut_list(layout, s, obj, areas, body_index):
+    from . import material_color_source
+    box = layout.box()
+    box.label(text="Colours to cut into parts:")
+    col = box.column(align=True)
+    for i, slot in enumerate(obj.material_slots):
+        mat = slot.material
+        if i >= len(areas) or areas[i] == 0 or mat is None:
+            continue
+        row = col.row(align=True)
+        swatch = row.row(align=True)
+        swatch.ui_units_x = 2.0
+        owner, prop = material_color_source(mat)
+        swatch.prop(owner, prop, text="")
+        if i == body_index:
+            row.label(text="%d  %s  (body)" % (i + 1, mat.name))
+        else:
+            row.prop(mat, "bambu_cut", text="%d  %s" % (i + 1, mat.name))
+    box.prop(s, "uncut", expand=True)
 
 
 class VIEW3D_PT_bambu_split(bpy.types.Panel):
@@ -708,6 +781,7 @@ class VIEW3D_PT_bambu_split(bpy.types.Panel):
                     why = "colour %d not used, %s" % (s.body_colour, why)
                 layout.label(text="Body: %d %s (%s)" % (index + 1, mat.name if mat else "", why),
                              icon="MESH_UVSPHERE")
+                _draw_cut_list(layout, s, obj, areas, index)
         if obj is not None and obj.type == "MESH":
             size = Vector(obj.dimensions) * s.mm_per_unit
             layout.label(text="Model: %.1f × %.1f × %.1f mm" % tuple(size), icon="OBJECT_DATA")
@@ -736,9 +810,13 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
     bpy.types.Scene.bambu_split = bpy.props.PointerProperty(type=BambuSplitSettings)
+    bpy.types.Material.bambu_cut = BoolProperty(
+        name="Cut", default=True, update=_changed,
+        description="Cut this colour into its own part (untick to leave it on the body)")
 
 
 def unregister():
+    del bpy.types.Material.bambu_cut
     del bpy.types.Scene.bambu_split
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

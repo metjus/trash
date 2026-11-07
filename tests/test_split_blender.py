@@ -226,6 +226,42 @@ class SplitTest(unittest.TestCase):
                 self.assertEqual(sum(1 for e in bm.edges if len(e.link_faces) != 2), 0, name)
                 bm.free()
 
+    def three_colours_side_unticked(self):
+        obj = self.sphere(3)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.center.z > 6 else (2 if p.center.x > 6 else 0)
+        obj.material_slots[2].material.bambu_cut = False
+        return obj
+
+    def body_face_colours(self):
+        body = bpy.data.objects["Sphere body"]
+        return {body.data.materials[p.material_index].name for p in body.data.polygons}
+
+    def test_unticked_colour_stays_painted_on_body(self):
+        self.three_colours_side_unticked()
+        self.s.uncut = "KEEP"
+        bpy.ops.bambu.split_colors()
+        names = sorted(o.name for o in bpy.data.collections["Sphere parts"].objects)
+        self.assertEqual(names, ["Sphere Colour", "Sphere body"])
+        self.assertEqual(self.body_face_colours(), {"Base", "Colour.001"})
+        body = bpy.data.objects["Sphere body"]
+        self.assertEqual(open_edges(body.data)[0], 0)
+        pocket = {body.data.materials[p.material_index].name for p in body.data.polygons if p.center.length < 9.9}
+        self.assertEqual(pocket, {"Base"})
+
+    def test_unticked_colour_can_become_body_colour(self):
+        self.three_colours_side_unticked()
+        self.s.uncut = "BODY"
+        bpy.ops.bambu.split_colors()
+        self.assertEqual(self.body_face_colours(), {"Base"})
+
+    def test_nothing_ticked_creates_nothing(self):
+        obj = self.three_colours_side_unticked()
+        obj.material_slots[1].material.bambu_cut = False
+        bpy.ops.bambu.split_colors()
+        self.assertNotIn("Sphere parts", bpy.data.collections)
+        self.assertFalse(obj.hide_get())
+
     def paint_all(self, obj):
         # No face left in colour 1: colour 3 has the larger area.
         for p in obj.data.polygons:

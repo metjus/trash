@@ -65,7 +65,8 @@ def rebuild(context):
     finally:
         bpy.data.meshes.remove(src)
     if not infos:
-        _state["message"] = "Only one colour used, nothing to split"
+        _state["message"] = ("Only one colour used, nothing to split" if body_index is None
+                             else "No colour is ticked to cut")
         _redraw()
         return
     body_mat = materials[body_index] if body_index < len(materials) else None

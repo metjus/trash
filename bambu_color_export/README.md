@@ -91,12 +91,16 @@ pocket in the body that is *Tolerance* mm larger on every side.
 4. **Body Colour** picks the colour that becomes the body (0 = Auto: colour 1, or, when
    the whole model is painted and colour 1 isn't used, the colour with the largest painted
    area). The panel shows which colour it will be.
-5. Click **Preview** to see the parts before splitting: they are drawn see-through in the
+5. Under **Colours to cut into parts**, tick the colours that should become parts (all are
+   ticked at first). Colours you untick stay on the body: **Keep Painted** leaves them
+   painted (e.g. print the body with the AMS and only the ticked colours as separate
+   parts), **Body Colour** turns them into the body colour.
+6. Click **Preview** to see the parts before splitting: they are drawn see-through in the
    model, tinted **red** where a part would go through. For each colour the panel lists how
    deep the part goes (from *Depth* at its thinnest to its deepest spot) and how much
    model is left beyond it, or by how much it goes through. The preview follows every
    change to the settings, the painting and the selection, and adds nothing to the file.
-6. Click **Split Colours into Parts** (this also ends the preview). The result goes into a new collection
+7. Click **Split Colours into Parts** (this also ends the preview). The result goes into a new collection
    "<model> parts"; the original is only hidden.
 
 **Flat Bottom** (on by default) gives every part a flat bottom for good bed adhesion:
@@ -113,7 +117,7 @@ before this trimming).
 
 **Export Parts** saves every selected object to its own file in a folder you pick, named
 after the object: **STL** for any slicer (e.g. resin slicers) or **3MF** with the part's
-colour for Bambu Studio. Sizes are in millimetres using *1 Blender unit (mm)*. Right after
+colour(s) for Bambu Studio (a body that kept painted colours keeps them). Sizes are in millimetres using *1 Blender unit (mm)*. Right after
 a split the body and all parts are selected, so one click exports them all.
 
 If the model is thinner than the part (+ tolerance) under a colour, you get a warning naming
