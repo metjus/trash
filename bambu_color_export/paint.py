@@ -386,6 +386,13 @@ class BambuPaintSettings(bpy.types.PropertyGroup):
         name="Sharp Angle", subtype="ANGLE", default=math.radians(30.0),
         min=math.radians(1.0), max=math.radians(180.0),
         description="Edges bending more than this count as sharp")
+    gap_max_area: FloatProperty(
+        name="Max Gap", default=25.0, min=0.001, soft_max=1000.0, precision=2,
+        description="Largest gap to fill, in mm² (uses '1 Blender unit' from the Split Parts panel)")
+    gap_any_colour: BoolProperty(
+        name="Also Other Colours", default=False,
+        description="Also fill small areas of other painted colours, not only unpainted ones "
+                    "(colour 1). Careful: small details such as eyes count as gaps too")
     show_controls: BoolProperty(name="Controls", default=False,
                                 description="Show the painting controls in this panel")
     show_overlay: BoolProperty(name="Show Controls in Viewport", default=True,
@@ -443,6 +450,149 @@ def remove_color(obj, index):
     op = _running
     if op is not None and op.session.obj == obj:
         op.session.remove_colour(index)
+
+
+GAP_ENCLOSED = 0.75  # share of a gap's border (by length) that must be the fill colour
+
+
+def find_gaps(mesh, target, max_area, area_scale=1.0, any_colour=False):
+    """Gaps to fill with colour slot `target`: connected islands of unpainted
+    faces (colour 1; with any_colour, of every colour except target) of at most
+    `max_area` (after multiplying face areas by area_scale) whose border is
+    mostly (GAP_ENCLOSED, by length) the target colour. Returns face index lists.
+    """
+    import numpy as np
+    count = len(mesh.polygons)
+    if count == 0:
+        return []
+    mat = np.empty(count, np.int32)
+    mesh.polygons.foreach_get("material_index", mat)
+    candidate = (mat != target) if any_colour else (mat == 0)
+    if target == 0 and not any_colour or not candidate.any():
+        return []
+    area = np.empty(count)
+    mesh.polygons.foreach_get("area", area)
+    area *= area_scale
+
+    # faces on each side of every edge
+    loop_edge = np.empty(len(mesh.loops), np.int32)
+    mesh.loops.foreach_get("edge_index", loop_edge)
+    starts = np.empty(count, np.int32)
+    totals = np.empty(count, np.int32)
+    mesh.polygons.foreach_get("loop_start", starts)
+    mesh.polygons.foreach_get("loop_total", totals)
+    if count and starts[0] == 0 and np.array_equal(starts[1:], np.cumsum(totals)[:-1]):
+        loop_face = np.repeat(np.arange(count, dtype=np.int32), totals)  # the usual, contiguous layout
+    else:
+        loop_face = np.empty(len(mesh.loops), np.int32)
+        for f, (st, tot) in enumerate(zip(starts.tolist(), totals.tolist())):
+            loop_face[st:st + tot] = f
+    order = np.argsort(loop_edge, kind="stable")
+    edges, faces = loop_edge[order], loop_face[order]
+    shared = edges[1:] == edges[:-1]
+    fa, fb, edge = faces[:-1][shared], faces[1:][shared], edges[1:][shared]
+    verts = np.empty(len(mesh.edges) * 2, np.int32)
+    mesh.edges.foreach_get("vertices", verts)
+    verts = verts.reshape(-1, 2)
+    co = np.empty(len(mesh.vertices) * 3)
+    mesh.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    length = np.linalg.norm(co[verts[edge, 0]] - co[verts[edge, 1]], axis=1) * area_scale ** 0.5
+
+    involved = candidate[fa] | candidate[fb]
+    neighbours = {}
+    for a, b, l in zip(fa[involved].tolist(), fb[involved].tolist(), length[involved].tolist()):
+        neighbours.setdefault(a, []).append((b, l))
+        neighbours.setdefault(b, []).append((a, l))
+
+    cand = candidate.tolist()
+    mats = mat.tolist()
+    areas = area.tolist()
+    seen = [False] * count
+    gaps = []
+    for seed in np.nonzero(candidate)[0].tolist():
+        if seen[seed]:
+            continue
+        seen[seed] = True
+        stack, island, total, too_big = [seed], [], 0.0, False
+        border_target = border_other = 0.0
+        while stack:
+            f = stack.pop()
+            total += areas[f]
+            if total > max_area:
+                too_big = True  # keep walking so the whole island is marked as seen
+            else:
+                island.append(f)
+            for g, l in neighbours.get(f, ()):
+                if cand[g]:
+                    if not seen[g]:
+                        seen[g] = True
+                        stack.append(g)
+                elif mats[g] == target:
+                    border_target += l
+                else:
+                    border_other += l
+        if not too_big and border_target > 0 and border_target >= GAP_ENCLOSED * (border_target + border_other):
+            gaps.append(island)
+    return gaps
+
+
+def fill_gaps(context, obj):
+    """Fill the gaps around the active colour of `obj`; returns (gaps, faces)."""
+    s = context.scene.bambu_paint
+    target = obj.active_material_index
+    mm = context.scene.bambu_split.mm_per_unit if hasattr(context.scene, "bambu_split") else 1.0
+    scale = abs(obj.matrix_world.to_3x3().determinant()) ** (2.0 / 3.0) * mm * mm
+    gaps = find_gaps(obj.data, target, s.gap_max_area, scale, s.gap_any_colour)
+    faces = [f for gap in gaps for f in gap]
+    if not faces:
+        return 0, 0
+    op = _running
+    if op is not None and op.session.obj == obj:
+        op.session.begin_stroke()
+        op.session._apply(faces, target)
+        op.session.end_stroke()  # one Ctrl+Z while painting undoes the whole fill
+        op.session.dirty = True
+        op.session.flush()
+    else:
+        polys = obj.data.polygons
+        for f in faces:
+            polys[f].material_index = target
+        obj.data.update()
+    return len(gaps), len(faces)
+
+
+class BAMBU_OT_fill_gaps(bpy.types.Operator):
+    """Fill small unpainted gaps (colour 1) surrounded by the active colour with that colour,
+    e.g. what Fill left in deep creases"""
+    bl_idname = "bambu.fill_gaps"
+    bl_label = "Fill Gaps"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+        return obj is not None and obj.type == "MESH" and len(obj.material_slots) >= 2
+
+    def execute(self, context):
+        obj = context.active_object
+        s = context.scene.bambu_paint
+        if obj.active_material_index == 0 and not s.gap_any_colour:
+            self.report({"WARNING"}, "Pick the colour to fill the gaps with (not colour 1, the unpainted colour)")
+            return {"CANCELLED"}
+        if obj.mode != "OBJECT":
+            bpy.ops.object.mode_set(mode="OBJECT")
+        try:
+            gaps, faces = fill_gaps(context, obj)
+        except Exception:
+            record_error("fill gaps")
+            self.report({"ERROR"}, "Could not fill the gaps. Use 'Copy Error' in the Bambu Paint panel")
+            return {"CANCELLED"}
+        if not gaps:
+            self.report({"INFO"}, "No gaps up to %.2f mm² found around this colour" % s.gap_max_area)
+        else:
+            self.report({"INFO"}, "Filled %d gap(s), %d face(s)" % (gaps, faces))
+        return {"FINISHED"}
 
 
 class BAMBU_OT_paint_remove_color(bpy.types.Operator):
@@ -896,6 +1046,13 @@ class VIEW3D_PT_bambu_paint(bpy.types.Panel):
             sub = col.row(align=True)
             sub.enabled = s.fill_sharp
             sub.prop(s, "sharp_angle")
+        box = layout.box()
+        mat = obj.active_material
+        box.operator(BAMBU_OT_fill_gaps.bl_idname, icon="BRUSH_DATA",
+                     text="Fill Gaps with %s" % (mat.name if mat else "active colour"))
+        col = box.column(align=True)
+        col.prop(s, "gap_max_area", text="Max Gap (mm²)")
+        col.prop(s, "gap_any_colour")
         row = layout.row(align=True)
         row.label(text="Symmetry")
         row.prop(s, "sym_x", toggle=True)
@@ -934,6 +1091,7 @@ classes = (
     BAMBU_OT_paint_add_color,
     BAMBU_OT_paint_set_color,
     BAMBU_OT_paint_remove_color,
+    BAMBU_OT_fill_gaps,
     BAMBU_OT_paint,
     BAMBU_OT_paint_stop,
     BAMBU_OT_control_hint,

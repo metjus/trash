@@ -59,6 +59,12 @@ For one whole mesh that needs several colours, use the **Bambu Paint** panel (Ba
    under the brush takes the colour that covers most of its surroundings (*Strength* =
    passes per dab). Only faces under the brush change, never the rest of the model.
 
+   **Fill Gaps** (button under the tools) fills the small unpainted spots that Fill leaves
+   in deep creases: every island of colour 1 up to *Max Gap* mm² that is mostly surrounded
+   by the active colour gets that colour. Bigger unpainted areas and other painted details
+   (eyes…) stay; tick *Also Other Colours* to fill small areas of any colour. Works while
+   painting too; Ctrl+Z undoes the whole fill.
+
    **Delete a colour** with the **X** next to it: its areas get the base colour (colour 1),
    which can't be deleted.
 
