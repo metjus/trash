@@ -90,8 +90,7 @@ class BambuSplitSettings(bpy.types.PropertyGroup):
     body_colour: IntProperty(
         name="Body Colour", default=0, min=0, max=64,
         description="Colour (number as in the Bambu Paint list) that becomes the body; the other "
-                    "colours become parts. 0 = Auto: colour 1, or the colour with the largest "
-                    "painted area when colour 1 isn't used",
+                    "colours become parts. 0 = Auto: the colour with the largest painted area",
         update=_changed)
     mm_per_unit: FloatProperty(
         name="1 Blender unit =", default=1.0, min=0.0001, max=10000.0, precision=3,
@@ -132,15 +131,15 @@ def pick_body(areas, choice):
     """Slot index of the body colour, or None if nothing is painted.
 
     choice is 1-based (0 = Auto): a chosen colour that isn't used falls back
-    to Auto, which is colour 1 if used, else the colour with the largest area.
+    to Auto, the colour with the largest painted area (the lower number on a
+    tie). In a model painted from colour 1 that is colour 1; in an imported
+    model colour 1 may only be a detail.
     """
     if not any(areas):
         return None
     if 0 < choice <= len(areas) and areas[choice - 1] > 0:
         return choice - 1
-    if areas[0] > 0:
-        return 0
-    return max(range(len(areas)), key=lambda i: areas[i])
+    return max(range(len(areas)), key=lambda i: (areas[i], -i))
 
 
 def _patch(mesh, mat_index):
@@ -756,6 +755,7 @@ class VIEW3D_PT_bambu_split(bpy.types.Panel):
     def _draw(self, context, layout):
         s = context.scene.bambu_split
         obj = context.active_object
+        layout.operator("import_mesh.bambu_3mf", text="Import Coloured 3MF…", icon="IMPORT")
         col = layout.column(align=True)
         col.label(text="Each colour becomes a part that")
         col.label(text="fits into a pocket in the body.")
@@ -775,8 +775,7 @@ class VIEW3D_PT_bambu_split(bpy.types.Panel):
                 layout.label(text="Only one colour used, nothing to split", icon="INFO")
             else:
                 mat = obj.material_slots[index].material
-                why = ("largest area" if index != 0 and s.body_colour != index + 1 else
-                       "chosen" if s.body_colour == index + 1 else "colour 1")
+                why = "chosen" if s.body_colour == index + 1 else "largest area"
                 if s.body_colour and s.body_colour != index + 1:
                     why = "colour %d not used, %s" % (s.body_colour, why)
                 layout.label(text="Body: %d %s (%s)" % (index + 1, mat.name if mat else "", why),

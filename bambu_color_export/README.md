@@ -77,6 +77,20 @@ Notes: painting colours whole faces, so edges follow the mesh. Subdivide (or rem
 models for finer detail. Symmetry mirrors across the object's origin, so keep the origin
 on the model's centre line.
 
+## Import a coloured 3MF
+**File → Import → Coloured 3MF for Bambu** (or **Import Coloured 3MF…** at the top of the
+Bambu Split Parts panel) brings in models that are already coloured, so you can repaint,
+export or split them:
+- **Bambu Studio projects**: every object with its parts, each part's filament, the
+  project's filament colours and filament painting;
+- **PrusaSlicer projects**: MMU painting and per-volume extruders, filament colours;
+- **standard 3MF** colours (colour groups and base materials), e.g. from this add-on.
+
+Every colour becomes a material ("Filament 2", or the hex colour), filaments in order, so
+filament 1 is colour 1. Painting that the slicer stored on finer sub-triangles is rebuilt
+as real faces, keeping the mesh closed. Objects keep their plate position unless you
+untick *Keep Plate Position*. Modifier, negative and support-blocker parts are left out.
+
 ## Split colours into parts (for single-colour printers, e.g. resin)
 Print each colour separately and assemble: the **Bambu Split Parts** panel (Bambu tab)
 turns a painted model into a **body** plus one **part** per other colour.
@@ -88,9 +102,9 @@ pocket in the body that is *Tolerance* mm larger on every side.
    own values: editing either switches to **Custom** and your values stay.
 3. Check **1 Blender unit (mm)** so the model size shown matches the printed size; the
    tolerance and depth are real millimetres at that size.
-4. **Body Colour** picks the colour that becomes the body (0 = Auto: colour 1, or, when
-   the whole model is painted and colour 1 isn't used, the colour with the largest painted
-   area). The panel shows which colour it will be.
+4. **Body Colour** picks the colour that becomes the body (0 = Auto: the colour with the
+   largest painted area, usually colour 1 in a model painted here). The panel shows which
+   colour it will be.
 5. Under **Colours to cut into parts**, tick the colours that should become parts (all are
    ticked at first). Colours you untick stay on the body: **Keep Painted** leaves them
    painted (e.g. print the body with the AMS and only the ticked colours as separate

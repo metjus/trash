@@ -292,10 +292,11 @@ class SplitTest(unittest.TestCase):
 
     def test_pick_body_rules(self):
         pick = self.split.pick_body
-        self.assertEqual(pick([5.0, 1.0, 9.0], 0), 0)    # colour 1 used -> colour 1
-        self.assertEqual(pick([0.0, 1.0, 9.0], 0), 2)    # else the largest area
+        self.assertEqual(pick([9.0, 1.0, 5.0], 0), 0)    # auto: the largest area
+        self.assertEqual(pick([5.0, 1.0, 9.0], 0), 2)    # even when colour 1 is used
+        self.assertEqual(pick([5.0, 1.0, 5.0], 0), 0)    # tie: the lower number
         self.assertEqual(pick([5.0, 1.0, 9.0], 2), 1)    # chosen colour
-        self.assertEqual(pick([5.0, 0.0, 9.0], 2), 0)    # chosen but unused -> auto
+        self.assertEqual(pick([5.0, 0.0, 9.0], 2), 2)    # chosen but unused -> auto
         self.assertIsNone(pick([0.0, 0.0], 0))
 
     def test_single_colour_creates_nothing(self):

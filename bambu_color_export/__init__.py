@@ -10,7 +10,7 @@ import bpy
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, StringProperty
 from bpy_extras.io_utils import ExportHelper
 
-from . import paint, preview, split, writers
+from . import importer, paint, preview, split, writers
 from .writers import MAX_FILAMENTS, PaletteEntry
 
 GEOMETRY_TYPES = {"MESH", "CURVE", "SURFACE", "META", "FONT"}
@@ -483,9 +483,11 @@ def register():
     paint.register()
     split.register()
     preview.register()
+    importer.register()
 
 
 def unregister():
+    importer.unregister()
     preview.unregister()
     split.unregister()
     paint.unregister()
