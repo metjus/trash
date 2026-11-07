@@ -211,6 +211,29 @@ def _report():
     return {"too_curved": False, "worst": None, "bad": set(), "deepest": 0.0, "margin": None}
 
 
+def thickness(bvh, origin, direction, eps, max_hits=64):
+    """How far the model's material goes from `origin` along `direction`.
+
+    Counts shells entered and left, so overlapping parts of a mesh (e.g. sculpted
+    strands pushed into a head) are seen as one solid: the walk stops only where
+    it leaves every shell. Returns None if the ray never comes out.
+    """
+    inside = 1
+    travelled = 0.0
+    point = origin
+    for _ in range(max_hits):
+        loc, normal, _i, dist = bvh.ray_cast(point, direction)
+        if loc is None:
+            return None
+        travelled += dist
+        inside += -1 if normal.dot(direction) > 0 else 1  # leaving a shell / entering another
+        if inside <= 0:
+            return travelled
+        point = loc + direction * eps
+        travelled += eps
+    return travelled
+
+
 def _check(report, co, need, have):
     report["deepest"] = max(report["deepest"], need)
     if have is None:
@@ -279,8 +302,8 @@ def _flat_solid(patch, depth, bvh=None, tolerance=0.0, eps=0.0):
 
         if bvh is not None:
             for v in verts:
-                loc, _n, _i, dist = bvh.ray_cast(v.co - normal * eps, -normal)
-                _check(report, v.co, height[v] - floor + tolerance, None if loc is None else dist + eps)
+                have = thickness(bvh, v.co - normal * eps, -normal, eps)
+                _check(report, v.co, height[v] - floor + tolerance, None if have is None else have + eps)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     bm.normal_update()
     return bm, report
@@ -317,8 +340,8 @@ def _surface_report(patch, bvh, depth, tolerance, eps):
     measured inward along each vertex normal."""
     report = _report()
     for v in patch.verts:
-        loc, _n, _i, dist = bvh.ray_cast(v.co - v.normal * eps, -v.normal)
-        _check(report, v.co, depth + tolerance, None if loc is None else dist + eps)
+        have = thickness(bvh, v.co - v.normal * eps, -v.normal, eps)
+        _check(report, v.co, depth + tolerance, None if have is None else have + eps)
     return report
 
 

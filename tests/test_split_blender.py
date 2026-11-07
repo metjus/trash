@@ -262,6 +262,31 @@ class SplitTest(unittest.TestCase):
         self.assertNotIn("Sphere parts", bpy.data.collections)
         self.assertFalse(obj.hide_get())
 
+    def test_overlapping_shells_are_not_thin(self):
+        # A sculpt-like mesh: a strand sphere pushed into a head sphere, its top
+        # only 0.5 mm under the head's surface. The head is 40 mm thick there.
+        from bambu_color_export import preview
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=20, segments=64, ring_count=32)
+        head = bpy.context.object
+        head_faces = len(head.data.polygons)
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=7.5, segments=48, ring_count=24, location=(0, 0, 12))
+        head.select_set(True)
+        bpy.context.view_layer.objects.active = head
+        bpy.ops.object.join()
+        obj = bpy.context.object
+        self.paint.add_color(obj)
+        self.paint.add_color(obj)
+        for p in obj.data.polygons:
+            p.material_index = 1 if p.index < head_faces and p.center.z > 12 else 0
+        self.s.printer, self.s.flat_bottom = "FDM", False
+        preview.start(bpy.context)
+        try:
+            part = preview.summary()["parts"][0]
+            self.assertFalse(part["through"])
+            self.assertGreater(part["margin"], 35.0)
+        finally:
+            preview.stop()
+
     def paint_all(self, obj):
         # No face left in colour 1: colour 3 has the larger area.
         for p in obj.data.polygons:
