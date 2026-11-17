@@ -1,0 +1,9 @@
+test,train,config,train_trades,train_avg_R,test_trades,test_avg_R
+2023-01..2023-06,2022-01..2022-12,HTF=base+1d min=0.5 limit P050 score>=60 session=on,555,0.177,235,-0.269
+2023-07..2023-12,2022-07..2023-06,HTF=base+1d min=1.0 market P333 score>=70 session=on,187,0.063,107,0.125
+2024-01..2024-06,2023-01..2023-12,HTF=base+1d min=1.0 market P050 score>=70 session=on,157,0.181,123,0.008
+2024-07..2024-12,2023-07..2024-06,HTF=base+1d min=1.0 market P050 score>=70 session=on,219,0.161,112,0.056
+2025-01..2025-06,2024-01..2024-12,HTF=base min=1.0 market P333 score>=70 session=on,463,0.051,228,-0.159
+2025-07..2025-12,2024-07..2025-06,HTF=base min=0.5 market P333 score>=70 session=on,697,0.014,319,-0.017
+2026-01..2026-06,2025-01..2025-12,HTF=base min=0.5 market P050 score>=70 session=off,958,0.01,510,0.086
+2026-07..2026-10,2025-07..2026-06,HTF=base+1d min=1.0 limit P050 score>=70 session=on,238,0.148,28,-0.444

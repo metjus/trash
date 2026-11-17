@@ -1,0 +1,8 @@
+numpy>=2.0
+pandas>=2.2
+numba>=0.60
+pyarrow>=15
+matplotlib>=3.8
+tabulate>=0.9
+pytest>=8
+pynescript>=0.3   # optional: Pine syntax check (tools/check_pine.py)

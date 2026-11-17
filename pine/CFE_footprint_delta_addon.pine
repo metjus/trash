@@ -1,0 +1,39 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © CFE — Confluence Futures Engine · OPTIONAL ADD-ON: TRUE volume delta from footprint data
+//
+// Unlike the main CFE indicator (which shows an ESTIMATED buy/sell pressure from OHLCV), this add-on reads
+// TradingView footprint data, which classifies traded volume by aggressor side.
+//  • Requires a TradingView Premium or Ultimate plan (request.footprint limitation).
+//  • Only ONE unique request.footprint() call is allowed per script.
+//  • Shows N/A (na) where the data feed provides no footprint for a bar – values are never invented.
+//  • The request.footprint() signature follows the Pine v6 docs ("Other timeframes and data"):
+//    request.footprint(ticks_per_row, va_percent, imbalance_percent) → series footprint.
+//    This add-on could not be compiled in the development environment – if TradingView reports a signature
+//    change, adjust the single request line below.
+//@version=6
+indicator("CFE Footprint Delta (true aggressor delta)", shorttitle = "CFE-Δ", overlay = false, format = format.volume)
+
+ticksPerRow = input.int(100, "Ticks per footprint row", minval = 1)
+cvdReset    = input.string("Daily", "CVD reset", options = ["Daily", "Weekly", "Never"])
+showUsd     = input.bool(true, "Show delta in quote currency (× close)")
+
+footprint fp = request.footprint(ticksPerRow)
+
+float buyV  = na(fp) ? na : footprint.buy_volume(fp)
+float sellV = na(fp) ? na : footprint.sell_volume(fp)
+float delta = na(fp) ? na : footprint.delta(fp)
+float mult  = showUsd and syminfo.volumetype == "base" ? close : 1.0
+float dOut  = delta * mult
+
+bool newPeriod = cvdReset == "Daily" ? timeframe.change("1D") : cvdReset == "Weekly" ? timeframe.change("1W") : false
+var float cvd = 0.0
+if newPeriod
+    cvd := 0.0
+if not na(dOut)
+    cvd += dOut
+
+plot(dOut, "Delta (true, aggressor)", style = plot.style_columns, color = dOut >= 0 ? color.new(#089981, 20) : color.new(#F23645, 20))
+plot(cvd, "CVD", color = color.new(#FFD54F, 0), linewidth = 2)
+plot(na(buyV) ? na : buyV * mult, "Buy volume (aggressor)", display = display.data_window)
+plot(na(sellV) ? na : sellV * mult, "Sell volume (aggressor)", display = display.data_window)
+hline(0, "Zero", color = color.new(color.gray, 50))

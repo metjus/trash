@@ -1,0 +1,274 @@
+{
+  "wf_5m_all": {
+    "trades": 1684,
+    "win_rate_pct": 40.0,
+    "avg_R_net": -0.095,
+    "avg_R_gross": -0.015,
+    "avg_cost_R": 0.076,
+    "avg_funding_R": 0.0041,
+    "profit_factor": 0.85,
+    "total_R": -160.7,
+    "t_stat": -3.03,
+    "net_profit_pct": -56.8,
+    "max_dd_pct": -60.3,
+    "avg_win_R": 1.4,
+    "avg_loss_R": -1.09,
+    "avg_hold_h": 5.6,
+    "long_n": 836,
+    "long_avg_R": -0.003,
+    "short_n": 848,
+    "short_avg_R": -0.187
+  },
+  "wf_5m_true_oos": {
+    "trades": 1627,
+    "win_rate_pct": 39.6,
+    "avg_R_net": -0.093,
+    "avg_R_gross": -0.013,
+    "avg_cost_R": 0.076,
+    "avg_funding_R": 0.0042,
+    "profit_factor": 0.86,
+    "total_R": -151.4,
+    "t_stat": -2.89,
+    "net_profit_pct": -54.7,
+    "max_dd_pct": -60.3,
+    "avg_win_R": 1.43,
+    "avg_loss_R": -1.09,
+    "avg_hold_h": 5.6,
+    "long_n": 820,
+    "long_avg_R": -0.005,
+    "short_n": 807,
+    "short_avg_R": -0.183
+  },
+  "wf_5m_windows_md": "| test             | train            | config                                                |   train_trades |   train_avg_R |   test_trades |   test_avg_R |\n|:-----------------|:-----------------|:------------------------------------------------------|---------------:|--------------:|--------------:|-------------:|\n| 2023-01..2023-06 | 2022-01..2022-12 | HTF=base+1d min=1.0 limit P333 score>=0 session=on    |            529 |         0.148 |            57 |       -0.163 |\n| 2023-07..2023-12 | 2022-07..2023-06 | HTF=base+1d min=1.0 limit P333 score>=0 session=on    |            216 |         0.065 |           143 |        0.025 |\n| 2024-01..2024-06 | 2023-01..2023-12 | HTF=base+1d min=1.0 limit P050 score>=70 session=off  |            369 |         0.083 |           318 |       -0.003 |\n| 2024-07..2024-12 | 2023-07..2024-06 | HTF=base+1d min=1.0 limit P050 score>=0 session=on    |            317 |         0.138 |           183 |       -0.081 |\n| 2025-01..2025-06 | 2024-01..2024-12 | HTF=base min=1.0 limit P3TR score>=70 session=on      |            669 |         0.014 |           309 |       -0.078 |\n| 2025-07..2025-12 | 2024-07..2025-06 | HTF=base min=1.0 market P050 score>=70 session=on     |            702 |         0.041 |           383 |       -0.181 |\n| 2026-01..2026-06 | 2025-01..2025-12 | HTF=base+1d min=1.0 limit P3TR score>=70 session=on   |            279 |        -0.022 |           230 |       -0.018 |\n| 2026-07..2026-10 | 2025-07..2026-06 | HTF=base+1d min=1.0 market P050 score>=60 session=off |            752 |         0.071 |            61 |       -0.682 |",
+  "wf_5m_marginals": {
+    "htf_set": {
+      "base": -0.0712,
+      "base+1d": -0.0828
+    },
+    "htf_min": {
+      "0.5": -0.0861,
+      "1.0": -0.0479
+    },
+    "entry_mode": {
+      "0": -0.0789,
+      "1": -0.0726
+    },
+    "exit": {
+      "P050": -0.0684,
+      "P333": -0.0805,
+      "P3TR": -0.0782
+    },
+    "min_score": {
+      "0.0": -0.0809,
+      "60.0": -0.0766,
+      "70.0": -0.0685
+    },
+    "session": {
+      "False": -0.0796,
+      "True": -0.0694
+    }
+  },
+  "wf_5m_grid_range": {
+    "min": -0.12,
+    "median": -0.062,
+    "max": 0.01,
+    "n_configs": 144,
+    "n_positive": 3
+  },
+  "wf_15m_all": {
+    "trades": 1662,
+    "win_rate_pct": 40.3,
+    "avg_R_net": -0.032,
+    "avg_R_gross": 0.04,
+    "avg_cost_R": 0.067,
+    "avg_funding_R": 0.0044,
+    "profit_factor": 0.95,
+    "total_R": -53.1,
+    "t_stat": -0.97,
+    "net_profit_pct": -26.1,
+    "max_dd_pct": -37.6,
+    "avg_win_R": 1.52,
+    "avg_loss_R": -1.08,
+    "avg_hold_h": 19.1,
+    "long_n": 794,
+    "long_avg_R": -0.02,
+    "short_n": 868,
+    "short_avg_R": -0.042
+  },
+  "wf_15m_true_oos": {
+    "trades": 1427,
+    "win_rate_pct": 42.6,
+    "avg_R_net": 0.007,
+    "avg_R_gross": 0.081,
+    "avg_cost_R": 0.068,
+    "avg_funding_R": 0.005,
+    "profit_factor": 1.01,
+    "total_R": 10.2,
+    "t_stat": 0.2,
+    "net_profit_pct": 1.9,
+    "max_dd_pct": -28.8,
+    "avg_win_R": 1.48,
+    "avg_loss_R": -1.08,
+    "avg_hold_h": 20.0,
+    "long_n": 663,
+    "long_avg_R": 0.027,
+    "short_n": 764,
+    "short_avg_R": -0.01
+  },
+  "wf_15m_windows_md": "| test             | train            | config                                               |   train_trades |   train_avg_R |   test_trades |   test_avg_R |\n|:-----------------|:-----------------|:-----------------------------------------------------|---------------:|--------------:|--------------:|-------------:|\n| 2023-01..2023-06 | 2022-01..2022-12 | HTF=base+1d min=0.5 limit P050 score>=60 session=on  |            555 |         0.177 |           235 |       -0.269 |\n| 2023-07..2023-12 | 2022-07..2023-06 | HTF=base+1d min=1.0 market P333 score>=70 session=on |            187 |         0.063 |           107 |        0.125 |\n| 2024-01..2024-06 | 2023-01..2023-12 | HTF=base+1d min=1.0 market P050 score>=70 session=on |            157 |         0.181 |           123 |        0.008 |\n| 2024-07..2024-12 | 2023-07..2024-06 | HTF=base+1d min=1.0 market P050 score>=70 session=on |            219 |         0.161 |           112 |        0.056 |\n| 2025-01..2025-06 | 2024-01..2024-12 | HTF=base min=1.0 market P333 score>=70 session=on    |            463 |         0.051 |           228 |       -0.159 |\n| 2025-07..2025-12 | 2024-07..2025-06 | HTF=base min=0.5 market P333 score>=70 session=on    |            697 |         0.014 |           319 |       -0.017 |\n| 2026-01..2026-06 | 2025-01..2025-12 | HTF=base min=0.5 market P050 score>=70 session=off   |            958 |         0.01  |           510 |        0.086 |\n| 2026-07..2026-10 | 2025-07..2026-06 | HTF=base+1d min=1.0 limit P050 score>=70 session=on  |            238 |         0.148 |            28 |       -0.444 |",
+  "wf_15m_marginals": {
+    "htf_set": {
+      "base": -0.0474,
+      "base+1d": -0.0628
+    },
+    "htf_min": {
+      "0.5": -0.057,
+      "1.0": -0.0471
+    },
+    "entry_mode": {
+      "0": -0.0593,
+      "1": -0.0473
+    },
+    "exit": {
+      "P050": -0.0536,
+      "P333": -0.0508,
+      "P3TR": -0.0565
+    },
+    "min_score": {
+      "0.0": -0.0611,
+      "60.0": -0.0593,
+      "70.0": -0.0371
+    },
+    "session": {
+      "False": -0.0616,
+      "True": -0.0397
+    }
+  },
+  "wf_15m_grid_range": {
+    "min": -0.105,
+    "median": -0.047,
+    "max": 0.022,
+    "n_configs": 144,
+    "n_positive": 2
+  },
+  "pre_5m_wf_symbols_2023H2plus": {
+    "trades": 1998,
+    "win_rate_pct": 51.0,
+    "avg_R_net": -0.049,
+    "avg_R_gross": 0.022,
+    "avg_cost_R": 0.068,
+    "avg_funding_R": 0.0026,
+    "profit_factor": 0.91,
+    "total_R": -97.0,
+    "t_stat": -1.93,
+    "net_profit_pct": -40.4,
+    "max_dd_pct": -46.9,
+    "avg_win_R": 0.94,
+    "avg_loss_R": -1.08,
+    "avg_hold_h": 4.5,
+    "long_n": 987,
+    "long_avg_R": 0.006,
+    "short_n": 1011,
+    "short_avg_R": -0.101
+  },
+  "pre_5m_holdout": {
+    "trades": 2905,
+    "win_rate_pct": 50.0,
+    "avg_R_net": -0.066,
+    "avg_R_gross": 0.001,
+    "avg_cost_R": 0.064,
+    "avg_funding_R": 0.0032,
+    "profit_factor": 0.88,
+    "total_R": -192.6,
+    "t_stat": -3.18,
+    "net_profit_pct": -63.5,
+    "max_dd_pct": -63.8,
+    "avg_win_R": 0.95,
+    "avg_loss_R": -1.08,
+    "avg_hold_h": 4.2,
+    "long_n": 1002,
+    "long_avg_R": -0.085,
+    "short_n": 1903,
+    "short_avg_R": -0.056
+  },
+  "pre_5m_holdout_by_symbol_md": "| symbol   |   trades |   win_rate_pct |   avg_R_net |   profit_factor |   total_R |   max_dd_pct |\n|:---------|---------:|---------------:|------------:|----------------:|----------:|-------------:|\n| ADAUSDT  |      407 |           46.2 |      -0.136 |            0.76 |     -55.5 |        -26.8 |\n| ATOMUSDT |      413 |           53   |      -0.003 |            0.99 |      -1.2 |        -12.8 |\n| DOTUSDT  |      408 |           49.5 |      -0.082 |            0.85 |     -33.6 |        -16   |\n| ETCUSDT  |      384 |           51.6 |      -0.021 |            0.96 |      -8   |        -13.2 |\n| FILUSDT  |      399 |           50.1 |      -0.048 |            0.91 |     -19.3 |        -12.4 |\n| LTCUSDT  |      315 |           47.6 |      -0.131 |            0.77 |     -41.3 |        -22.3 |\n| NEARUSDT |      435 |           52.6 |      -0.026 |            0.95 |     -11.1 |        -13.5 |\n| TRXUSDT  |      144 |           45.8 |      -0.157 |            0.74 |     -22.6 |        -15.5 |",
+  "pre_5m_holdout_by_year_md": "|   year |   trades |   win_rate_pct |   avg_R_net |   avg_R_gross |   profit_factor |   total_R |   long_avg_R |   short_avg_R |\n|-------:|---------:|---------------:|------------:|--------------:|----------------:|----------:|-------------:|--------------:|\n|   2022 |      668 |           50.7 |      -0.034 |         0.026 |            0.94 |     -22.6 |       -0.229 |         0.012 |\n|   2023 |      521 |           50.9 |      -0.078 |        -0.001 |            0.85 |     -40.7 |       -0.125 |        -0.009 |\n|   2024 |      609 |           52.9 |       0.014 |         0.077 |            1.03 |       8.4 |        0.079 |        -0.036 |\n|   2025 |      653 |           44.3 |      -0.186 |        -0.118 |            0.69 |    -121.3 |       -0.16  |        -0.193 |\n|   2026 |      454 |           52.2 |      -0.036 |         0.036 |            0.93 |     -16.5 |       -0.098 |        -0.003 |",
+  "pre_5m_holdout_regime_md": "| regime            |   trades |   win_rate_pct |   avg_R_net |   avg_R_gross |   profit_factor |   total_R |   long_avg_R |   short_avg_R |\n|:------------------|---------:|---------------:|------------:|--------------:|----------------:|----------:|-------------:|--------------:|\n| Bear (30d < -15%) |     1157 |           50.8 |      -0.057 |         0.004 |            0.89 |     -66.4 |        0.03  |        -0.058 |\n| Bull (30d > +15%) |      728 |           50.1 |      -0.066 |        -0.006 |            0.88 |     -47.9 |       -0.066 |       nan     |\n| Sideways          |     1020 |           48.9 |      -0.077 |         0.002 |            0.86 |     -78.3 |       -0.14  |        -0.054 |\n| High volatility   |     1496 |           48.1 |      -0.111 |        -0.051 |            0.8  |    -166.7 |       -0.1   |        -0.117 |\n| Low volatility    |     1409 |           52   |      -0.018 |         0.056 |            0.96 |     -25.9 |       -0.071 |         0.009 |",
+  "pre_5m_combined_regime_md": "| regime            |   trades |   win_rate_pct |   avg_R_net |   avg_R_gross |   profit_factor |   total_R |   long_avg_R |   short_avg_R |\n|:------------------|---------:|---------------:|------------:|--------------:|----------------:|----------:|-------------:|--------------:|\n| Bear (30d < -15%) |     1775 |           50.2 |      -0.072 |        -0.01  |            0.87 |    -127   |        0.03  |        -0.072 |\n| Bull (30d > +15%) |     1422 |           50.9 |      -0.046 |         0.016 |            0.91 |     -66   |       -0.044 |        -1.094 |\n| Sideways          |     1706 |           50.2 |      -0.057 |         0.024 |            0.9  |     -96.6 |       -0.031 |        -0.069 |\n| High volatility   |     2437 |           48.5 |      -0.105 |        -0.043 |            0.81 |    -255.3 |       -0.057 |        -0.134 |\n| Low volatility    |     2466 |           52.2 |      -0.014 |         0.062 |            0.97 |     -34.3 |       -0.026 |        -0.004 |",
+  "pre_5m_exit_reasons": {
+    "SL": 1453,
+    "STOP_AFTER_TP": 1088,
+    "TP3": 363,
+    "END": 1
+  },
+  "pre_5m_cost_sensitivity_md": "| costs                                |   trades |   avg_R_net |   profit_factor |   total_R |   t_stat |   max_dd_pct |\n|:-------------------------------------|---------:|------------:|----------------:|----------:|---------:|-------------:|\n| Binance VIP0 (0.05/0.02 + 0.02 slip) |     2905 |      -0.066 |            0.88 |    -192.6 |    -3.18 |        -63.8 |\n| Reduced (0.04/0.016 + 0.01 slip)     |     3170 |      -0.058 |            0.89 |    -185.1 |    -2.92 |        -63.9 |\n| Low (0.02/0.0 + 0.01 slip)           |     3345 |      -0.023 |            0.96 |     -76.5 |    -1.17 |        -48.7 |\n| Zero costs (gross)                   |     3396 |       0.003 |            1.01 |       8.5 |     0.13 |        -42.3 |",
+  "pre_15m_wf_symbols_2023H2plus": {
+    "trades": 1203,
+    "win_rate_pct": 51.3,
+    "avg_R_net": -0.011,
+    "avg_R_gross": 0.041,
+    "avg_cost_R": 0.048,
+    "avg_funding_R": 0.0037,
+    "profit_factor": 0.98,
+    "total_R": -13.2,
+    "t_stat": -0.33,
+    "net_profit_pct": -8.2,
+    "max_dd_pct": -22.8,
+    "avg_win_R": 0.98,
+    "avg_loss_R": -1.06,
+    "avg_hold_h": 13.0,
+    "long_n": 606,
+    "long_avg_R": 0.012,
+    "short_n": 597,
+    "short_avg_R": -0.035
+  },
+  "pre_15m_holdout": {
+    "trades": 1733,
+    "win_rate_pct": 50.9,
+    "avg_R_net": -0.02,
+    "avg_R_gross": 0.028,
+    "avg_cost_R": 0.045,
+    "avg_funding_R": 0.0039,
+    "profit_factor": 0.96,
+    "total_R": -35.0,
+    "t_stat": -0.74,
+    "net_profit_pct": -18.4,
+    "max_dd_pct": -37.6,
+    "avg_win_R": 0.98,
+    "avg_loss_R": -1.06,
+    "avg_hold_h": 12.6,
+    "long_n": 628,
+    "long_avg_R": -0.089,
+    "short_n": 1105,
+    "short_avg_R": 0.019
+  },
+  "pre_15m_holdout_by_symbol_md": "| symbol   |   trades |   win_rate_pct |   avg_R_net |   profit_factor |   total_R |   max_dd_pct |\n|:---------|---------:|---------------:|------------:|----------------:|----------:|-------------:|\n| ADAUSDT  |      237 |           53.2 |       0.022 |            1.04 |       5.1 |         -8.2 |\n| ATOMUSDT |      228 |           55.3 |       0.026 |            1.05 |       5.9 |         -7.4 |\n| DOTUSDT  |      248 |           50.8 |      -0.031 |            0.94 |      -7.7 |        -11   |\n| ETCUSDT  |      225 |           52   |       0.023 |            1.04 |       5.1 |         -9.6 |\n| FILUSDT  |      223 |           48   |      -0.029 |            0.95 |      -6.4 |        -10.1 |\n| LTCUSDT  |      211 |           50.7 |      -0.071 |            0.86 |     -15   |        -15   |\n| NEARUSDT |      224 |           46.4 |      -0.105 |            0.81 |     -23.4 |        -14.5 |\n| TRXUSDT  |      137 |           50.4 |       0.011 |            1.02 |       1.5 |        -10.7 |",
+  "pre_15m_holdout_by_year_md": "|   year |   trades |   win_rate_pct |   avg_R_net |   avg_R_gross |   profit_factor |   total_R |   long_avg_R |   short_avg_R |\n|-------:|---------:|---------------:|------------:|--------------:|----------------:|----------:|-------------:|--------------:|\n|   2022 |      352 |           51.1 |       0.007 |         0.05  |            1.01 |       2.4 |       -0.29  |         0.074 |\n|   2023 |      359 |           48.5 |      -0.107 |        -0.049 |            0.8  |     -38.6 |       -0.165 |        -0.032 |\n|   2024 |      366 |           53.6 |       0.085 |         0.128 |            1.17 |      31.1 |        0.001 |         0.158 |\n|   2025 |      388 |           47.9 |      -0.1   |        -0.055 |            0.82 |     -38.9 |        0.058 |        -0.151 |\n|   2026 |      268 |           54.5 |       0.034 |         0.087 |            1.07 |       9   |       -0.094 |         0.103 |",
+  "pre_15m_holdout_regime_md": "| regime            |   trades |   win_rate_pct |   avg_R_net |   avg_R_gross |   profit_factor |   total_R |   long_avg_R |   short_avg_R |\n|:------------------|---------:|---------------:|------------:|--------------:|----------------:|----------:|-------------:|--------------:|\n| Bear (30d < -15%) |      639 |           49.9 |      -0.014 |         0.028 |            0.97 |      -8.8 |       -0.358 |        -0.013 |\n| Bull (30d > +15%) |      404 |           46.8 |      -0.115 |        -0.071 |            0.79 |     -46.4 |       -0.115 |       nan     |\n| Sideways          |      690 |           54.2 |       0.029 |         0.087 |            1.06 |      20.1 |       -0.039 |         0.061 |\n| High volatility   |      824 |           48.8 |      -0.078 |        -0.035 |            0.86 |     -64.2 |       -0.16  |        -0.031 |\n| Low volatility    |      909 |           52.8 |       0.032 |         0.086 |            1.06 |      29.2 |       -0.024 |         0.064 |",
+  "pre_15m_combined_regime_md": "| regime            |   trades |   win_rate_pct |   avg_R_net |   avg_R_gross |   profit_factor |   total_R |   long_avg_R |   short_avg_R |\n|:------------------|---------:|---------------:|------------:|--------------:|----------------:|----------:|-------------:|--------------:|\n| Bear (30d < -15%) |      963 |           49.3 |      -0.025 |         0.015 |            0.95 |     -24   |       -0.358 |        -0.024 |\n| Bull (30d > +15%) |      793 |           50.1 |      -0.052 |        -0.006 |            0.9  |     -41.3 |       -0.051 |        -1.046 |\n| Sideways          |     1180 |           53.1 |       0.014 |         0.074 |            1.03 |      17.1 |       -0.016 |         0.033 |\n| High volatility   |     1360 |           48.5 |      -0.085 |        -0.041 |            0.84 |    -115.4 |       -0.11  |        -0.069 |\n| Low volatility    |     1576 |           53.2 |       0.043 |         0.098 |            1.09 |      67.2 |        0.015 |         0.065 |",
+  "pre_15m_exit_reasons": {
+    "SL": 851,
+    "STOP_AFTER_TP": 644,
+    "TP3": 237,
+    "END": 1
+  },
+  "pre_15m_cost_sensitivity_md": "| costs                                |   trades |   avg_R_net |   profit_factor |   total_R |   t_stat |   max_dd_pct |\n|:-------------------------------------|---------:|------------:|----------------:|----------:|---------:|-------------:|\n| Binance VIP0 (0.05/0.02 + 0.02 slip) |     1733 |      -0.02  |            0.96 |     -35   |    -0.74 |        -37.6 |\n| Reduced (0.04/0.016 + 0.01 slip)     |     1772 |      -0.01  |            0.98 |     -17.3 |    -0.36 |        -37.4 |\n| Low (0.02/0.0 + 0.01 slip)           |     1791 |       0.013 |            1.03 |      22.7 |     0.47 |        -31.3 |\n| Zero costs (gross)                   |     1792 |       0.025 |            1.05 |      44.4 |     0.92 |        -29   |",
+  "score_buckets_5m_md": "| bucket                |   setups |   win_rate_pct |   avg_R_net |   avg_R_gross |   t_stat |\n|:----------------------|---------:|---------------:|------------:|--------------:|---------:|\n| NO TRADE (<50)        |        0 |          nan   |     nan     |       nan     |   nan    |\n| WEAK (50-64)          |       49 |           55.1 |      -0.044 |         0.034 |    -0.29 |\n| VALID (65-79)         |     2470 |           51.3 |      -0.045 |         0.025 |    -1.97 |\n| STRONG (80-89)        |     1591 |           48.6 |      -0.076 |        -0.013 |    -2.69 |\n| HIGH-CONVICTION (90+) |       96 |           47.9 |      -0.078 |        -0.012 |    -0.67 |",
+  "score_rank_corr_5m": 0.0271,
+  "score_buckets_15m_md": "| bucket                |   setups |   win_rate_pct |   avg_R_net |   avg_R_gross |   t_stat |\n|:----------------------|---------:|---------------:|------------:|--------------:|---------:|\n| NO TRADE (<50)        |        0 |          nan   |     nan     |       nan     |   nan    |\n| WEAK (50-64)          |       77 |           46.8 |      -0.118 |        -0.056 |    -0.92 |\n| VALID (65-79)         |     1501 |           50.8 |      -0.037 |         0.017 |    -1.27 |\n| STRONG (80-89)        |      753 |           48.3 |      -0.05  |        -0.006 |    -1.18 |\n| HIGH-CONVICTION (90+) |       51 |           49   |      -0.134 |        -0.096 |    -0.91 |",
+  "score_rank_corr_15m": 0.0674,
+  "delta_estimate_quality_BTC_2024": {
+    "bars": 105408,
+    "corr_bar": 0.5473875576961844,
+    "sign_agreement_pct": 71.09232695810564,
+    "corr_pressure_10": 0.5213568634626933,
+    "corr_pressure_50": 0.45800413465688805
+  },
+  "delta_estimate_quality_SOL_2024": {
+    "bars": 105408,
+    "corr_bar": 0.48529996422328747,
+    "sign_agreement_pct": 69.35811323618701,
+    "corr_pressure_10": 0.5004890855236898,
+    "corr_pressure_50": 0.3878720244661355
+  }
+}

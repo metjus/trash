@@ -1,0 +1,257 @@
+
+// ═════════════════════════════════════════════════════════════════════════════════════════════════
+// STRATEGY EXECUTION
+// ═════════════════════════════════════════════════════════════════════════════════════════════════
+const string G_POS = "⑩ Strategy: position sizing"
+sizeMode    = input.string("Risk % of equity", "Sizing mode", options = ["Risk % of equity", "% of equity (notional)", "Fixed quantity"], group = G_POS)
+riskPct     = input.float(1.0, "Risk per trade (% of equity)", minval = 0.01, step = 0.1, group = G_POS)
+notionalPct = input.float(100.0, "Notional (% of equity)", minval = 1, step = 5, group = G_POS)
+fixedQty    = input.float(1.0, "Fixed quantity (contracts / coins)", minval = 0.000001, group = G_POS)
+maxLev      = input.float(5.0, "Max leverage cap (notional / equity)", minval = 1, step = 0.5, group = G_POS, tooltip = "Also set Properties → Margin long/short = 100 / leverage.")
+maxPos      = input.int(1, "Max concurrent positions (same direction)", minval = 1, maxval = 3, group = G_POS, tooltip = "Validation was done with 1 position. Values > 1 are untested.")
+startTime   = input.time(timestamp("01 Jan 2022 00:00 +0000"), "Backtest start", group = G_POS)
+showStats   = input.bool(true, "Show cost-aware stats table", group = G_POS)
+
+type Slot
+    string oid
+    int    dir
+    int    state      // 0 empty, 1 pending limit, 2 open
+    int    setupBar
+    float  entry
+    float  sl
+    float  sl0
+    float  tp1
+    float  tp2
+    float  tp3
+    float  qty
+    float  q1
+    float  q2
+    float  q3
+    int    stage
+    float  ext
+    float  riskCash
+
+var array<Slot> slots = array.new<Slot>()
+var map<string, float> riskMap = map.new<string, float>()
+if barstate.isfirst
+    for i = 1 to 3
+        array.push(slots, Slot.new(oid = "CFE" + str.tostring(i), dir = 0, state = 0))
+
+f_openIdx(string oid) =>
+    int idx = -1
+    int n = strategy.opentrades
+    if n > 0
+        for i = 0 to n - 1
+            if strategy.opentrades.entry_id(i) == oid
+                idx := i
+                break
+    idx
+
+f_sjson(string ev, Slot s) =>
+    '{"event":"' + ev + '","symbol":"' + syminfo.ticker + '","tf":"' + timeframe.period + '","side":"' + (s.dir == 1 ? "long" : "short") + '","order":"' + (isLimit ? "limit" : "market") + '","id":"' + s.oid + '","qty":' + str.tostring(s.qty, "#.########") + ',"entry":' + f_num(s.entry) + ',"sl":' + f_num(s.sl) + ',"tp1":' + f_num(s.tp1) + ',"tp2":' + f_num(s.tp2) + ',"tp3":' + f_num(s.tp3) + ',"q1":' + str.tostring(s.q1, "#.########") + ',"q2":' + str.tostring(s.q2, "#.########") + ',"q3":' + str.tostring(s.q3, "#.########") + ',"price":' + f_num(close) + (botId != "" ? ',"bot":"' + botId + '"' : "") + '}'
+
+f_salert(string ev, Slot s) =>
+    if jsonAlerts
+        alert(f_sjson(ev, s), alert.freq_once_per_bar_close)
+    else
+        alert("CFE-S " + ev + " " + syminfo.ticker + " " + timeframe.period + " " + (s.dir == 1 ? "LONG" : "SHORT") + " entry " + f_fmt(s.entry) + " SL " + f_fmt(s.sl) + " TP1 " + f_fmt(s.tp1) + " TP2 " + f_fmt(s.tp2) + " TP3 " + f_fmt(s.tp3), alert.freq_once_per_bar_close)
+
+f_qty(float e, float s) =>
+    float eq = strategy.equity
+    float q = sizeMode == "Risk % of equity" ? eq * riskPct / 100.0 / math.abs(e - s) : sizeMode == "% of equity (notional)" ? eq * notionalPct / 100.0 / e : fixedQty
+    math.max(0.0, math.min(q, eq * maxLev / e))
+
+f_placeExits(Slot s) =>
+    if s.stage < 1 and s.q1 > 0
+        strategy.exit(s.oid + "-TP1", s.oid, qty = s.q1, limit = s.tp1, stop = s.sl, comment_profit = "TP1", comment_loss = s.stage == 0 ? "SL" : "STOP")
+    if s.stage < 2 and s.q2 > 0
+        strategy.exit(s.oid + "-TP2", s.oid, qty = s.q2, limit = s.tp2, stop = s.sl, comment_profit = "TP2", comment_loss = s.stage == 0 ? "SL" : "STOP")
+    if s.q3 > 0
+        strategy.exit(s.oid + "-TP3", s.oid, qty = s.q3, limit = s.tp3, stop = s.sl, comment_profit = "TP3", comment_loss = s.stage == 0 ? "SL" : "STOP")
+
+f_cancelAll(Slot s) =>
+    strategy.cancel(s.oid)
+    strategy.cancel(s.oid + "-TP1")
+    strategy.cancel(s.oid + "-TP2")
+    strategy.cancel(s.oid + "-TP3")
+
+bool inWindow = time >= startTime
+int  openCnt = 0
+int  openDir = 0
+
+// ---- 1) manage existing slots ----
+for s in slots
+    if s.state == 1
+        int oi = f_openIdx(s.oid)
+        if oi >= 0
+            s.state := 2
+            s.entry := strategy.opentrades.entry_price(oi)
+            s.ext := s.entry
+            map.put(riskMap, s.oid + "@" + str.tostring(strategy.opentrades.entry_bar_index(oi)), s.riskCash)
+            f_salert("FILLED", s)
+        else
+            bool tp1First = s.dir == 1 ? high >= s.tp1 : low <= s.tp1
+            if tp1First or bar_index - s.setupBar >= validBars
+                f_cancelAll(s)
+                s.state := 0
+                f_salert(tp1First ? "CANCELLED_TP1_FIRST" : "EXPIRED", s)
+    if s.state == 2
+        int oi = f_openIdx(s.oid)
+        if oi < 0
+            s.state := 0
+            f_salert("CLOSED", s)
+        else
+            int d = s.dir
+            float remQty = math.abs(strategy.opentrades.size(oi))
+            // stage from quantities (if partials) or from price extremes reached since the fill
+            if d == 1
+                s.ext := math.max(s.ext, high)
+            else
+                s.ext := math.min(s.ext, low)
+            if s.stage == 0 and ((s.q1 > 0 and remQty <= s.qty - s.q1 + 1e-12) or (s.ext - s.tp1) * d >= 0)
+                s.stage := 1
+                f_salert("TP1", s)
+            if s.stage == 1 and ((s.q2 > 0 and remQty <= s.q3 + 1e-12) or (s.ext - s.tp2) * d >= 0)
+                s.stage := 2
+                f_salert("TP2", s)
+            bool oppSig = d == 1 ? sigS : sigL
+            bool chochAgainst = d == 1 ? bearBreak == 2 : bullBreak == 2
+            bool htfFlip = d * htfAlign <= -0.5
+            if (exitOnOpp and oppSig) or (exitOnWarn and (chochAgainst or htfFlip)) or (maxBarsIn > 0 and bar_index - s.setupBar >= maxBarsIn)
+                strategy.close(s.oid, comment = "EXIT")
+                f_cancelAll(s)
+                s.state := 0
+                f_salert("EXIT", s)
+            else
+                if s.stage >= 1 and beAfterTp1
+                    float be = s.entry + d * s.entry * 2.0 * (feeTaker + slipPct) / 100.0
+                    if (be - s.sl) * d > 0
+                        s.sl := be
+                if s.stage >= 2 and lockAfterTp2
+                    if (s.tp1 - s.sl) * d > 0
+                        s.sl := s.tp1
+                if s.stage >= 1 and trailAtr > 0
+                    float trl = s.ext - d * trailAtr * atr
+                    if (trl - s.sl) * d > 0
+                        s.sl := trl
+                f_placeExits(s)
+                openCnt += 1
+                openDir := d
+
+// ---- 2) new setups ----
+if inWindow and (sigL or sigS)
+    int d = sigL ? 1 : -1
+    // a newer setup replaces any pending limit order
+    for s in slots
+        if s.state == 1
+            f_cancelAll(s)
+            s.state := 0
+    bool allowed = openCnt == 0 or (openDir == d and openCnt < maxPos)
+    if allowed
+        Slot free = na
+        for s in slots
+            if s.state == 0 and na(free)
+                free := s
+        if not na(free)
+            float e = sigL ? entryL : entryS
+            float sl0 = sigL ? slL : slS
+            float q = f_qty(e, sl0)
+            if q > 0
+                free.dir := d
+                free.state := isLimit ? 1 : 2
+                free.setupBar := bar_index
+                free.entry := e
+                free.sl := sl0
+                free.sl0 := sl0
+                free.tp1 := sigL ? tp1L : tp1S
+                free.tp2 := sigL ? tp2L : tp2S
+                free.tp3 := sigL ? tp3L : tp3S
+                free.qty := q
+                free.q1 := q * tp1Pct / 100.0
+                free.q2 := q * tp2Pct / 100.0
+                free.q3 := math.max(q - free.q1 - free.q2, 0.0)
+                free.stage := 0
+                free.ext := e
+                free.riskCash := q * math.abs(e - sl0)
+                string cmt = (d == 1 ? "LONG " : "SHORT ") + str.tostring(sigL ? scoreL : scoreS, "#")
+                if isLimit
+                    strategy.entry(free.oid, d == 1 ? strategy.long : strategy.short, qty = q, limit = e, comment = cmt)
+                else
+                    strategy.entry(free.oid, d == 1 ? strategy.long : strategy.short, qty = q, comment = cmt)
+                f_placeExits(free)
+                f_salert(d == 1 ? "LONG" : "SHORT", free)
+
+// ---- 3) visuals ----
+Slot vis = na
+for s in slots
+    if s.state > 0 and na(vis)
+        vis := s
+float vE = na
+float vS = na
+float v1 = na
+float v2 = na
+float v3 = na
+if not na(vis)
+    vE := vis.entry
+    vS := vis.sl
+    v1 := vis.tp1
+    v2 := vis.tp2
+    v3 := vis.tp3
+plot(vE, "Entry", color.new(color.gray, 0), 1, plot.style_linebr)
+plot(vS, "Stop", color.new(#EF5350, 0), 1, plot.style_linebr)
+plot(v1, "TP1", color.new(#26A69A, 40), 1, plot.style_linebr)
+plot(v2, "TP2", color.new(#26A69A, 0), 1, plot.style_linebr)
+plot(v3, "TP3", color.new(#26A69A, 0), 2, plot.style_linebr)
+plot(showEma ? emaB : na, "EMA 200", color.new(#E0E0E0, 30), 1)
+plotshape(inWindow and sigL, "LONG setup", shape.triangleup, location.belowbar, color.new(#089981, 0), size = size.small)
+plotshape(inWindow and sigS, "SHORT setup", shape.triangledown, location.abovebar, color.new(#F23645, 0), size = size.small)
+
+// ---- 4) cost-aware statistics (per POSITION, partial exits aggregated) ----
+var table st = table.new(position.bottom_right, 2, 12, bgcolor = color.new(#131722, 8), border_color = color.new(#363A45, 0), border_width = 1)
+f_srow(int r, string k, string v) =>
+    table.cell(st, 0, r, k, text_color = color.new(#B2B5BE, 0), text_halign = text.align_left, text_size = size.small)
+    table.cell(st, 1, r, v, text_color = color.white, text_halign = text.align_right, text_size = size.small)
+
+if showStats and barstate.islastconfirmedhistory or showStats and barstate.islast
+    map<string, float> pnlByPos = map.new<string, float>()
+    float fundEst = 0.0
+    float longNet = 0.0
+    float shortNet = 0.0
+    float durH = 0.0
+    int nCt = strategy.closedtrades
+    int first = strategy.closedtrades.first_index
+    if nCt > first
+        for i = first to nCt - 1
+            string k = strategy.closedtrades.entry_id(i) + "@" + str.tostring(strategy.closedtrades.entry_bar_index(i))
+            float pr = strategy.closedtrades.profit(i)
+            map.put(pnlByPos, k, nz(map.get(pnlByPos, k)) + pr)
+            float notional = math.abs(strategy.closedtrades.size(i)) * strategy.closedtrades.entry_price(i)
+            float hrs = (strategy.closedtrades.exit_time(i) - strategy.closedtrades.entry_time(i)) / 3600000.0
+            fundEst += notional * fundPct8h / 100.0 * hrs / 8.0
+            durH += hrs
+            if strategy.closedtrades.size(i) > 0
+                longNet += pr
+            else
+                shortNet += pr
+    int nPos = 0
+    int nWin = 0
+    float sumR = 0.0
+    for [k, v] in pnlByPos
+        float rc = map.get(riskMap, k)
+        if not na(rc) and rc > 0
+            nPos += 1
+            sumR += v / rc
+            if v > 0
+                nWin += 1
+    f_srow(0, "CFE-S stats (positions)", "")
+    f_srow(1, "Positions", str.tostring(nPos))
+    f_srow(2, "Win rate", nPos > 0 ? str.tostring(100.0 * nWin / nPos, "#.#") + "%" : "N/A")
+    f_srow(3, "Avg R / position (after commission)", nPos > 0 ? f_signed(sumR / nPos, "#.###") : "N/A")
+    f_srow(4, "Profit factor", strategy.grossloss > 0 ? str.tostring(strategy.grossprofit / strategy.grossloss, "#.##") : "N/A")
+    f_srow(5, "Net profit (commission incl.)", str.tostring(strategy.netprofit, "#.##") + " " + strategy.account_currency)
+    f_srow(6, "Est. funding (both sides pay)", "-" + str.tostring(fundEst, "#.##"))
+    f_srow(7, "Net after est. funding", str.tostring(strategy.netprofit - fundEst, "#.##"))
+    f_srow(8, "Max drawdown", str.tostring(strategy.max_drawdown, "#.##") + " (" + str.tostring(strategy.max_drawdown_percent, "#.##") + "%)")
+    f_srow(9, "Avg holding time (per fill)", nCt > first ? str.tostring(durH / (nCt - first), "#.#") + " h" : "N/A")
+    f_srow(10, "Long net / Short net", str.tostring(longNet, "#.##") + " / " + str.tostring(shortNet, "#.##"))
+    f_srow(11, "Costs", "comm " + str.tostring(feeTaker, "#.###") + "%/side · funding est. " + str.tostring(fundPct8h, "#.###") + "%/8h")
