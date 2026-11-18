@@ -3,14 +3,14 @@
 // STRATEGY EXECUTION
 // ═════════════════════════════════════════════════════════════════════════════════════════════════
 const string G_POS = "⑩ Strategy: position sizing"
-sizeMode    = input.string("Risk % of equity", "Sizing mode", options = ["Risk % of equity", "% of equity (notional)", "Fixed quantity"], group = G_POS)
-riskPct     = input.float(1.0, "Risk per trade (% of equity)", minval = 0.01, step = 0.1, group = G_POS)
-notionalPct = input.float(100.0, "Notional (% of equity)", minval = 1, step = 5, group = G_POS)
-fixedQty    = input.float(1.0, "Fixed quantity (contracts / coins)", minval = 0.000001, group = G_POS)
-maxLev      = input.float(5.0, "Max leverage cap (notional / equity)", minval = 1, step = 0.5, group = G_POS, tooltip = "Also set Properties → Margin long/short = 100 / leverage.")
-maxPos      = input.int(1, "Max concurrent positions (same direction)", minval = 1, maxval = 3, group = G_POS, tooltip = "Validation was done with 1 position. Values > 1 are untested.")
-startTime   = input.time(timestamp("01 Jan 2022 00:00 +0000"), "Backtest start", group = G_POS)
-showStats   = input.bool(true, "Show cost-aware stats table", group = G_POS)
+sizeMode    = input.string("Risk % of equity", "Sizing mode", options = ["Risk % of equity", "% of equity (notional)", "Fixed quantity"], group = G_POS, display = display.none)
+riskPct     = input.float(1.0, "Risk per trade (% of equity)", minval = 0.01, step = 0.1, group = G_POS, display = display.none)
+notionalPct = input.float(100.0, "Notional (% of equity)", minval = 1, step = 5, group = G_POS, display = display.none)
+fixedQty    = input.float(1.0, "Fixed quantity (contracts / coins)", minval = 0.000001, group = G_POS, display = display.none)
+maxLev      = input.float(5.0, "Max leverage cap (notional / equity)", minval = 1, step = 0.5, group = G_POS, tooltip = "Also set Properties → Margin long/short = 100 / leverage.", display = display.none)
+maxPos      = input.int(1, "Max concurrent positions (same direction)", minval = 1, maxval = 3, group = G_POS, tooltip = "Validation was done with 1 position. Values > 1 are untested.", display = display.none)
+startTime   = input.time(timestamp("01 Jan 2022 00:00 +0000"), "Backtest start", group = G_POS, display = display.none)
+showStats   = input.bool(true, "Show cost-aware stats table", group = G_POS, display = display.none)
 
 type Slot
     string oid

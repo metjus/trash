@@ -11,6 +11,7 @@ break a first compile:
   * built-in namespace members that are not on the Pine v6 whitelist below
   * v6 breaking changes: `transp=` / `when=` arguments, history reference on literals, duplicate named
     arguments, linewidth < 1
+  * runtime: negative or zero `by` step in for loops (TradingView: "'step' in loop must be greater than zero")
 
     python tools/lint_pine.py pine/*.pine          (exit code 1 on errors)
 """
@@ -275,7 +276,10 @@ class Lint:
             if isinstance(v, A.If):
                 self.if_(v, scopes)
             elif isinstance(v, A.ForTo):
-                self.expr(v.start, scopes); self.expr(v.end, scopes); self.expr(getattr(v, "step", None), scopes)
+                st = getattr(v, "step", None)
+                if isinstance(st, A.UnaryOp) and isinstance(st.op, A.USub) or (isinstance(st, A.Constant) and isinstance(st.value, (int, float)) and st.value <= 0):
+                    self.err(v, "'step' in a for loop must be > 0 (Pine counts down automatically when start > end)")
+                self.expr(v.start, scopes); self.expr(v.end, scopes); self.expr(st, scopes)
                 self.block(v.body, scopes, {v.target.id: True})
             elif isinstance(v, A.ForIn):
                 self.expr(v.iter, scopes)
