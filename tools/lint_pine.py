@@ -47,7 +47,7 @@ NS = {
                               "exit_bar_index", "size", "profit", "first_index", "commission"},
     "array": {"new", "from", "size", "get", "set", "push", "pop", "shift", "unshift", "clear", "remove", "insert", "copy"},
     "map": {"new", "put", "get", "contains", "keys", "values", "size", "remove", "clear"},
-    "str": {"tostring", "format", "length", "contains", "replace_all", "upper", "lower", "split"},
+    "str": {"tostring", "format", "length", "contains", "replace_all", "upper", "lower", "split", "trim"},
     "color": {"new", "rgb", "gray", "white", "black", "red", "green", "blue", "teal", "orange", "yellow", "purple",
               "aqua", "lime", "silver", "maroon", "navy", "olive", "fuchsia"},
     "line": {"new", "delete", "set_x1", "set_x2", "set_y1", "set_y2", "set_xy1", "set_xy2", "set_color", "set_style",

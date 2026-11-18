@@ -42,7 +42,7 @@ dispBody     = input.float(0.5, "Displacement: min body / range", minval = 0.0, 
 dispRangeAtr = input.float(0.8, "Displacement: min range (× ATR)", minval = 0.0, step = 0.1, group = G_SIG)
 validBars    = input.int(12, "Limit order validity (bars)", minval = 1, group = G_SIG)
 entryOffAtr  = input.float(0.0, "Limit offset toward price (× ATR)", minval = 0.0, step = 0.05, group = G_SIG)
-useSession   = input.bool(true, "Session filter (UTC hours of bar close)", inline = "ses", group = G_SIG)
+useSession   = input.bool(true, "Session filter (UTC hours of bar close, charts < 4h)", inline = "ses", group = G_SIG)
 sesStart     = input.int(13, "from", minval = 0, maxval = 23, inline = "ses", group = G_SIG)
 sesEnd       = input.int(24, "to", minval = 1, maxval = 24, inline = "ses", group = G_SIG)
 
@@ -72,10 +72,11 @@ slipPct      = input.float(0.02, "Slippage % per market fill", minval = 0, step 
 costMult     = input.float(4.0, "Cost filter: SL distance ≥ k × round-trip cost", minval = 0, step = 0.5, group = G_COST, tooltip = "Skips setups whose stop is so tight that fees + slippage would eat a large share of the risk. 4 → costs ≤ 25 % of 1R.")
 fundPct8h    = input.float(0.01, "Funding estimate % per 8h (PnL display only)", step = 0.005, group = G_COST)
 
-tfA1         = input.timeframe("15", "Alignment TF 1 (w 1.0)", group = G_MTF)
-tfA2         = input.timeframe("60", "Alignment TF 2 (w 1.5)", group = G_MTF)
-tfA3         = input.timeframe("240", "Alignment TF 3 (w 2.0)", group = G_MTF)
-useDaily     = input.bool(false, "Add Daily to alignment (w 2.0)", group = G_MTF)
+htfMode      = input.string("Auto", "HTF trend timeframes", options = ["Auto", "Manual"], group = G_MTF, tooltip = "Auto picks higher timeframes relative to the chart: chart < 15m → 15m / 1h / 4h; chart ≥ 15m → the next two of 1h / 4h / 1D / 1W / 1M above the chart (15m chart → 1h / 4h). On 5m and 15m this is exactly the validated configuration. Manual uses the three timeframes below (+ optional Daily).")
+tfA1         = input.timeframe("15", "Manual TF 1 (w 1.0)", group = G_MTF)
+tfA2         = input.timeframe("60", "Manual TF 2 (w 1.5)", group = G_MTF)
+tfA3         = input.timeframe("240", "Manual TF 3 (w 2.0)", group = G_MTF)
+useDaily     = input.bool(false, "Manual: add Daily (w 2.0)", group = G_MTF)
 tfD1         = input.timeframe("1", "Dashboard TF 1", inline = "d1", group = G_MTF)
 tfD2         = input.timeframe("3", "TF 2", inline = "d1", group = G_MTF)
 tfD3         = input.timeframe("5", "TF 3", inline = "d1", group = G_MTF)
@@ -101,7 +102,7 @@ deltaSrc     = input.string("OHLC estimate", "Buy/sell pressure source", options
 deltaLtf     = input.timeframe("1", "Intrabar TF for estimate", group = G_IND)
 rsiLen       = input.int(14, "RSI length", minval = 2, group = G_IND)
 atrLen       = input.int(14, "ATR length", minval = 1, group = G_IND)
-atrRankLen   = input.int(500, "ATR percentile lookback", minval = 50, group = G_IND)
+atrRankLen   = input.int(500, "ATR percentile lookback (capped at 200 on charts ≥ 4h)", minval = 50, group = G_IND)
 volMaxRank   = input.float(99.0, "Skip setups above ATR percentile", minval = 50, maxval = 100, group = G_IND)
 
 wTrend       = input.float(45, "Weight: trend / MTF", minval = 0, group = G_SIG, inline = "w1")
@@ -216,9 +217,11 @@ float emaS  = ta.ema(close, emaSlowLen)
 float emaB  = ta.ema(close, emaBaseLen)
 float tLocal = f_trend()
 
+int   chSec   = timeframe.in_seconds()
+int   rankLen = chSec >= 14400 ? math.min(atrRankLen, 200) : atrRankLen
 float atr     = ta.atr(atrLen)
 float atrPct  = atr / close
-float atrRank = ta.percentrank(atrPct, atrRankLen)
+float atrRank = ta.percentrank(atrPct, rankLen)
 
 float vAvgPrev = ta.sma(volume, rvolLen)[1]
 float rvol     = vAvgPrev > 0 ? volume / vAvgPrev : 1.0
@@ -264,12 +267,21 @@ bool  upFirst = math.abs(high - open) < math.abs(low - open)
 float pathP1  = upFirst ? high : low
 float pathP2  = upFirst ? low : high
 
-bool  warm = bar_index >= math.max(emaBaseLen, atrRankLen) + 5
+bool  warm = bar_index >= math.max(emaBaseLen, rankLen) + 5
 
 // ═════════════════════════════════════════════════════════════════════════════════════════════════
 // MULTI-TIMEFRAME (no look-ahead)
 // ═════════════════════════════════════════════════════════════════════════════════════════════════
-int chSec = timeframe.in_seconds()
+// Auto HTF ladder: n-th of 15m / 1h / 4h / 1D / 1W / 1M strictly above the chart (chart period if none)
+string upTf1 = chSec < 900 ? "15" : chSec < 3600 ? "60" : chSec < 14400 ? "240" : chSec < 86400 ? "1D" : chSec < 604800 ? "1W" : chSec < timeframe.in_seconds("1M") ? "1M" : timeframe.period
+string upTf2 = chSec < 900 ? "60" : chSec < 3600 ? "240" : chSec < 14400 ? "1D" : chSec < 86400 ? "1W" : chSec < 604800 ? "1M" : timeframe.period
+string upTf3 = chSec < 900 ? "240" : chSec < 3600 ? "1D" : chSec < 14400 ? "1W" : chSec < 86400 ? "1M" : timeframe.period
+bool   autoHtf = htfMode == "Auto"
+bool   fineCh  = chSec < 900
+string tfX1 = autoHtf ? (fineCh ? upTf1 : timeframe.period) : tfA1    // weight 1.0
+string tfX2 = autoHtf ? (fineCh ? upTf2 : upTf1) : tfA2              // weight 1.5
+string tfX3 = autoHtf ? (fineCh ? upTf3 : upTf2) : tfA3              // weight 2.0
+bool   useD = not autoHtf and useDaily
 
 f_tfState(string tf, bool allowLower) =>
     int tfSec = timeframe.in_seconds(tf)
@@ -292,26 +304,27 @@ f_tfState(string tf, bool allowLower) =>
         res := lastLtf
     res
 
-float sA1 = f_tfState(tfA1, false)
-float sA2 = f_tfState(tfA2, false)
-float sA3 = f_tfState(tfA3, false)
-float sAD = useDaily ? f_tfState("1D", false) : na
+float sA1 = f_tfState(tfX1, false)
+float sA2 = f_tfState(tfX2, false)
+float sA3 = f_tfState(tfX3, false)
+float sAD = useD ? f_tfState("1D", false) : na
 
 float alNum = 0.0
 float alW   = 0.0
-if timeframe.in_seconds(tfA1) > chSec
+if timeframe.in_seconds(tfX1) > chSec
     alNum += 1.0 * nz(sA1)
     alW   += 1.0
-if timeframe.in_seconds(tfA2) > chSec
+if timeframe.in_seconds(tfX2) > chSec
     alNum += 1.5 * nz(sA2)
     alW   += 1.5
-if timeframe.in_seconds(tfA3) > chSec
+if timeframe.in_seconds(tfX3) > chSec
     alNum += 2.0 * nz(sA3)
     alW   += 2.0
-if useDaily and timeframe.in_seconds("1D") > chSec
+if useD and timeframe.in_seconds("1D") > chSec
     alNum += 2.0 * nz(sAD)
     alW   += 2.0
-float htfAlign = alW > 0 ? alNum / alW : 0.0
+// no higher timeframe available (e.g. a monthly chart) → fall back to the chart's own trend state
+float htfAlign = alW > 0 ? alNum / alW : tLocal
 
 float sD1 = f_tfState(tfD1, useLtf)
 float sD2 = f_tfState(tfD2, useLtf)
@@ -535,6 +548,7 @@ bool  disp     = bodyFrac >= dispBody and rangeAtr >= dispRangeAtr
 float rtCost   = 2.0 * (feeTaker + slipPct) / 100.0
 bool  isLimit  = entryModeIn == EM_LIMIT
 bool  inSess   = hour(time_close - 1, "UTC") >= sesStart and hour(time_close - 1, "UTC") < sesEnd
+bool  sesOn    = useSession and chSec < 14400
 
 // Score layers (each 0..1); weights are inputs (defaults from calibration – see docs).
 f_score(int d, float distV, float roomR, bool sweepRecent, bool fvgNew) =>
@@ -562,7 +576,7 @@ bool  okL    = distL >= slMinAtr * atr and distL <= slMaxAtr * atr and distL / e
 float roomL  = (up1 - entryL) / distL
 if roomMinR > 0
     okL := okL and (na(roomL) or roomL >= roomMinR)
-if useSession
+if sesOn
     okL := okL and inSess
 bool  ctxL   = htfAlign >= htfMin - 1e-9
 float tp1L   = entryL + tp1R * distL
@@ -593,7 +607,7 @@ bool  okS    = distS >= slMinAtr * atr and distS <= slMaxAtr * atr and distS / e
 float roomS  = (entryS - dn1) / distS
 if roomMinR > 0
     okS := okS and (na(roomS) or roomS >= roomMinR)
-if useSession
+if sesOn
     okS := okS and inSess
 bool  ctxS   = -htfAlign >= htfMin - 1e-9
 float tp1S   = entryS - tp1R * distS
@@ -1055,7 +1069,8 @@ if showDash and barstate.islast
     // MARKET STATUS
     f_head(0, "MARKET STATUS  ·  " + syminfo.ticker + " " + f_tfName(timeframe.period))
     string trTxt = htfAlign >= 0.5 ? "BULLISH" : htfAlign <= -0.5 ? "BEARISH" : "NEUTRAL"
-    f_row(1, "Current trend (HTF)", trTxt + " (" + f_signed(htfAlign, "#.##") + ")", htfAlign >= 0.5 ? cLong : htfAlign <= -0.5 ? cShort : neu)
+    string htfUsed = (timeframe.in_seconds(tfX1) > chSec ? f_tfName(tfX1) + " " : "") + (timeframe.in_seconds(tfX2) > chSec ? f_tfName(tfX2) + " " : "") + (timeframe.in_seconds(tfX3) > chSec ? f_tfName(tfX3) + " " : "") + (useD and timeframe.in_seconds("1D") > chSec ? "1D" : "")
+    f_row(1, "Current trend (HTF " + (htfUsed == "" ? "n/a, chart TF" : str.trim(htfUsed)) + ")", trTxt + " (" + f_signed(htfAlign, "#.##") + ")", htfAlign >= 0.5 ? cLong : htfAlign <= -0.5 ? cShort : neu)
     string msTxt = (msState == 1 ? "BULLISH" : msState == -1 ? "BEARISH" : "UNDEFINED") + " · " + lastStructEvt + (hhhl == 1 ? " · HH/HL" : hhhl == -1 ? " · LH/LL" : "")
     f_row(2, "Market structure", msTxt, msState == 1 ? cLong : msState == -1 ? cShort : neu)
     string vReg = na(atrRank) ? "N/A" : atrRank >= 97 ? "EXTREME" : atrRank >= 80 ? "HIGH" : atrRank >= 20 ? "NORMAL" : "LOW"
