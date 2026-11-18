@@ -128,7 +128,7 @@ showScen     = input.bool(true, "LONG / SHORT scenarios (trigger level, projecte
 showDash     = input.bool(true, "Dashboard", group = G_VIS, display = display.none)
 dashPos      = input.string("Top right", "Dashboard position", options = ["Top right", "Top left", "Bottom right", "Bottom left"], group = G_VIS, display = display.none)
 dashSize     = input.string("Small", "Dashboard text", options = ["Tiny", "Small", "Normal"], group = G_VIS, display = display.none)
-detailLbl    = input.bool(true, "Detailed signal labels", group = G_VIS, display = display.none)
+detailLbl    = input.bool(false, "Detailed signal labels (prices on the label)", group = G_VIS, display = display.none)
 
 jsonAlerts   = input.bool(true, "alert() messages as JSON (webhook)", group = G_ALR, display = display.none)
 botId        = input.string("", "Bot / strategy ID (optional, added to JSON)", group = G_ALR, display = display.none)
@@ -890,7 +890,7 @@ if barstate.isconfirmed
         string head = (d == 1 ? "▲ LONG " : "▼ SHORT ") + str.tostring(sc, "#")
         string body = "\n" + (isLimit ? "Limit " : "Entry ") + f_fmt(e) + "\nSL " + f_fmt(s) + "  R:R 1:" + str.tostring(rr2, "#.#")
         string tip  = (d == 1 ? "LONG" : "SHORT") + " – " + f_bucket(sc) + " (" + str.tostring(sc, "#") + "/100)\nEntry (" + (isLimit ? "limit, valid " + str.tostring(validBars) + " bars" : "market @ close") + "): " + f_fmt(e) + "\nStop loss: " + f_fmt(s) + "\nInvalidation (impulse-leg extreme): " + f_fmt(sigL ? legL : legS) + "\nTP1: " + f_fmt(tr.tp1) + "\nTP2: " + f_fmt(tr.tp2) + "\nTP3: " + f_fmt(tr.tp3) + "\nR:R (TP2): 1:" + str.tostring(rr2, "#.##") + "\nTrigger: " + ((sigL ? bullBreak : bearBreak) == 2 ? "CHoCH" : "BOS") + " with displacement\nHTF alignment: " + str.tostring(d * htfAlign, "#.##")
-        label.new(bar_index, d == 1 ? low : high, head + (detailLbl ? body : ""), style = d == 1 ? label.style_label_up : label.style_label_down, color = d == 1 ? cLong : cShort, textcolor = color.white, size = size.small, tooltip = tip)
+        label.new(bar_index, d == 1 ? low - 0.8 * atr : high + 0.8 * atr, head + (detailLbl ? body : ""), style = d == 1 ? label.style_label_up : label.style_label_down, color = d == 1 ? cLong : cShort, textcolor = color.white, size = size.small, tooltip = tip)
 
     // ---------------- trend reversal (HTF alignment) ----------------
     int tdir = htfAlign >= 0.5 ? 1 : htfAlign <= -0.5 ? -1 : 0
