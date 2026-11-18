@@ -1,0 +1,920 @@
+<title>CFE v akcii</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a trading desk — chart and indicator dashboard side by side, the replay narration under the chart,
+   the signal pipeline above as the reading rail, validation results closing the page. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --ink: #11151b;
+  --ink-2: #47505c;
+  --muted: #7f8894;
+  --line: #e1e4e9;
+  --grid: #eceef2;
+  --accent: #2a62d6;
+  --accent-soft: rgba(42, 98, 214, 0.10);
+  --bull: #0f9a6b;
+  --bear: #d93c43;
+  --warn: #b97400;
+  --ob: #6c58cf;
+  --ema20: #3c86e0;
+  --ema50: #d9822b;
+  --ema200: #8a919c;
+  --session: rgba(42, 98, 214, 0.045);
+  --future: rgba(17, 21, 27, 0.035);
+  --on-fill: #ffffff;
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0e12; --surface: #12171e; --surface-2: #171d25; --ink: #e6eaef; --ink-2: #a7b0bc; --muted: #737c89;
+    --line: #242b35; --grid: #1a2029; --accent: #5d90f0; --accent-soft: rgba(93, 144, 240, 0.14);
+    --bull: #26b887; --bear: #f05d63; --warn: #eea532; --ob: #9b8cf2; --ema20: #5d9ff0; --ema50: #eb9a45; --ema200: #8f97a3;
+    --session: rgba(93, 144, 240, 0.06); --future: rgba(255, 255, 255, 0.025); --on-fill: #ffffff; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b0e12; --surface: #12171e; --surface-2: #171d25; --ink: #e6eaef; --ink-2: #a7b0bc; --muted: #737c89;
+  --line: #242b35; --grid: #1a2029; --accent: #5d90f0; --accent-soft: rgba(93, 144, 240, 0.14);
+  --bull: #26b887; --bear: #f05d63; --warn: #eea532; --ob: #9b8cf2; --ema20: #5d9ff0; --ema50: #eb9a45; --ema200: #8f97a3;
+  --session: rgba(93, 144, 240, 0.06); --future: rgba(255, 255, 255, 0.025); --on-fill: #ffffff; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 22px; }
+h1, h2, h3 { font-family: var(--font-sans); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(30px, 4.2vw, 44px); font-weight: 700; line-height: 1.08; }
+h2 { font-size: 22px; font-weight: 600; }
+h3 { font-size: 15px; font-weight: 600; }
+p { margin: 0; }
+.mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lead { max-width: 72ch; color: var(--ink-2); font-size: 16px; }
+header.top { display: grid; gap: 12px; }
+.note { display: flex; gap: 10px; align-items: flex-start; max-width: 80ch; font-size: 14px; color: var(--ink-2);
+  border-left: 3px solid var(--warn); padding: 4px 0 4px 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+
+/* pipeline */
+.pipe { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px 13px; display: grid; gap: 6px;
+  transition: border-color .2s, background .2s; min-width: 0; }
+.step .hd { display: flex; align-items: center; gap: 8px; }
+.step .no { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.step .st { margin-left: auto; font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
+.step p { font-size: 13px; color: var(--ink-2); line-height: 1.45; }
+.step[data-s="ok"] { border-color: color-mix(in srgb, var(--bull) 55%, var(--line)); }
+.step[data-s="ok"] .st { color: var(--bull); }
+.step[data-s="fail"] { border-color: color-mix(in srgb, var(--bear) 55%, var(--line)); }
+.step[data-s="fail"] .st { color: var(--bear); }
+.step[data-s="active"] { border-color: var(--accent); background: var(--accent-soft); }
+.step[data-s="active"] .st { color: var(--accent); }
+
+/* desk */
+.desk { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+.chartcard { display: grid; min-width: 0; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.bar .sym { font-family: var(--font-mono); font-weight: 600; font-size: 14px; }
+.bar .meta { color: var(--muted); font-size: 13px; }
+.toggles { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; }
+.tg { font: 500 12px var(--font-sans); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-2); cursor: pointer; }
+.tg[aria-pressed="true"] { color: var(--ink); border-color: var(--ink-2); }
+.canvas-box { position: relative; height: 470px; }
+canvas#chart { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: pan-y; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+  font: 12px/1.45 var(--font-mono); color: var(--ink); box-shadow: 0 6px 20px rgba(0,0,0,.12); min-width: 168px; z-index: 3; }
+.tip .t { color: var(--muted); margin-bottom: 4px; }
+.tip .ev { margin-top: 4px; color: var(--ink-2); font-family: var(--font-sans); }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 12px 14px; border-top: 1px solid var(--line); }
+.btn { font: 500 13px var(--font-sans); height: 34px; min-width: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn:hover { border-color: var(--ink-2); }
+.btn.primary { background: var(--accent); color: var(--on-fill); border-color: var(--accent); min-width: 92px; }
+.btn:focus-visible, .tg:focus-visible, input:focus-visible, select:focus-visible, .jump:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type=range] { flex: 1 1 180px; min-width: 140px; accent-color: var(--accent); }
+.clock { font: 500 13px var(--font-mono); color: var(--ink-2); white-space: nowrap; }
+.clock b { color: var(--ink); font-weight: 600; }
+.forming { color: var(--warn); }
+label.chk { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--ink-2); }
+select { font: 13px var(--font-sans); height: 34px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); padding: 0 8px; }
+.jumps { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 14px; }
+.jump { font: 500 12px var(--font-sans); padding: 5px 10px; border-radius: 999px; border: 1px dashed var(--line); background: transparent; color: var(--ink-2); cursor: pointer; }
+.jump:hover { color: var(--ink); border-color: var(--ink-2); }
+
+/* narration */
+.narr { padding: 16px 18px 18px; display: grid; gap: 10px; border-top: 1px solid var(--line); }
+.narr .h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.narr .body { display: grid; gap: 8px; max-width: 86ch; color: var(--ink-2); }
+.narr .body b { color: var(--ink); font-weight: 600; }
+.narr .body .pv { border-left: 3px solid var(--warn); padding-left: 10px; }
+.narr .body .why { font-size: 14px; }
+.tag { font: 600 11px var(--font-mono); letter-spacing: .04em; padding: 2px 7px; border-radius: 5px; color: var(--on-fill); white-space: nowrap; }
+.tag.l { background: var(--bull); } .tag.s { background: var(--bear); } .tag.n { background: var(--muted); } .tag.w { background: var(--warn); } .tag.a { background: var(--accent); }
+
+/* dashboard replica */
+.dash { overflow: hidden; font-size: 12.5px; }
+.dash .cap { padding: 12px 14px 10px; display: grid; gap: 2px; border-bottom: 1px solid var(--line); }
+.dash .cap small { color: var(--muted); font-size: 12px; }
+.dash table { width: 100%; border-collapse: collapse; }
+.dash th { text-align: left; font: 600 11.5px var(--font-mono); letter-spacing: .06em; color: var(--ink); background: var(--surface-2);
+  padding: 7px 14px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.dash td { padding: 5px 14px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+.dash td:first-child { color: var(--ink-2); width: 46%; }
+.dash td:last-child { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+.c-l { color: var(--bull) !important; } .c-s { color: var(--bear) !important; } .c-w { color: var(--warn) !important; } .c-m { color: var(--muted) !important; }
+
+/* anatomy */
+.anat { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 0; }
+.anat > div { padding: 18px 20px; min-width: 0; display: grid; gap: 12px; align-content: start; }
+.anat > div + div { border-left: 1px solid var(--line); }
+.plan { display: grid; grid-template-columns: auto 1fr auto; gap: 6px 14px; font-size: 14px; align-items: baseline; }
+.plan .k { color: var(--ink-2); }
+.plan .v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.plan .r { font-family: var(--font-mono); color: var(--muted); font-size: 12px; text-align: right; }
+.layers { display: grid; gap: 9px; }
+.ly { display: grid; grid-template-columns: 112px minmax(0, 1fr) 64px; gap: 10px; align-items: center; font-size: 13px; }
+.ly .nm { color: var(--ink-2); }
+.ly .nm small { color: var(--muted); font-family: var(--font-mono); }
+.ly .trk { height: 10px; background: var(--grid); border-radius: 5px; overflow: hidden; }
+.ly .fil { height: 100%; background: var(--accent); border-radius: 5px; }
+.ly .pts { font-family: var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.total { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 10px; }
+.total .big { font: 600 28px var(--font-mono); }
+.small { font-size: 13px; color: var(--ink-2); }
+
+/* legend */
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 14px 18px; font-size: 13px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 18px; height: 10px; border-radius: 3px; display: inline-block; }
+.sw.line { height: 0; border-top: 2px solid; border-radius: 0; }
+.sw.dash { height: 0; border-top: 2px dashed; border-radius: 0; }
+.sw.dot { height: 0; border-top: 2px dotted; border-radius: 0; }
+
+/* results */
+.results { display: grid; gap: 16px; }
+.res-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.tbl-wrap { overflow-x: auto; }
+table.res { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.res th { text-align: right; font: 600 11.5px var(--font-mono); color: var(--muted); letter-spacing: .04em; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.res th:first-child, table.res td:first-child { text-align: left; }
+table.res td { text-align: right; padding: 10px 12px; border-bottom: 1px solid var(--grid); font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.res td:first-child { font-family: var(--font-sans); }
+.verdict { font: 600 11px var(--font-sans); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); white-space: nowrap; }
+.verdict.neg { border-color: color-mix(in srgb, var(--bear) 50%, var(--line)); color: var(--bear); }
+.eq { padding: 14px 16px 10px; display: grid; gap: 8px; position: relative; min-width: 0; }
+.eq svg { width: 100%; height: 280px; display: block; }
+.eq .lg { display: flex; gap: 16px; font-size: 13px; color: var(--ink-2); flex-wrap: wrap; }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.fact { padding: 14px 16px; display: grid; gap: 4px; }
+.fact b { font: 600 20px var(--font-mono); }
+.fact span { font-size: 13px; color: var(--ink-2); }
+footer { color: var(--muted); font-size: 12.5px; max-width: 90ch; }
+footer code { font-family: var(--font-mono); font-size: 12px; }
+
+@media (max-width: 1080px) {
+  .desk { grid-template-columns: minmax(0, 1fr); }
+  .pipe { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pipe .step:last-child { grid-column: 1 / -1; }
+  .res-grid, .anat { grid-template-columns: minmax(0, 1fr); }
+  .anat > div + div { border-left: 0; border-top: 1px solid var(--line); }
+}
+@media (max-width: 560px) {
+  body { font-size: 14.5px; }
+  .canvas-box { height: 360px; }
+  .pipe { grid-template-columns: minmax(0, 1fr); }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+  .toggles { margin-left: 0; }
+  .ly { grid-template-columns: 92px minmax(0, 1fr) 56px; }
+}
+@media (prefers-reduced-motion: reduce) { .step { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">CFE · Confluence Futures Engine · Pine Script v6</div>
+    <h1>CFE v akcii</h1>
+    <p class="lead">Prehrávanie skutočného okna <b class="mono">BINANCE:BTCUSDT.P</b> na 15-minútovom grafe, 16.–17. apríla 2026 (UTC).
+      Každá sviečka, čiara a signál je výstup referenčného enginu, podľa ktorého je napísaný Pine indikátor. Nič nie je dokreslené ručne.</p>
+    <p class="note">Okno obsahuje jeden stratový a jeden ziskový obchod. Ukazuje, ako systém pracuje, nie aký je výkonný. Výsledky celej validácie sú na konci stránky.</p>
+  </header>
+
+  <section class="pipe" aria-label="Ako vzniká signál">
+    <div class="step" id="s1"><div class="hd"><span class="no">1</span><h3>Kontext</h3><span class="st"></span></div>
+      <p>Trend na 1h a 4h (EMA 20/50/100/200) musí ísť v smere obchodu. Default: obe vyššie TF súhlasia.</p></div>
+    <div class="step" id="s2"><div class="hd"><span class="no">2</span><h3>Trigger</h3><span class="st"></span></div>
+      <p>Uzavretie za posledným swingom (BOS/CHoCH) s displacementom: telo ≥ 50 % rozpätia, rozpätie ≥ 0,8 ATR.</p></div>
+    <div class="step" id="s3"><div class="hd"><span class="no">3</span><h3>Plán</h3><span class="st"></span></div>
+      <p>Limit na prelomenej úrovni, SL 0,2 ATR za extrémom impulzu (0,5–6 ATR), TP1/TP2/TP3 = 1/2/3 R.</p></div>
+    <div class="step" id="s4"><div class="hd"><span class="no">4</span><h3>Filtre a skóre</h3><span class="st"></span></div>
+      <p>Stop ≥ 4× náklady, volatilita nie extrémna, session 13–24 UTC, skóre ≥ 70.</p></div>
+    <div class="step" id="s5"><div class="hd"><span class="no">5</span><h3>Riadenie</h3><span class="st"></span></div>
+      <p>Fill → TP1 (⅓, SL na break-even) → TP2 (⅓, SL na TP1) → TP3. Alebo stop.</p></div>
+  </section>
+
+  <section class="desk">
+    <div class="card chartcard">
+      <div class="bar">
+        <span class="sym">BTCUSDT.P</span><span class="meta">15m · Binance USDⓈ-M · UTC</span>
+        <div class="toggles" role="group" aria-label="Vrstvy grafu">
+          <button class="tg" id="tg-ema" aria-pressed="true">EMA</button>
+          <button class="tg" id="tg-struct" aria-pressed="true">BOS / CHoCH</button>
+          <button class="tg" id="tg-liq" aria-pressed="true">Likvidita</button>
+          <button class="tg" id="tg-zones" aria-pressed="true">FVG / OB</button>
+          <button class="tg" id="tg-sess" aria-pressed="true">Session</button>
+        </div>
+      </div>
+      <div class="canvas-box" id="cbox">
+        <canvas id="chart" aria-label="Sviečkový graf BTCUSDT 15m so signálmi CFE" role="img"></canvas>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="b-start" title="Na začiatok okna" aria-label="Na začiatok">⏮</button>
+        <button class="btn" id="b-back" title="Krok späť (←)" aria-label="Krok späť">◀</button>
+        <button class="btn primary" id="b-play" title="Prehrať / pauza (medzerník)">▶ Prehrať</button>
+        <button class="btn" id="b-fwd" title="Krok vpred (→)" aria-label="Krok vpred">▶|</button>
+        <button class="btn" id="b-next" title="Ďalšia udalosť">Ďalšia udalosť ⏭</button>
+        <input type="range" id="scrub" min="0" value="0" aria-label="Pozícia prehrávania">
+        <select id="speed" aria-label="Rýchlosť"><option value="3">1×</option><option value="7" selected>2×</option><option value="16">4×</option></select>
+        <label class="chk"><input type="checkbox" id="formchk" checked> tvorba sviečky po 5 min</label>
+        <span class="clock" id="clock"></span>
+      </div>
+      <div class="jumps" id="jumps" aria-label="Skok na moment"></div>
+      <div class="narr" aria-live="polite">
+        <div class="h"><h3>Čo sa práve deje</h3><span class="small" id="narr-sub"></span></div>
+        <div class="body" id="narr"></div>
+      </div>
+    </div>
+
+    <aside class="card dash" aria-label="Dashboard indikátora">
+      <div class="cap"><h3>Dashboard indikátora</h3><small>Rovnaké riadky ako v TradingView. Stav po poslednej uzavretej sviečke, cena aj z tvoriacej sa.</small></div>
+      <table>
+        <tbody id="dash"></tbody>
+      </table>
+    </aside>
+  </section>
+
+  <section class="card">
+    <div class="anat">
+      <div>
+        <div class="h"><div class="eyebrow" id="an-eyebrow">Rozbor signálu</div></div>
+        <h2 id="an-title">—</h2>
+        <div class="plan" id="an-plan"></div>
+        <p class="small" id="an-res"></p>
+      </div>
+      <div>
+        <div class="eyebrow">Skóre 0–100 z vrstiev (váha × hodnota)</div>
+        <div class="layers" id="an-layers"></div>
+        <div class="total"><span class="big" id="an-total">—</span><span class="small" id="an-bucket"></span></div>
+        <p class="small">Skóre meria mieru konfluencie, nie pravdepodobnosť úspechu. Pri validácii pásma STRONG a HIGH-CONVICTION nedopadli lepšie ako VALID, preto trend dostáva najväčšiu váhu a hranica signálu je 70.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card legend" aria-label="Legenda grafu">
+    <span><i class="sw" style="background:var(--bull)"></i>LONG signál / rastúca sviečka</span>
+    <span><i class="sw dash" style="border-color:var(--accent)"></i>Limit čaká</span>
+    <span><i class="sw line" style="border-color:var(--accent)"></i>Entry (vyplnený)</span>
+    <span><i class="sw line" style="border-color:var(--bear)"></i>Stop loss (posúva sa)</span>
+    <span><i class="sw dot" style="border-color:var(--bull)"></i>TP1 · TP2 · TP3</span>
+    <span><i class="sw dash" style="border-color:var(--ink-2)"></i>BOS / CHoCH</span>
+    <span><i class="sw dot" style="border-color:var(--muted)"></i>Neodobratá likvidita</span>
+    <span><i class="sw" style="background:color-mix(in srgb, var(--bull) 22%, transparent)"></i>FVG</span>
+    <span><i class="sw" style="background:color-mix(in srgb, var(--ob) 25%, transparent)"></i>Order block</span>
+    <span><i class="sw" style="background:var(--session)"></i>Session 13–24 UTC</span>
+  </section>
+
+  <section class="results">
+    <div class="eyebrow">Validácia · Binance USDⓈ-M · 2022-01 až 2026-10 · poplatky, slippage a reálny funding</div>
+    <h2>Čo ukázala validácia</h2>
+    <p class="lead">Na 16 pároch, ktoré sa pri vývoji nikdy nepoužili, je default konfigurácia pred nákladmi približne na nule.
+      Po poplatkoch, slippage a fundingu je na 15m mierne v strate (štatisticky nerozlíšiteľné od nuly) a na 5m jednoznačne v strate.</p>
+    <div class="facts">
+      <div class="card fact"><b>≈ 12 mil.</b><span>5-minútových sviečok, 24 párov</span></div>
+      <div class="card fact"><b>144 × 8</b><span>kombinácií × okien vo walk-forward teste</span></div>
+      <div class="card fact"><b>2 holdouty</b><span>po 8 nových pároch, pravidlá zapísané vopred</span></div>
+    </div>
+    <div class="res-grid">
+      <div class="card tbl-wrap">
+        <table class="res">
+          <thead><tr><th>Test (nové páry)</th><th>Obchody</th><th>Win rate</th><th>Gross R</th><th>Náklady R</th><th>Net R</th><th>PF</th><th>t</th><th></th></tr></thead>
+          <tbody id="res-body"></tbody>
+        </table>
+      </div>
+      <div class="card eq" id="eq">
+        <div class="eyebrow">Holdout 1 · 15m · 1 733 obchodov · 0,5 % riziko na obchod</div>
+        <div class="lg"><span><i class="sw line" style="border-color:var(--accent)"></i>Po nákladoch</span><span><i class="sw line" style="border-color:var(--muted)"></i>Pred nákladmi</span></div>
+        <svg id="eqsvg" role="img" aria-label="Equity krivka holdout 1, 15m, pred a po nákladoch"></svg>
+        <div class="tip" id="eqtip" hidden></div>
+      </div>
+    </div>
+    <footer>Zdroj čísel: <code>docs/03_validation_report.md</code>, <code>results/final_results.json</code>, <code>results/holdout2_results.json</code>.
+      Dáta okna: verejný archív <code>data.binance.vision</code>. Prehrávanie generuje <code>tools/build_replay.py</code>, ktorý pred exportom overí,
+      že zobrazené štruktúry a obchody sa zhodujú s enginom a simulátorom. 1m a 3m stav v dashboarde je N/A, lebo okno obsahuje iba 5m dáta.
+      Nejde o investičné odporúčanie.</footer>
+  </section>
+</div>
+
+<script type="application/json" id="cfe-data">__CFE_DATA__</script>
+<script>
+(function () {
+  "use strict";
+  const D = JSON.parse(document.getElementById("cfe-data").textContent);
+  const B = D.bars, N = B.length;
+  const TRADES = D.trades;
+  const evAt = {}, sevAt = {}, stAt = {};
+  D.events.forEach(e => (evAt[e.bar] = evAt[e.bar] || []).push(e));
+  D.structEvents.forEach(e => (sevAt[e.bar] = sevAt[e.bar] || []).push(e));
+  D.states.forEach(s => { stAt[s.bar] = s; });
+
+  // ---------- formatting ----------
+  const nfP = new Intl.NumberFormat("sk-SK", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const nf2 = new Intl.NumberFormat("sk-SK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const nf0 = new Intl.NumberFormat("sk-SK", { maximumFractionDigits: 0 });
+  const fP = x => (x == null || isNaN(x)) ? "N/A" : nfP.format(x);
+  const f2 = x => nf2.format(x);
+  const sg = (x, f = f2) => (x > 0 ? "+" : x < 0 ? "−" : "") + f(Math.abs(x));
+  const pad = n => String(n).padStart(2, "0");
+  const fT = t => { const d = new Date(t); return d.getUTCDate() + ". " + (d.getUTCMonth() + 1) + ". " + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()); };
+  const fHM = t => { const d = new Date(t); return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()); };
+  const compact = x => x >= 1e9 ? nf2.format(x / 1e9) + " B" : x >= 1e6 ? nf2.format(x / 1e6) + " M" : x >= 1e3 ? nf2.format(x / 1e3) + " K" : nf2.format(x);
+  const bucket = s => s >= 90 ? "HIGH-CONVICTION" : s >= 80 ? "STRONG" : s >= 65 ? "VALID" : s >= 50 ? "WEAK" : "LOW";
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  // ---------- replay position ----------
+  const MAXPOS = N * 3 - 1;
+  let pos = 0, playing = false, timer = null;
+  const layers = { ema: true, struct: true, liq: true, zones: true, sess: true };
+  const formchk = document.getElementById("formchk");
+  const scrub = document.getElementById("scrub");
+  scrub.max = String(MAXPOS);
+  const cur = () => { const k = Math.floor(pos / 3), m = pos % 3; return { k, m, lc: m === 2 ? k : k - 1 }; };
+
+  function stateAt(bar) { return bar >= 0 ? stAt[bar] : null; }
+  function tradeFor(bar) { // latest trade whose setup <= bar
+    let t = null; TRADES.forEach(x => { if (x.setup <= bar) t = x; }); return t;
+  }
+
+  // ---------- chart ----------
+  const canvas = document.getElementById("chart"), box = document.getElementById("cbox"), tip = document.getElementById("tip");
+  const ctx = canvas.getContext("2d");
+  let geo = null, hoverIdx = null;
+
+  function niceStep(range, target) {
+    const raw = range / target, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const n = raw / mag; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * mag;
+  }
+
+  function pill(x, y, text, bg, fg, align, font) {
+    ctx.font = font || "600 11px 'IBM Plex Mono', monospace";
+    const w = ctx.measureText(text).width + 12, h = 18;
+    let x0 = align === "left" ? x : align === "right" ? x - w : x - w / 2;
+    x0 = Math.max(geo.L + 2, Math.min(x0, geo.R + geo.axis - w - 2));
+    ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(x0, y - h / 2, w, h, 4); ctx.fill();
+    ctx.fillStyle = fg; ctx.textBaseline = "middle"; ctx.textAlign = "left"; ctx.fillText(text, x0 + 6, y + 0.5);
+    return { x0, w };
+  }
+
+  function draw() {
+    const W = box.clientWidth, H = box.clientHeight, dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (!ctx.roundRect) ctx.roundRect = function (x, y, w, h) { this.rect(x, y, w, h); };
+    const C = { ink: css("--ink"), ink2: css("--ink-2"), muted: css("--muted"), grid: css("--grid"), line: css("--line"),
+      bull: css("--bull"), bear: css("--bear"), accent: css("--accent"), warn: css("--warn"), ob: css("--ob"),
+      e20: css("--ema20"), e50: css("--ema50"), e200: css("--ema200"), sess: css("--session"), future: css("--future"), surf: css("--surface"), onfill: css("--on-fill") };
+    const axis = 70, L = 6, R = W - axis, T = 16, Bm = H - 26;
+    const { k, m, lc } = cur();
+    const wide = W >= 760;
+    let count = wide ? N : Math.max(48, Math.floor((R - L) / 6.5));
+    let end = wide ? N - 1 : Math.min(N - 1, k + 6);
+    let start = Math.max(0, end - count + 1);
+    if (!wide && start === 0) end = Math.min(N - 1, count - 1);
+    const bw = (R - L) / (end - start + 1);
+    const X = i => L + (i - start + 0.5) * bw;
+    // y range: whole visible span (stable while replaying) + active trade levels
+    let lo = Infinity, hi = -Infinity;
+    for (let i = start; i <= end; i++) { lo = Math.min(lo, B[i].l); hi = Math.max(hi, B[i].h); }
+    TRADES.forEach(t => { if (t.setup >= start && t.setup <= end) { lo = Math.min(lo, t.sl); hi = Math.max(hi, t.tp3); } });
+    const padY = (hi - lo) * 0.06; lo -= padY; hi += padY;
+    const Y = p => T + (hi - p) / (hi - lo) * (Bm - T);
+    geo = { L, R, T, Bm, axis, start, end, bw, X, Y, W, H };
+    ctx.clearRect(0, 0, W, H);
+
+    // session shading
+    if (layers.sess) {
+      ctx.fillStyle = C.sess;
+      for (let i = start; i <= end; i++) if (B[i].sess) ctx.fillRect(X(i) - bw / 2, T, bw + 0.5, Bm - T);
+    }
+    // grid + price axis
+    const step = niceStep(hi - lo, 7);
+    ctx.font = "11px 'IBM Plex Mono', monospace"; ctx.textBaseline = "middle"; ctx.textAlign = "left";
+    for (let p = Math.ceil(lo / step) * step; p <= hi; p += step) {
+      const y = Math.round(Y(p)) + 0.5;
+      ctx.strokeStyle = C.grid; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(R, y); ctx.stroke();
+      ctx.fillStyle = C.muted; ctx.fillText(nf0.format(p), R + 8, y);
+    }
+    // time axis: every 6h
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    for (let i = start; i <= end; i++) {
+      const d = new Date(B[i].t);
+      if (d.getUTCMinutes() === 0 && d.getUTCHours() % (wide ? 6 : 12) === 0) {
+        const x = Math.round(X(i)) + 0.5;
+        ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(x, T); ctx.lineTo(x, Bm); ctx.stroke();
+        ctx.fillStyle = C.muted;
+        ctx.fillText(d.getUTCHours() === 0 ? (d.getUTCDate() + ". " + (d.getUTCMonth() + 1) + ".") : fHM(B[i].t), x, Bm + 7);
+      }
+    }
+    // future region
+    const lastShown = m === 2 ? k : k;
+    if (lastShown < end) {
+      const fx = X(lastShown) + bw / 2;
+      ctx.fillStyle = C.future; ctx.fillRect(fx, T, R - fx, Bm - T);
+      if (R - fx > 150) { ctx.fillStyle = C.muted; ctx.font = "12px 'IBM Plex Sans', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText("budúcnosť – engine ju nevidí", (fx + R) / 2, T + 18); }
+    }
+    ctx.save(); ctx.beginPath(); ctx.rect(L, T, R - L, Bm - T); ctx.clip();
+
+    // zones (active at last closed bar, like the Pine last-bar drawing)
+    if (layers.zones && lc >= 0) {
+      D.objects.forEach(o => {
+        if (!/^(bF|sF|bO|sO)$/.test(o.kind)) return;
+        if (o.born > lc || (o.end != null && o.end <= lc)) return;
+        const isOB = o.kind === "bO" || o.kind === "sO", bull = o.kind[0] === "b";
+        const col = isOB ? C.ob : bull ? C.bull : C.bear;
+        const x0 = Math.max(L, X(Math.max(o.x0, start)) - bw / 2), x1 = Math.min(R, X(Math.min(lc, end)) + bw * 3);
+        ctx.globalAlpha = isOB ? 0.16 : 0.12; ctx.fillStyle = col; ctx.fillRect(x0, Y(o.top), x1 - x0, Y(o.bot) - Y(o.top));
+        ctx.globalAlpha = 0.5; ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.strokeRect(x0 + .5, Y(o.top) + .5, x1 - x0, Y(o.bot) - Y(o.top));
+        ctx.globalAlpha = 1;
+        if (isOB && x1 - x0 > 30) { ctx.fillStyle = col; ctx.font = "600 10px 'IBM Plex Mono', monospace"; ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("OB", x0 + 4, Y(o.top) + 2); }
+      });
+    }
+    // liquidity pools
+    if (layers.liq && lc >= 0) {
+      ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+      D.objects.forEach(o => {
+        if (o.kind !== "liqH" && o.kind !== "liqL") return;
+        if (o.born > lc || (o.end != null && o.end <= lc)) return;
+        ctx.strokeStyle = o.kind === "liqH" ? C.bear : C.bull; ctx.globalAlpha = 0.55;
+        const x0 = X(Math.max(o.x0, start)), x1 = X(Math.min(lc, end)) + bw * 4;
+        ctx.beginPath(); ctx.moveTo(x0, Math.round(Y(o.level)) + .5); ctx.lineTo(x1, Math.round(Y(o.level)) + .5); ctx.stroke();
+      });
+      ctx.globalAlpha = 1; ctx.setLineDash([]);
+    }
+    // EMAs
+    if (layers.ema) {
+      [["e200", C.e200, 1.6], ["e50", C.e50, 1.2], ["e20", C.e20, 1.2]].forEach(([key, col, w]) => {
+        ctx.strokeStyle = col; ctx.lineWidth = w; ctx.globalAlpha = 0.85; ctx.beginPath();
+        let started = false;
+        for (let i = start; i <= Math.min(lc, end); i++) { const y = Y(B[i][key]); if (!started) { ctx.moveTo(X(i), y); started = true; } else ctx.lineTo(X(i), y); }
+        ctx.stroke(); ctx.globalAlpha = 1;
+      });
+    }
+    // structure breaks
+    if (layers.struct) {
+      D.structEvents.forEach(e => {
+        if (e.bar > lc || e.bar < start || !/BOS|CHOCH/.test(e.type)) return;
+        const up = /UP/.test(e.type), col = up ? C.bull : C.bear;
+        const x0 = X(Math.max(e.x, start)), x1 = X(e.bar), y = Math.round(Y(e.price)) + .5;
+        ctx.strokeStyle = col; ctx.globalAlpha = 0.75; ctx.setLineDash([4, 3]); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+        ctx.fillStyle = col; ctx.font = "600 10px 'IBM Plex Mono', monospace"; ctx.textAlign = "center"; ctx.textBaseline = up ? "bottom" : "top";
+        ctx.fillText(/CHOCH/.test(e.type) ? "CHoCH" : "BOS", (x0 + x1) / 2, up ? y - 2 : y + 2);
+      });
+    }
+    // trade levels
+    TRADES.forEach(t => {
+      if (t.setup > lc) return;
+      const endBar = (t.end != null && t.end <= lc) ? t.end : k;
+      const x0 = X(t.setup), x1 = X(endBar) + bw / 2;
+      const fillBar = (t.fill != null && t.fill <= Math.max(lc, k)) ? t.fill : null;
+      // TPs
+      [[t.tp1, 0.55], [t.tp2, 0.85], [t.tp3, 1]].forEach(([p, a]) => {
+        ctx.strokeStyle = C.bull; ctx.globalAlpha = a; ctx.lineWidth = 1.3; ctx.setLineDash([2, 3]);
+        ctx.beginPath(); ctx.moveTo(x0, Y(p)); ctx.lineTo(x1, Y(p)); ctx.stroke();
+      });
+      ctx.globalAlpha = 1; ctx.setLineDash([]);
+      // entry
+      ctx.strokeStyle = C.accent; ctx.lineWidth = 1.6;
+      const xf = fillBar != null ? X(fillBar) - bw / 2 : x1;
+      ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(x0, Y(t.planned)); ctx.lineTo(xf, Y(t.planned)); ctx.stroke(); ctx.setLineDash([]);
+      if (fillBar != null) { ctx.beginPath(); ctx.moveTo(xf, Y(t.entry)); ctx.lineTo(x1, Y(t.entry)); ctx.stroke(); }
+      // stop: step line (a stop change applies from the next bar, as in Pine)
+      ctx.strokeStyle = C.bear; ctx.lineWidth = 1.6; ctx.beginPath();
+      let slCur = t.sl, prevY = null;
+      for (let j = t.setup; j <= endBar; j++) {
+        if (j > t.setup) { const s = stateAt(j - 1); if (s && s.setup === t.setup && s.sl != null) slCur = s.sl; }
+        const yv = Y(slCur), xa = X(j) - bw / 2, xb = X(j) + bw / 2;
+        if (prevY == null) ctx.moveTo(xa, yv); else if (yv !== prevY) ctx.lineTo(xa, yv);
+        ctx.lineTo(xb, yv); prevY = yv;
+      }
+      ctx.stroke();
+      // right-edge tags for the live trade
+      const live = !(t.end != null && t.end <= lc);
+      if (live) {
+        const s = stateAt(lc);
+        const slNow = (s && s.st !== 0) ? s.sl : t.sl;
+        ctx.restore();
+        [["TP3", t.tp3, C.bull], ["TP2", t.tp2, C.bull], ["TP1", t.tp1, C.bull], [fillBar != null ? "ENTRY" : "LIMIT", t.planned, C.accent], ["SL", slNow, C.bear]]
+          .forEach(([lab, p, col]) => pill(R + 2, Y(p), lab + " " + nf0.format(p), col, C.onfill, "left", "600 10px 'IBM Plex Mono', monospace"));
+        ctx.save(); ctx.beginPath(); ctx.rect(L, T, R - L, Bm - T); ctx.clip();
+      }
+    });
+    // candles
+    const cw = Math.max(1, Math.min(9, bw * 0.66));
+    for (let i = start; i <= Math.min(end, k); i++) {
+      let o, h, l, c, forming = false;
+      if (i === k && m < 2) { const s = B[i].subs[m]; o = s.o; h = s.h; l = s.l; c = s.c; forming = true; }
+      else if (i <= lc) { o = B[i].o; h = B[i].h; l = B[i].l; c = B[i].c; }
+      else continue;
+      const col = c >= o ? C.bull : C.bear, x = Math.round(X(i)) + .5;
+      ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, Y(h)); ctx.lineTo(x, Y(l)); ctx.stroke();
+      const y0 = Y(Math.max(o, c)), y1 = Y(Math.min(o, c)), bh = Math.max(1, y1 - y0);
+      if (forming) { ctx.setLineDash([3, 2]); ctx.strokeRect(x - cw / 2, y0, cw, bh); ctx.setLineDash([]); }
+      else { ctx.fillStyle = col; ctx.fillRect(x - cw / 2, y0, cw, bh); }
+    }
+    // hover crosshair
+    if (hoverIdx != null && hoverIdx >= start && hoverIdx <= end) {
+      ctx.strokeStyle = C.muted; ctx.globalAlpha = 0.6; ctx.setLineDash([3, 3]); ctx.beginPath();
+      ctx.moveTo(Math.round(X(hoverIdx)) + .5, T); ctx.lineTo(Math.round(X(hoverIdx)) + .5, Bm); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    }
+    // sweeps
+    if (layers.liq) {
+      D.structEvents.forEach(e => {
+        if (e.bar > lc || e.bar < start || !/SWEEP/.test(e.type)) return;
+        const bull = e.type === "SWEEP_BULL", x = X(e.bar), y = bull ? Y(B[e.bar].l) + 9 : Y(B[e.bar].h) - 9;
+        ctx.fillStyle = bull ? C.bull : C.bear; ctx.beginPath(); ctx.moveTo(x, y - 4); ctx.lineTo(x + 4, y); ctx.lineTo(x, y + 4); ctx.lineTo(x - 4, y); ctx.closePath(); ctx.fill();
+      });
+    }
+    ctx.restore();
+    // event markers (outside clip so labels can reach the edges)
+    const evs = []; for (let i = start; i <= Math.min(lc, end); i++) (evAt[i] || []).forEach(e => evs.push(e));
+    evs.forEach(e => {
+      const x = X(e.bar), b = B[e.bar];
+      if (e.type === "LONG" || e.type === "SHORT") {
+        const up = e.type === "LONG"; const y = up ? Y(b.l) + 26 : Y(b.h) - 26;
+        pill(x, Math.min(Bm - 10, Math.max(T + 10, y)), (up ? "▲ LONG " : "▼ SHORT ") + Math.round(e.score), up ? C.bull : C.bear, C.onfill, "center");
+      } else if (e.type === "FILLED") {
+        ctx.fillStyle = C.accent; const y = Y(e.price); ctx.beginPath(); ctx.moveTo(x - 6, y - 5); ctx.lineTo(x, y); ctx.lineTo(x - 6, y + 5); ctx.closePath(); ctx.fill();
+      } else if (/^TP/.test(e.type)) {
+        pill(x, Y(e.price) - 12, e.type + (e.type === "TP3" ? " ✓" : ""), C.bull, C.onfill, "center", "600 10px 'IBM Plex Mono', monospace");
+      } else if (e.type === "SL" || e.type === "STOP") {
+        pill(x, Y(e.price) + 13, e.type, e.type === "SL" ? C.bear : C.warn, C.onfill, "center", "600 10px 'IBM Plex Mono', monospace");
+      }
+    });
+    // setup confirmed while a position is open (ignored by the tracker)
+    for (let i = start; i <= Math.min(lc, end); i++) {
+      (B[i].why || []).forEach(w => {
+        if (w.signal && !(evAt[i] || []).some(e => e.type === "LONG" || e.type === "SHORT")) {
+          const y = w.dir > 0 ? Y(B[i].l) + 24 : Y(B[i].h) - 24;
+          ctx.globalAlpha = 0.9; pill(X(i), y, "setup · pozícia otvorená", C.muted, C.onfill, "center", "500 10px 'IBM Plex Sans', sans-serif"); ctx.globalAlpha = 1;
+        }
+      });
+    }
+    // PREVIEW on the forming bar
+    if (m < 2 && k >= start && k <= end) {
+      const s = B[k].subs[m];
+      ctx.fillStyle = C.warn; ctx.font = "600 10px 'IBM Plex Mono', monospace"; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+      ctx.fillText("tvorí sa " + ((m + 1) * 5) + "/15", X(k), Y(s.h) - 4);
+      if (s.pv) {
+        const up = s.pv.dir > 0; ctx.globalAlpha = 0.45;
+        pill(X(k), up ? Y(s.l) + 26 : Y(s.h) - 26, "PREVIEW " + (up ? "LONG " : "SHORT ") + Math.round(s.pv.score), up ? C.bull : C.bear, C.onfill, "center");
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  // tooltip for candles
+  function onMove(ev) {
+    if (!geo) return;
+    const r = canvas.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
+    const i = Math.floor((x - geo.L) / geo.bw) + geo.start;
+    const { k, m, lc } = cur();
+    if (x < geo.L || x > geo.R || i > k || i < geo.start || i > geo.end) { hoverIdx = null; tip.hidden = true; draw(); return; }
+    hoverIdx = i;
+    const forming = i === k && m < 2, b = forming ? B[i].subs[m] : B[i];
+    let html = '<div class="t">' + fT(B[i].t) + ' UTC' + (forming ? ' · tvorí sa' : '') + '</div>' +
+      'O ' + fP(b.o) + '<br>H ' + fP(b.h) + '<br>L ' + fP(b.l) + '<br>C ' + fP(b.c);
+    if (!forming) {
+      const names = { LONG: "Signál LONG", SHORT: "Signál SHORT", FILLED: "Limit vyplnený", TP1: "TP1", TP2: "TP2", TP3: "TP3", SL: "Stop loss", STOP: "Ochranný stop", BE: "SL → break-even", LOCK: "SL → TP1" };
+      const sn = { BOS_UP: "BOS ▲", BOS_DN: "BOS ▼", CHOCH_UP: "CHoCH ▲", CHOCH_DN: "CHoCH ▼", SWEEP_BULL: "Sweep (bull)", SWEEP_BEAR: "Sweep (bear)", EQH: "EQH", EQL: "EQL" };
+      const list = (sevAt[i] || []).map(e => sn[e.type]).concat((evAt[i] || []).map(e => names[e.type] || e.type));
+      if (list.length) html += '<div class="ev">' + list.join(" · ") + '</div>';
+    }
+    tip.innerHTML = html; tip.hidden = false;
+    const bx = box.clientWidth, tw = tip.offsetWidth;
+    tip.style.left = Math.min(bx - tw - 8, x + 14) + "px"; tip.style.top = Math.max(8, y - 60) + "px";
+    draw();
+  }
+  canvas.addEventListener("mousemove", onMove);
+  canvas.addEventListener("mouseleave", () => { hoverIdx = null; tip.hidden = true; draw(); });
+
+  // ---------- narration ----------
+  function whyText(w) {
+    const fails = [];
+    if (w.htf < 1) fails.push("HTF trend nesúhlasí (zhoda " + sg(w.htf) + ")");
+    if (!w.disp) fails.push("chýba displacement (telo " + Math.round(w.body * 100) + " % rozpätia, rozpätie " + f2(w.rng) + "× ATR)");
+    if (!w.dist) fails.push("stop by bol mimo rozsahu 0,5–6 ATR");
+    if (!w.cost) fails.push("stop je príliš blízko, náklady by zjedli viac ako 25 % rizika");
+    if (!w.vol) fails.push("extrémna volatilita");
+    if (!w.sess) fails.push("mimo session 13–24 UTC");
+    if (w.score < 70) fails.push("skóre " + f2(w.score) + " < 70");
+    return fails;
+  }
+  function stepsFor(w) {
+    return { s1: w.htf >= 1 ? "ok" : "fail", s2: w.disp ? "ok" : "fail", s3: (w.dist && w.cost) ? "ok" : "fail", s4: (w.sess && w.vol && w.score >= 70) ? "ok" : "fail" };
+  }
+  function narrate() {
+    const { k, m, lc } = cur();
+    const out = []; let steps = {};
+    const sub = document.getElementById("narr-sub");
+    if (m < 2) {
+      const s = B[k].subs[m];
+      sub.textContent = fT(B[k].t) + " UTC · sviečka sa tvorí";
+      out.push("<p>Sviečka <b>" + fT(B[k].t) + "</b> sa tvorí (" + ((m + 1) * 5) + " z 15 minút, zo skutočných 5m dát). Hodnoty sa ešte menia, preto CFE nič nepotvrdzuje a stav obchodu sa nemení.</p>");
+      if (s.pv) {
+        out.push('<p class="pv">Na neuzavretej sviečke by setup vyzeral ako <b>' + (s.pv.dir > 0 ? "LONG" : "SHORT") + "</b> (skóre " + f2(s.pv.score) +
+          "). Indikátor ukáže iba priesvitný <b>PREVIEW</b>. Signál vznikne až po uzavretí sviečky, ak podmienky stále platia. Ak nie, PREVIEW zmizne a v histórii po ňom nič nezostane.</p>");
+        steps.s2 = "active";
+      }
+      setSteps(steps); document.getElementById("narr").innerHTML = out.join(""); return;
+    }
+    const b = B[lc];
+    sub.textContent = fT(b.t) + " UTC · sviečka uzavretá";
+    (sevAt[lc] || []).forEach(e => {
+      if (e.type === "SWEEP_BEAR") out.push("<p>Knôt prerazil neodobratý swing high a sviečka sa uzavrela späť pod ním: <b>liquidity sweep</b> (stop hunt nad vrcholom).</p>");
+      if (e.type === "SWEEP_BULL") out.push("<p>Knôt prerazil neodobratý swing low a sviečka sa uzavrela späť nad ním: <b>liquidity sweep</b> (stop hunt pod dnom).</p>");
+      if (e.type === "EQH" || e.type === "EQL") out.push("<p>Nový swing takmer na úrovni predošlého: <b>" + e.type + "</b>, rovnaké " + (e.type === "EQH" ? "vrcholy" : "dná") + " = pool likvidity.</p>");
+    });
+    (b.why || []).forEach(w => {
+      const dirTxt = w.dir > 0 ? "▲" : "▼";
+      const brk = (w.dir > 0 ? "nad posledným swing high" : "pod posledným swing low");
+      let t = "<p>Sviečka sa uzavrela " + brk + ": <b>" + w.kind + " " + dirTxt + "</b>. ";
+      const ev = (evAt[lc] || []).find(e => e.type === "LONG" || e.type === "SHORT");
+      steps = stepsFor(w);
+      if (ev) {
+        const tr = TRADES.find(x => x.setup === lc);
+        t += "Displacement (telo " + Math.round(w.body * 100) + " %, rozpätie " + f2(w.rng) + "× ATR), HTF trend súhlasí, stop v rozsahu, v session, skóre <b>" + f2(w.score) + "</b> → <b>signál " + (w.dir > 0 ? "LONG" : "SHORT") + "</b>.</p>";
+        t += "<p>Plán: limit na prelomenej úrovni <b>" + fP(tr.planned) + "</b>, invalidácia " + fP(tr.inval) + ", stop loss <b>" + fP(tr.sl) + "</b>, TP1 " + fP(tr.tp1) + " · TP2 " + fP(tr.tp2) + " · TP3 " + fP(tr.tp3) +
+          ". Príkaz platí 12 sviečok. Ak cena skôr dosiahne TP1, zruší sa.</p>";
+        steps.s4 = "active";
+      } else if (w.signal) {
+        t += "Všetky podmienky platia (skóre " + f2(w.score) + "), ale <b>pozícia je už otvorená</b>. CFE drží jednu pozíciu naraz, preto nový signál nevznikne.</p>";
+      } else {
+        const f = whyText(w);
+        t += "<b>Bez signálu</b>: " + f.join("; ") + ".</p>";
+      }
+      out.push('<div class="why">' + t + "</div>");
+    });
+    (evAt[lc] || []).forEach(e => {
+      const tr = tradeFor(lc);
+      if (e.type === "FILLED") { out.push("<p>Cena sa vrátila k prelomenej úrovni a prešla cez limit <b>" + fP(e.price) + "</b> → <b>pozícia otvorená</b>. Limit znamená maker poplatok a žiadnu slippage.</p>"); steps.s5 = "active"; }
+      if (e.type === "TP1") { out.push("<p><b>TP1</b> " + fP(e.price) + ": zatvorená ⅓ pozície so ziskom 1 R.</p>"); steps.s5 = "active"; }
+      if (e.type === "BE") out.push("<p>Od ďalšej sviečky sa stop posúva na break-even plus náklady (" + fP(e.price) + "). Zvyšok obchodu už nemôže skončiť stratou.</p>");
+      if (e.type === "TP2") { out.push("<p><b>TP2</b> " + fP(e.price) + ": zatvorená ďalšia ⅓ so ziskom 2 R.</p>"); steps.s5 = "active"; }
+      if (e.type === "LOCK") out.push("<p>Stop sa posúva na TP1 (" + fP(e.price) + "). Posledná tretina má istý zisk aspoň 1 R.</p>");
+      if (e.type === "TP3") { out.push("<p><b>TP3</b> " + fP(e.price) + ": uzavretý zvyšok. Výsledok obchodu <b>" + sg(tr.r_gross) + " R</b> pred nákladmi, <b>" + sg(tr.r_net) + " R</b> po poplatkoch, slippage a fundingu.</p>"); steps.s5 = "ok"; }
+      if (e.type === "SL") { out.push("<p>Cena prešla cez stop loss <b>" + fP(e.price) + "</b> hneď po vstupe. Strata <b>" + sg(tr.r_gross) + " R</b> pred nákladmi, <b>" + sg(tr.r_net) + " R</b> po nákladoch. Stop bol za extrémom impulzu, takže trh setup naozaj zneplatnil.</p>"); steps.s5 = "fail"; }
+      if (e.type === "STOP") { out.push("<p>Ochranný stop po TP " + fP(e.price) + ".</p>"); steps.s5 = "active"; }
+    });
+    if (!out.length) {
+      const s = stateAt(lc);
+      let t = "<p>Sviečka <b>" + fT(b.t) + "</b> uzavretá bez zmeny štruktúry a bez udalosti obchodu.";
+      if (s && s.st === 2) { t += " Pozícia " + (s.dir > 0 ? "LONG" : "SHORT") + " je otvorená, stop " + fP(s.sl) + ", ďalší cieľ TP" + (s.stage + 1) + "."; steps.s5 = "active"; }
+      else if (s && s.st === 1) t += " Limit " + fP(s.entry) + " čaká na vyplnenie.";
+      else t += " CFE čaká na prelomenie štruktúry v smere HTF trendu (stav: " + (b.htf >= 0.5 ? "bullish" : b.htf <= -0.5 ? "bearish" : "neutrálny") + ").";
+      out.push(t + "</p>");
+    }
+    setSteps(steps);
+    document.getElementById("narr").innerHTML = out.join("");
+  }
+  function setSteps(s) {
+    const lab = { ok: "✓", fail: "✗", active: "●" };
+    ["s1", "s2", "s3", "s4", "s5"].forEach(id => {
+      const el = document.getElementById(id), v = s[id] || "idle";
+      el.dataset.s = v; el.querySelector(".st").textContent = lab[v] || "";
+    });
+  }
+
+  // ---------- dashboard ----------
+  const arrow = s => s == null ? '<span class="c-m">N/A</span>' : s >= 0.5 ? '<span class="c-l">▲</span>' : s <= -0.5 ? '<span class="c-s">▼</span>' : '<span class="c-m">■</span>';
+  function dash() {
+    const { k, m, lc } = cur();
+    const i = Math.max(0, lc), b = B[i];
+    const price = m < 2 ? B[k].subs[m].c : B[k].c;
+    const rows = [];
+    const H = t => rows.push('<tr><th colspan="2">' + t + "</th></tr>");
+    const Rw = (a, v, cls) => rows.push("<tr><td>" + a + '</td><td class="' + (cls || "") + '">' + v + "</td></tr>");
+    H("MARKET STATUS");
+    const trd = b.htf >= 0.5 ? "BULLISH" : b.htf <= -0.5 ? "BEARISH" : "NEUTRAL";
+    Rw("Current trend (HTF)", trd + " (" + sg(b.htf) + ")", b.htf >= 0.5 ? "c-l" : b.htf <= -0.5 ? "c-s" : "");
+    let lastEv = "—"; for (let j = i; j >= 0; j--) { const e = (sevAt[j] || []).find(x => /BOS|CHOCH/.test(x.type)); if (e) { lastEv = (/CHOCH/.test(e.type) ? "CHoCH" : "BOS") + (/UP/.test(e.type) ? " ▲" : " ▼"); break; } }
+    Rw("Market structure", (b.ms === 1 ? "BULLISH" : b.ms === -1 ? "BEARISH" : "UNDEFINED") + " · " + lastEv + (b.hh === 1 ? " · HH/HL" : b.hh === -1 ? " · LH/LL" : ""), b.ms === 1 ? "c-l" : b.ms === -1 ? "c-s" : "");
+    const reg = b.rank >= 97 ? "EXTREME" : b.rank >= 80 ? "HIGH" : b.rank >= 20 ? "NORMAL" : "LOW";
+    Rw("Volatility", reg + " · ATR " + b.atrp.toFixed(3).replace(".", ",") + " % · pct " + Math.round(b.rank), b.rank >= 97 ? "c-s" : "");
+    Rw("Volume (USDT)", compact(b.v * b.c));
+    Rw("Relative volume", f2(b.rvol) + "×" + (b.rvol >= 2 ? " SPIKE" : ""), b.rvol >= 2 ? "c-w" : "");
+    Rw("Buy/Sell pressure (est. OHLC)", (b.press >= 0 ? "BUY " : "SELL ") + sg(b.press * 100, nf0.format) + " %", b.press >= 0 ? "c-l" : "c-s");
+    const s5 = m < 2 ? B[k].subs[m].s5 : b.s5;
+    Rw("MTF alignment", "1m " + arrow(null) + " 3m " + arrow(null) + " 5m " + arrow(s5) + " 15m " + arrow(b.tl) + " 1h " + arrow(b.s1h) + " 4h " + arrow(b.s4h));
+    Rw("Momentum (RSI " + Math.round(b.rsi) + ")", (b.bdiv ? "Bullish RSI div. · " : b.sdiv ? "Bearish RSI div. · " : "") + "MACD " + (b.macd >= 0 ? "▲" : "▼"));
+    H("TRADING SIGNAL");
+    const s = stateAt(lc), has = s && s.st > 0;
+    Rw("Current signal", has ? (s.dir > 0 ? "LONG" : "SHORT") + (s.st === 1 ? " · PENDING LIMIT" : " · ACTIVE") : "WAIT", has ? (s.dir > 0 ? "c-l" : "c-s") : "");
+    Rw("Signal strength", has ? Math.round(s.score) + "/100 · " + bucket(s.score) : "N/A", has ? "" : "c-m");
+    Rw("Entry price", has ? fP(s.entry) + (s.st === 1 ? " (limit)" : "") : "N/A", has ? "" : "c-m");
+    Rw("Stop loss", has ? fP(s.sl) : "N/A", has ? "c-s" : "c-m");
+    Rw("TP1", has ? fP(s.tp1) + (s.stage >= 1 ? " ✓" : "") : "N/A", has ? "c-l" : "c-m");
+    Rw("TP2", has ? fP(s.tp2) + (s.stage >= 2 ? " ✓" : "") : "N/A", has ? "c-l" : "c-m");
+    Rw("TP3", has ? fP(s.tp3) : "N/A", has ? "c-l" : "c-m");
+    const risk = has ? Math.abs(s.entry - s.sl0) : null;
+    Rw("Risk/Reward (TP1/2/3)", has ? "1:" + f2(Math.abs(s.tp1 - s.entry) / risk).replace(/,00$/, "") + " / 1:" + f2(Math.abs(s.tp2 - s.entry) / risk).replace(/,00$/, "") + " / 1:" + f2(Math.abs(s.tp3 - s.entry) / risk).replace(/,00$/, "") : "N/A", has ? "" : "c-m");
+    H("POSITION STATUS");
+    const open = has && s.st === 2;
+    Rw("Active position", open ? (s.dir > 0 ? "LONG" : "SHORT") + " · " + Math.round(s.rem * 100) + " % open" : has ? "PENDING (not filled)" : "NONE", open ? (s.dir > 0 ? "c-l" : "c-s") : "");
+    if (open) {
+      const pnl = s.dir * (price - s.entry) / s.entry * 100, oR = s.dir * (price - s.entry) / risk * s.rem;
+      Rw("Unrealized PnL", sg(pnl) + " % · " + sg(oR) + " R", pnl >= 0 ? "c-l" : "c-s");
+      Rw("Realized", sg(s.realized) + " R");
+    } else { Rw("Unrealized PnL", "N/A", "c-m"); Rw("Realized", "N/A", "c-m"); }
+    Rw("Current price", fP(price));
+    Rw("Distance to SL", has ? f2(Math.abs(price - s.sl) / price * 100) + " % · " + f2(Math.abs(price - s.sl) / risk) + " R" : "N/A", has ? "c-s" : "c-m");
+    const nt = has ? (s.stage === 0 ? s.tp1 : s.stage === 1 ? s.tp2 : s.tp3) : null;
+    Rw("Distance to next TP", has ? f2(Math.abs(nt - price) / price * 100) + " % (TP" + (s.stage + 1) + ")" : "N/A", has ? "c-l" : "c-m");
+    let ls = null; D.events.forEach(e => { if ((e.type === "LONG" || e.type === "SHORT") && e.bar <= lc) ls = e; });
+    Rw("Last signal", ls ? (ls.type + " " + Math.round(ls.score) + " · " + (lc - ls.bar) + " bars ago") : "N/A", ls ? "" : "c-m");
+    document.getElementById("dash").innerHTML = rows.join("");
+  }
+
+  // ---------- anatomy ----------
+  const LAYERS = [["trend", "Trend / MTF", 45], ["struct", "Štruktúra", 15], ["volume", "Objem", 10], ["momentum", "Momentum", 10], ["liquidity", "Likvidita", 10], ["volatility", "Volatilita", 10]];
+  function anatomy() {
+    const { lc } = cur();
+    const t = tradeFor(lc) || TRADES[0];
+    const known = t.setup <= lc;
+    document.getElementById("an-eyebrow").textContent = known ? "Rozbor signálu · " + fT(B[t.setup].t) + " UTC" : "Rozbor najbližšieho signálu v okne · " + fT(B[t.setup].t) + " UTC";
+    document.getElementById("an-title").textContent = (t.dir > 0 ? "LONG" : "SHORT") + " po " + t.trigger + " s displacementom";
+    const risk = Math.abs(t.entry - t.sl);
+    const r = p => sg((p - t.entry) / risk * t.dir) + " R";
+    const rows = [["Entry (limit, prelomená úroveň)", t.planned, "0 R"], ["Invalidácia (extrém impulzu)", t.inval, r(t.inval)], ["Stop loss (−0,2 ATR)", t.sl, "−1,00 R"],
+      ["TP1", t.tp1, r(t.tp1)], ["TP2", t.tp2, r(t.tp2)], ["TP3", t.tp3, r(t.tp3)]];
+    document.getElementById("an-plan").innerHTML = rows.map(x => '<span class="k">' + x[0] + '</span><span class="v">' + fP(x[1]) + '</span><span class="r">' + x[2] + "</span>").join("") +
+      '<span class="k">HTF zhoda</span><span class="v">' + sg(t.htf) + '</span><span class="r">1h + 4h</span>';
+    const done = t.end != null && t.end <= lc;
+    document.getElementById("an-res").innerHTML = !known ? "Výsledok zatiaľ neznámy." : done
+      ? "Výsledok: <b>" + (t.outcome === "TP3" ? "TP3" : t.outcome) + "</b>, " + sg(t.r_gross) + " R pred nákladmi, <b>" + sg(t.r_net) + " R</b> po poplatkoch, slippage a fundingu."
+      : "Obchod ešte prebieha.";
+    let tot = 0;
+    document.getElementById("an-layers").innerHTML = LAYERS.map(([key, nm, w]) => {
+      const v = t.comps[key] || 0, pts = v * w; tot += pts;
+      return '<div class="ly"><span class="nm">' + nm + ' <small>×' + w + '</small></span><span class="trk"><span class="fil" style="display:block;width:' + Math.round(v * 100) + '%"></span></span><span class="pts">' + f2(pts) + "</span></div>";
+    }).join("");
+    document.getElementById("an-total").textContent = f2(tot);
+    document.getElementById("an-bucket").textContent = "/ 100 · " + bucket(tot) + " · hranica signálu 70";
+  }
+
+  // ---------- controls ----------
+  const clock = document.getElementById("clock");
+  function render() {
+    scrub.value = String(pos);
+    const { k, m } = cur();
+    clock.innerHTML = "<b>" + fT(B[k].t) + "</b> UTC" + (m < 2 ? ' · <span class="forming">tvorí sa ' + ((m + 1) * 5) + "/15 min</span>" : " · uzavretá");
+    draw(); narrate(); dash(); anatomy();
+  }
+  function step(dir) {
+    if (formchk.checked) pos = Math.max(0, Math.min(MAXPOS, pos + dir));
+    else { const k = Math.floor(pos / 3) + (pos % 3 === 2 ? dir : (dir > 0 ? 0 : -1)); pos = Math.max(0, Math.min(N - 1, k)) * 3 + 2; }
+    render();
+  }
+  function hasEvent(bar) { return (evAt[bar] && evAt[bar].length) || (sevAt[bar] || []).some(e => /BOS|CHOCH/.test(e.type)) || (B[bar].subs || []).some(s => s.pv); }
+  function nextEvent() {
+    let { k, m } = cur(); let bar = m === 2 ? k + 1 : k;
+    for (; bar < N; bar++) if (hasEvent(bar)) break;
+    if (bar >= N) bar = N - 1;
+    const pvSub = formchk.checked ? (B[bar].subs || []).findIndex(s => s.pv) : -1;
+    pos = pvSub >= 0 && !(cur().k === bar) ? bar * 3 + pvSub : bar * 3 + 2;
+    render();
+  }
+  function play(on) {
+    playing = on; const btn = document.getElementById("b-play");
+    btn.textContent = on ? "❚❚ Pauza" : "▶ Prehrať";
+    clearInterval(timer);
+    if (on) {
+      if (pos >= MAXPOS) pos = 0;
+      timer = setInterval(() => { if (pos >= MAXPOS) { play(false); return; } step(1); }, 1000 / Number(document.getElementById("speed").value));
+    }
+  }
+  document.getElementById("b-start").onclick = () => { play(false); pos = formchk.checked ? 0 : 2; render(); };
+  document.getElementById("b-back").onclick = () => { play(false); step(-1); };
+  document.getElementById("b-fwd").onclick = () => { play(false); step(1); };
+  document.getElementById("b-next").onclick = () => { play(false); nextEvent(); };
+  document.getElementById("b-play").onclick = () => play(!playing);
+  document.getElementById("speed").onchange = () => { if (playing) play(true); };
+  formchk.onchange = () => { if (!formchk.checked) pos = Math.floor(pos / 3) * 3 + 2; render(); };
+  scrub.oninput = () => { play(false); pos = Number(scrub.value); if (!formchk.checked) pos = Math.floor(pos / 3) * 3 + 2; render(); };
+  document.addEventListener("keydown", e => {
+    if (e.target.closest("input, select, textarea")) return;
+    if (e.key === "ArrowRight") { play(false); step(1); e.preventDefault(); }
+    if (e.key === "ArrowLeft") { play(false); step(-1); e.preventDefault(); }
+    if (e.key === " " && e.target === document.body) { play(!playing); e.preventDefault(); }
+  });
+  [["ema", "tg-ema"], ["struct", "tg-struct"], ["liq", "tg-liq"], ["zones", "tg-zones"], ["sess", "tg-sess"]].forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    el.onclick = () => { layers[key] = !layers[key]; el.setAttribute("aria-pressed", String(layers[key])); draw(); };
+  });
+
+  // jump chips derived from the data
+  const jumps = [];
+  const sigs = D.events.filter(e => e.type === "LONG" || e.type === "SHORT");
+  const pvBar = B.findIndex(b => b.subs.some(s => s.pv));
+  if (pvBar >= 0) jumps.push(["PREVIEW na tvoriacej sa sviečke", pvBar * 3 + B[pvBar].subs.findIndex(s => s.pv)]);
+  if (sigs[0]) { const t = TRADES.find(x => x.setup === sigs[0].bar); jumps.push(["Signál 1 → " + (t.outcome === "SL" ? "stop loss" : t.outcome), sigs[0].bar * 3 + 2]); if (t.end != null) jumps.push(["Signál 1: výsledok", t.end * 3 + 2]); }
+  if (sigs[1]) { const t = TRADES.find(x => x.setup === sigs[1].bar); jumps.push(["Signál 2 → " + t.outcome, sigs[1].bar * 3 + 2]);
+    const tp1 = D.events.find(e => e.type === "TP1" && e.bar > t.setup); if (tp1) jumps.push(["TP1 a break-even", tp1.bar * 3 + 2]);
+    if (t.end != null) jumps.push(["TP3", t.end * 3 + 2]); }
+  const offSess = B.findIndex(b => (b.why || []).some(w => !w.signal && w.htf >= 1 && w.disp && !w.sess));
+  if (offSess >= 0) jumps.push(["Setup mimo session", offSess * 3 + 2]);
+  const inPos = B.findIndex((b, i) => (b.why || []).some(w => w.signal) && !(evAt[i] || []).some(e => e.type === "LONG" || e.type === "SHORT"));
+  if (inPos >= 0) jumps.push(["Setup počas otvorenej pozície", inPos * 3 + 2]);
+  const jumpBox = document.getElementById("jumps");
+  jumps.forEach(([label, p]) => {
+    const b = document.createElement("button"); b.className = "jump"; b.textContent = label;
+    b.onclick = () => { play(false); if (p % 3 !== 2) formchk.checked = true; pos = p; render(); };
+    jumpBox.appendChild(b);
+  });
+
+  // ---------- results ----------
+  document.getElementById("res-body").innerHTML = D.summary.map(s => {
+    const verdict = s.t <= -2 ? '<span class="verdict neg">záporné</span>' : '<span class="verdict">≈ 0, nevýznamné</span>';
+    return "<tr><td>" + s.name + "</td><td>" + nf0.format(s.trades) + "</td><td>" + nfP.format(s.win) + " %</td><td>" + sg(s.gross, x => x.toFixed(3).replace(".", ",")) +
+      "</td><td>" + s.cost.toFixed(3).replace(".", ",") + "</td><td><b>" + sg(s.net, x => x.toFixed(3).replace(".", ",")) + "</b></td><td>" + f2(s.pf) + "</td><td>" + sg(s.t) + "</td><td>" + verdict + "</td></tr>";
+  }).join("");
+
+  const eqsvg = document.getElementById("eqsvg"), eqtip = document.getElementById("eqtip"), eqbox = document.getElementById("eq");
+  function drawEq(hi) {
+    const W = eqsvg.clientWidth || 600, H = 280, L = 44, R = W - 64, T = 10, Bt = H - 26;
+    const E = D.equity, t0 = E[0].t, t1 = E[E.length - 1].t;
+    let lo = Infinity, hiV = -Infinity; E.forEach(e => { lo = Math.min(lo, e.n, e.g); hiV = Math.max(hiV, e.n, e.g); });
+    lo = Math.min(lo, 1) - 0.03; hiV = Math.max(hiV, 1) + 0.03;
+    const X = t => L + (t - t0) / (t1 - t0) * (R - L), Y = v => T + (hiV - v) / (hiV - lo) * (Bt - T);
+    const ns = "http://www.w3.org/2000/svg";
+    let s = "";
+    for (let v = Math.ceil(lo * 10) / 10; v <= hiV; v = Math.round((v + 0.1) * 10) / 10) {
+      s += '<line x1="' + L + '" x2="' + R + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--grid)" stroke-width="1"/>';
+      s += '<text x="' + (L - 8) + '" y="' + Y(v) + '" text-anchor="end" dominant-baseline="middle" fill="var(--muted)" font-size="11" font-family="IBM Plex Mono, monospace">' + v.toFixed(1).replace(".", ",") + "</text>";
+    }
+    for (let y = 2022; y <= 2026; y++) {
+      const x = X(Date.UTC(y, 0, 1)); if (x < L || x > R) continue;
+      s += '<line x1="' + x + '" x2="' + x + '" y1="' + T + '" y2="' + Bt + '" stroke="var(--grid)"/>';
+      s += '<text x="' + x + '" y="' + (Bt + 16) + '" text-anchor="middle" fill="var(--muted)" font-size="11" font-family="IBM Plex Mono, monospace">' + y + "</text>";
+    }
+    s += '<line x1="' + L + '" x2="' + R + '" y1="' + Y(1) + '" y2="' + Y(1) + '" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="1"/>';
+    const path = key => E.map((e, i) => (i ? "L" : "M") + X(e.t).toFixed(1) + " " + Y(e[key]).toFixed(1)).join(" ");
+    s += '<path d="' + path("g") + '" fill="none" stroke="var(--muted)" stroke-width="1.6"/>';
+    s += '<path d="' + path("n") + '" fill="none" stroke="var(--accent)" stroke-width="2"/>';
+    const last = E[E.length - 1];
+    s += '<text x="' + (R + 6) + '" y="' + Y(last.g) + '" dominant-baseline="middle" fill="var(--ink-2)" font-size="11" font-family="IBM Plex Mono, monospace">' + last.g.toFixed(2).replace(".", ",") + "</text>";
+    s += '<text x="' + (R + 6) + '" y="' + Y(last.n) + '" dominant-baseline="middle" fill="var(--ink)" font-size="11" font-weight="600" font-family="IBM Plex Mono, monospace">' + last.n.toFixed(2).replace(".", ",") + "</text>";
+    if (hi != null) {
+      const e = E[hi], x = X(e.t);
+      s += '<line x1="' + x + '" x2="' + x + '" y1="' + T + '" y2="' + Bt + '" stroke="var(--muted)" stroke-dasharray="3 3"/>';
+      s += '<circle cx="' + x + '" cy="' + Y(e.g) + '" r="4" fill="var(--muted)" stroke="var(--surface)" stroke-width="2"/>';
+      s += '<circle cx="' + x + '" cy="' + Y(e.n) + '" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>';
+    }
+    eqsvg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    eqsvg.innerHTML = s;
+    eqsvg._geo = { X, L, R, E };
+  }
+  eqsvg.addEventListener("mousemove", ev => {
+    const g = eqsvg._geo; if (!g) return;
+    const r = eqsvg.getBoundingClientRect(), x = ev.clientX - r.left;
+    let best = 0, bd = Infinity; g.E.forEach((e, i) => { const d = Math.abs(g.X(e.t) - x); if (d < bd) { bd = d; best = i; } });
+    drawEq(best);
+    const e = g.E[best], d = new Date(e.t);
+    eqtip.innerHTML = '<div class="t">' + d.getUTCDate() + ". " + (d.getUTCMonth() + 1) + ". " + d.getUTCFullYear() + " · obchod " + nf0.format(e.i) + "</div>Po nákladoch " + e.n.toFixed(3).replace(".", ",") + "<br>Pred nákladmi " + e.g.toFixed(3).replace(".", ",");
+    eqtip.hidden = false;
+    const bx = eqbox.clientWidth, tw = eqtip.offsetWidth, left = x + eqsvg.offsetLeft;
+    eqtip.style.left = Math.min(bx - tw - 8, left + 12) + "px"; eqtip.style.top = (eqsvg.offsetTop + 20) + "px";
+  });
+  eqsvg.addEventListener("mouseleave", () => { eqtip.hidden = true; drawEq(null); });
+
+  // ---------- boot ----------
+  const tp2 = D.events.find(e => e.type === "TP2");
+  pos = tp2 ? tp2.bar * 3 + 2 : MAXPOS;
+  let rT = null;
+  window.addEventListener("resize", () => { clearTimeout(rT); rT = setTimeout(() => { draw(); drawEq(null); }, 60); });
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  if (mq.addEventListener) mq.addEventListener("change", () => draw());
+  new MutationObserver(() => draw()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => draw());
+  render(); drawEq(null);
+})();
+</script>
