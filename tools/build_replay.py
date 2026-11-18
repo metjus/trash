@@ -30,7 +30,7 @@ def params():
 # --------------------------------------------------------------------------------------------
 # structure mirror with object logging (same rules/order as engine.structure_pass)
 # --------------------------------------------------------------------------------------------
-def structure_log(o, h, l, c, atr, rsi, a, b, L=5, slots=10, eq_tol=0.15, fvg_min=0.25, obs=50):
+def structure_log(o, h, l, c, atr, rsi, a, b, L=5, slots=10, eq_tol=0.15, fvg_min=0.25, obs=50, htf=None, prm=None):
     pools = {"H": [None] * slots, "L": [None] * slots}     # each: dict(level, pbar, cbar)
     zones = {k: [None] * 5 for k in ("bF", "sF", "bO", "sO")}
     objs, events = [], []
@@ -38,6 +38,7 @@ def structure_log(o, h, l, c, atr, rsi, a, b, L=5, slots=10, eq_tol=0.15, fvg_mi
     lastbar = {"H": -1, "L": -1}; broken = {"H": True, "L": True}; lrsi = {"H": np.nan, "L": np.nan}
     state = 0; div = {"bull": -10**9, "bear": -10**9}
     out = {k: np.zeros(b - a, np.int8) for k in ("ms", "bb", "sb", "bsw", "ssw", "hhhl", "bdiv", "sdiv")}
+    out["sc"] = [None] * (b - a)
     win = 2 * L + 1
 
     def push_pool(side, lvl, pbar, i):
@@ -140,6 +141,22 @@ def structure_log(o, h, l, c, atr, rsi, a, b, L=5, slots=10, eq_tol=0.15, fvg_mi
         k = i - a
         out["ms"][k] = state; out["bb"][k] = bb; out["sb"][k] = sb; out["bsw"][k] = bsw; out["ssw"][k] = ssw
         out["hhhl"][k] = hh; out["bdiv"][k] = (i - div["bull"]) < 10; out["sdiv"][k] = (i - div["bear"]) < 10
+        if htf is not None:
+            # LONG / SHORT scenario – identical to f_scen() in the Pine indicator
+            rt = 2 * (prm.fee_taker + prm.slippage) / 100
+            sc = []
+            for d, side, other in ((1, "H", "L"), (-1, "L", "H")):
+                if broken[side] or np.isnan(last[side]):
+                    sc.append([0, None, None, None, None]); continue
+                trig = float(last[side]); lo = max(lastbar[other], i - obs, 0)
+                ext = float(l[lo:i + 1].min() if d == 1 else h[lo:i + 1].max())
+                slv = ext - d * prm.sl_buffer_atr * A
+                dist = (trig - slv) * d
+                okd = bool(dist >= prm.sl_min_atr * A and dist <= prm.sl_max_atr * A and dist / trig >= prm.cost_mult * rt)
+                ctx = bool(d * htf[i] >= prm.htf_min - 1e-9)
+                st = 1 if (ctx and okd) else (2 if not ctx else 3)
+                sc.append([st, trig, int(lastbar[side]), float(slv), float(trig + d * prm.tp3_r * dist)])
+            out["sc"][k] = sc
     return out, objs, events
 
 
@@ -276,7 +293,7 @@ def main(out):
     # ---- structure mirror (warm-up 4000 bars) + consistency check vs engine ----
     w0 = a - 4000
     rsi = np.nan_to_num(R["rsi"], nan=50.0)
-    mo, objs, sev = structure_log(O, H, L, C, R["atr"], rsi, w0, b)
+    mo, objs, sev = structure_log(O, H, L, C, R["atr"], rsi, w0, b, htf=R["htf_align"], prm=p)
     off = a - w0
     assert np.array_equal(mo["ms"][off:], R["ms"][a:b]), "ms mismatch"
     assert np.array_equal(mo["bb"][off:], R["bull_break"][a:b]), "bull break mismatch"
@@ -298,6 +315,11 @@ def main(out):
         assert t["setup"] == int(row[0]) and t["fill"] == int(row[1]) and t["end"] == int(row[2]), (t, row)
         assert abs(t["r_gross"] - row[5]) < 1e-9, (t["r_gross"], row[5])
     net_r = {int(row[0]): float(row[4]) for row in T}
+    # every real signal must have been announced by the scenario trigger on the previous bar
+    for t in trades:
+        k = t["setup"]; d = t["dir"]
+        sc_prev = mo["sc"][k - 1 - w0][0 if d == 1 else 1]
+        assert sc_prev[0] > 0 and abs(sc_prev[1] - t["planned"]) < 1e-9, ("scenario trigger mismatch", k, sc_prev, t["planned"])
 
     # ---- MTF states ----
     s1h = engine.htf_state_aligned(chart, df5, "1h", p)
@@ -345,6 +367,7 @@ def main(out):
                          atrp=float(R["atr"][i] / C[i] * 100), rank=float(R["atr_rank"][i]), rvol=float(R["rvol"][i]),
                          press=float(R["pressure"][i]), rsi=float(R["rsi"][i]), macd=float(hist[i]),
                          sess=bool(R["lowvol"][i] if False else ((((ot[i] + BAR - 1) // 3_600_000) % 24) >= 13)),
+                         sc=[[x[0], x[1], None if x[2] is None else x[2] - a, x[3], x[4]] for x in mo["sc"][i - w0]],
                          subs=subs))
         if (i - a) % 40 == 0:
             print("partial bars", i - a, "/", b - a, flush=True)

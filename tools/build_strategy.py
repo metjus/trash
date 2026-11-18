@@ -13,7 +13,7 @@ PARTS = ROOT / "tools" / "strategy_parts"
 
 DROP_INPUTS = ("tfD1", "tfD2", "tfD3", "tfD4", "tfD5", "tfD6", "useLtf", "lvlWeak", "lvlValid", "lvlStrong", "lvlHigh",
                "showStruct", "showLiq", "showZones", "showSweeps", "showPreview", "showDash", "dashPos", "dashSize",
-               "detailLbl", "exitAdvisory", "showLevels", "hcScore")
+               "detailLbl", "exitAdvisory", "showLevels", "hcScore", "showScen")
 
 
 def section(src, title):

@@ -203,7 +203,8 @@ footer code { font-family: var(--font-mono); font-size: 12px; }
     <div class="eyebrow">CFE · Confluence Futures Engine · Pine Script v6</div>
     <h1>CFE v akcii</h1>
     <p class="lead">Prehrávanie skutočného okna <b class="mono">BINANCE:BTCUSDT.P</b> na 15-minútovom grafe, 16.–17. apríla 2026 (UTC).
-      Každá sviečka, čiara a signál je výstup referenčného enginu, podľa ktorého je napísaný Pine indikátor. Nič nie je dokreslené ručne.</p>
+      Každá sviečka, čiara a signál je výstup referenčného enginu, podľa ktorého je napísaný Pine indikátor. Nič nie je dokreslené ručne.
+      Hrubá prerušovaná čiara je <b>scenár</b>: úroveň, ktorej prelomenie by vytvorilo LONG alebo SHORT, s projekciou SL a TP3.</p>
     <p class="note">Okno obsahuje jeden stratový a jeden ziskový obchod. Ukazuje, ako systém pracuje, nie aký je výkonný. Výsledky celej validácie sú na konci stránky.</p>
   </header>
 
@@ -230,6 +231,7 @@ footer code { font-family: var(--font-mono); font-size: 12px; }
           <button class="tg" id="tg-liq" aria-pressed="true">Likvidita</button>
           <button class="tg" id="tg-zones" aria-pressed="true">FVG / OB</button>
           <button class="tg" id="tg-sess" aria-pressed="true">Session</button>
+          <button class="tg" id="tg-scen" aria-pressed="true">Scenáre</button>
         </div>
       </div>
       <div class="canvas-box" id="cbox">
@@ -290,6 +292,7 @@ footer code { font-family: var(--font-mono); font-size: 12px; }
     <span><i class="sw" style="background:color-mix(in srgb, var(--bull) 22%, transparent)"></i>FVG</span>
     <span><i class="sw" style="background:color-mix(in srgb, var(--ob) 25%, transparent)"></i>Order block</span>
     <span><i class="sw" style="background:var(--session)"></i>Session 13–24 UTC</span>
+    <span><i class="sw dash" style="border-color:var(--bull);border-top-width:3px"></i>Scenár: kde by vznikol LONG / SHORT</span>
   </section>
 
   <section class="results">
@@ -352,7 +355,9 @@ footer code { font-family: var(--font-mono); font-size: 12px; }
   // ---------- replay position ----------
   const MAXPOS = N * 3 - 1;
   let pos = 0, playing = false, timer = null;
-  const layers = { ema: true, struct: true, liq: true, zones: true, sess: true };
+  const layers = { ema: true, struct: true, liq: true, zones: true, sess: true, scen: true };
+  const SC_SK = { 1: "READY", 2: "blokovaný HTF trendom", 3: "blokovaný: stop mimo rozsahu", 0: "chýba swing" };
+  const SC_EN = { 1: "READY", 2: "BLOCKED · HTF trend", 3: "BLOCKED · stop range", 0: "no swing to break" };
   const formchk = document.getElementById("formchk");
   const scrub = document.getElementById("scrub");
   scrub.max = String(MAXPOS);
@@ -528,6 +533,22 @@ footer code { font-family: var(--font-mono); font-size: 12px; }
         ctx.save(); ctx.beginPath(); ctx.rect(L, T, R - L, Bm - T); ctx.clip();
       }
     });
+    // LONG / SHORT scenarios at the last closed bar (projection, as drawn by the Pine indicator on the last bar)
+    const scen = (layers.scen && lc >= 0 && B[lc].sc) ? B[lc].sc : [];
+    const stNow = stateAt(lc), flatNow = !(stNow && stNow.st > 0);
+    const scX0 = X(Math.min(lc, end)), scX1 = Math.min(R - 4, scX0 + bw * 14);
+    scen.forEach((sc, idx) => {
+      const st = sc[0]; if (!st) return;
+      const d = idx === 0 ? 1 : -1, ready = st === 1, col = d > 0 ? C.bull : C.bear;
+      ctx.strokeStyle = ready ? col : C.muted; ctx.globalAlpha = ready ? 0.95 : 0.55; ctx.lineWidth = ready ? 2 : 1; ctx.setLineDash([7, 4]);
+      ctx.beginPath(); ctx.moveTo(X(Math.max(sc[2], start)), Y(sc[1])); ctx.lineTo(scX1, Y(sc[1])); ctx.stroke();
+      if (ready && flatNow) {
+        ctx.lineWidth = 1.3; ctx.setLineDash([2, 3]);
+        ctx.strokeStyle = C.bear; ctx.beginPath(); ctx.moveTo(scX0, Y(sc[3])); ctx.lineTo(scX1, Y(sc[3])); ctx.stroke();
+        ctx.strokeStyle = C.bull; ctx.beginPath(); ctx.moveTo(scX0, Y(sc[4])); ctx.lineTo(scX1, Y(sc[4])); ctx.stroke();
+      }
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+    });
     // candles
     const cw = Math.max(1, Math.min(9, bw * 0.66));
     for (let i = start; i <= Math.min(end, k); i++) {
@@ -579,6 +600,22 @@ footer code { font-family: var(--font-mono); font-size: 12px; }
         }
       });
     }
+    // scenario labels
+    scen.forEach((sc, idx) => {
+      const st = sc[0]; if (!st) return;
+      const d = idx === 0 ? 1 : -1, ready = st === 1, col = d > 0 ? C.bull : C.bear;
+      const y = Math.min(Bm - 10, Math.max(T + 10, Y(sc[1]) + (d > 0 ? -12 : 12)));
+      ctx.globalAlpha = ready ? 1 : 0.75;
+      pill(scX0 + bw, y, (d > 0 ? "▲ LONG ak close > " : "▼ SHORT ak close < ") + nf0.format(sc[1]) + " · " + (ready ? "READY" : SC_SK[st]), ready ? col : C.muted, C.onfill, "left", "600 10px 'IBM Plex Mono', monospace");
+      ctx.globalAlpha = 1;
+      if (ready && flatNow) {
+        [["TP3 ≈ ", sc[4], C.bull], ["SL ≈ ", sc[3], C.bear]].forEach(([lab, pv, cc]) => {
+          const yy = Y(pv); if (yy < T || yy > Bm) return;
+          ctx.fillStyle = cc; ctx.font = "600 10px 'IBM Plex Mono', monospace"; ctx.textAlign = "right"; ctx.textBaseline = "bottom";
+          ctx.fillText(lab + nf0.format(pv), scX1, yy - 2);
+        });
+      }
+    });
     // PREVIEW on the forming bar
     if (m < 2 && k >= start && k <= end) {
       const s = B[k].subs[m];
@@ -666,6 +703,9 @@ footer code { font-family: var(--font-mono); font-size: 12px; }
         t += "<p>Plán: limit na prelomenej úrovni <b>" + fP(tr.planned) + "</b>, invalidácia " + fP(tr.inval) + ", stop loss <b>" + fP(tr.sl) + "</b>, TP1 " + fP(tr.tp1) + " · TP2 " + fP(tr.tp2) + " · TP3 " + fP(tr.tp3) +
           ". Príkaz platí 12 sviečok. Ak cena skôr dosiahne TP1, zruší sa.</p>";
         steps.s4 = "active";
+        const pv = lc > 0 && B[lc - 1].sc ? B[lc - 1].sc[w.dir > 0 ? 0 : 1] : null;
+        if (pv && pv[0] === 1 && Math.abs(pv[1] - tr.planned) < 1e-6)
+          t += "<p>Tento vstup bol vopred viditeľný: o sviečku skôr ukazoval scenár <b>" + (w.dir > 0 ? "▲ LONG ak close &gt; " : "▼ SHORT ak close &lt; ") + fP(pv[1]) + "</b> stav READY, s projekciou SL ≈ " + fP(pv[3]) + " a TP3 ≈ " + fP(pv[4]) + ". Po potvrdení sa úrovne prepočítali presne.</p>";
       } else if (w.signal) {
         t += "Všetky podmienky platia (skóre " + f2(w.score) + "), ale <b>pozícia je už otvorená</b>. CFE drží jednu pozíciu naraz, preto nový signál nevznikne.</p>";
       } else {
@@ -691,6 +731,11 @@ footer code { font-family: var(--font-mono); font-size: 12px; }
       if (s && s.st === 2) { t += " Pozícia " + (s.dir > 0 ? "LONG" : "SHORT") + " je otvorená, stop " + fP(s.sl) + ", ďalší cieľ TP" + (s.stage + 1) + "."; steps.s5 = "active"; }
       else if (s && s.st === 1) t += " Limit " + fP(s.entry) + " čaká na vyplnenie.";
       else t += " CFE čaká na prelomenie štruktúry v smere HTF trendu (stav: " + (b.htf >= 0.5 ? "bullish" : b.htf <= -0.5 ? "bearish" : "neutrálny") + ").";
+      if (b.sc && !(s && s.st > 0)) {
+        const L1 = b.sc[0], S1 = b.sc[1];
+        const one = (sc, d) => sc[0] ? ((d > 0 ? "<b>▲ LONG</b> pri uzavretí nad " : "<b>▼ SHORT</b> pri uzavretí pod ") + fP(sc[1]) + " (" + SC_SK[sc[0]] + (sc[0] === 1 ? ", SL ≈ " + fP(sc[3]) + ", TP3 ≈ " + fP(sc[4]) : "") + ")") : ((d > 0 ? "LONG" : "SHORT") + ": chýba swing na prelomenie");
+        t += "</p><p>Scenáre: " + one(L1, 1) + " · " + one(S1, -1) + ".";
+      }
       out.push(t + "</p>");
     }
     setSteps(steps);
@@ -751,6 +796,13 @@ footer code { font-family: var(--font-mono); font-size: 12px; }
     Rw("Distance to next TP", has ? f2(Math.abs(nt - price) / price * 100) + " % (TP" + (s.stage + 1) + ")" : "N/A", has ? "c-l" : "c-m");
     let ls = null; D.events.forEach(e => { if ((e.type === "LONG" || e.type === "SHORT") && e.bar <= lc) ls = e; });
     Rw("Last signal", ls ? (ls.type + " " + Math.round(ls.score) + " · " + (lc - ls.bar) + " bars ago") : "N/A", ls ? "" : "c-m");
+    H("SCENARIOS (projection, not signals)");
+    (b.sc || []).forEach((sc, idx) => {
+      const d = idx === 0 ? 1 : -1, st = sc[0];
+      const lab = (d > 0 ? "▲ LONG if close > " : "▼ SHORT if close < ") + (st > 0 ? fP(sc[1]) : "N/A");
+      const val = st === 1 ? "SL ≈ " + fP(sc[3]) + " · TP3 ≈ " + fP(sc[4]) + " · READY" : SC_EN[st];
+      Rw(lab, val, st === 1 ? (d > 0 ? "c-l" : "c-s") : "c-m");
+    });
     document.getElementById("dash").innerHTML = rows.join("");
   }
 
@@ -826,7 +878,7 @@ footer code { font-family: var(--font-mono); font-size: 12px; }
     if (e.key === "ArrowLeft") { play(false); step(-1); e.preventDefault(); }
     if (e.key === " " && e.target === document.body) { play(!playing); e.preventDefault(); }
   });
-  [["ema", "tg-ema"], ["struct", "tg-struct"], ["liq", "tg-liq"], ["zones", "tg-zones"], ["sess", "tg-sess"]].forEach(([key, id]) => {
+  [["ema", "tg-ema"], ["struct", "tg-struct"], ["liq", "tg-liq"], ["zones", "tg-zones"], ["sess", "tg-sess"], ["scen", "tg-scen"]].forEach(([key, id]) => {
     const el = document.getElementById(id);
     el.onclick = () => { layers[key] = !layers[key]; el.setAttribute("aria-pressed", String(layers[key])); draw(); };
   });
@@ -840,6 +892,7 @@ footer code { font-family: var(--font-mono); font-size: 12px; }
   if (sigs[1]) { const t = TRADES.find(x => x.setup === sigs[1].bar); jumps.push(["Signál 2 → " + t.outcome, sigs[1].bar * 3 + 2]);
     const tp1 = D.events.find(e => e.type === "TP1" && e.bar > t.setup); if (tp1) jumps.push(["TP1 a break-even", tp1.bar * 3 + 2]);
     if (t.end != null) jumps.push(["TP3", t.end * 3 + 2]); }
+  if (sigs[1]) jumps.push(["Scenár pred signálom 2", (sigs[1].bar - 1) * 3 + 2]);
   const offSess = B.findIndex(b => (b.why || []).some(w => !w.signal && w.htf >= 1 && w.disp && !w.sess));
   if (offSess >= 0) jumps.push(["Setup mimo session", offSess * 3 + 2]);
   const inPos = B.findIndex((b, i) => (b.why || []).some(w => w.signal) && !(evAt[i] || []).some(e => e.type === "LONG" || e.type === "SHORT"));

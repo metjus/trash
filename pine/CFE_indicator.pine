@@ -123,6 +123,7 @@ showZones    = input.bool(true, "FVG / order-block zones", group = G_VIS)
 showSweeps   = input.bool(true, "Liquidity sweeps", group = G_VIS)
 showLevels   = input.bool(true, "Entry / SL / TP lines", group = G_VIS)
 showPreview  = input.bool(true, "PREVIEW of setup on the live bar", group = G_VIS)
+showScen     = input.bool(true, "LONG / SHORT scenarios (trigger level, projected SL / TP3)", group = G_VIS, tooltip = "Shows where the next LONG / SHORT setup would trigger: a CLOSE beyond the last unbroken swing with displacement. READY = allowed by the HTF trend and the stop filters. A projection, never a signal.")
 showDash     = input.bool(true, "Dashboard", group = G_VIS)
 dashPos      = input.string("Top right", "Dashboard position", options = ["Top right", "Top left", "Bottom right", "Bottom left"], group = G_VIS)
 dashSize     = input.string("Small", "Dashboard text", options = ["Tiny", "Small", "Normal"], group = G_VIS)
@@ -895,6 +896,61 @@ if showPreview and barstate.isrealtime and not barstate.isconfirmed and (setupL 
     pvLbl := label.new(bar_index, dP == 1 ? low : high, "PREVIEW " + (dP == 1 ? "LONG " : "SHORT ") + str.tostring(dP == 1 ? scoreL : scoreS, "#"), style = dP == 1 ? label.style_label_up : label.style_label_down, color = color.new(dP == 1 ? cLong : cShort, 65), textcolor = color.white, size = size.small, tooltip = "Unconfirmed – the bar is still forming. This is NOT a signal until the bar closes.")
 
 // ═════════════════════════════════════════════════════════════════════════════════════════════════
+// LONG / SHORT SCENARIOS – forward-looking projection, never a signal
+// ═════════════════════════════════════════════════════════════════════════════════════════════════
+// Trigger = last unbroken swing high (LONG) / swing low (SHORT). A CLOSE beyond it with displacement creates a
+// signal when the other filters pass. SL / TP are projected from the current impulse leg and are recomputed
+// exactly at confirmation. Status: 1 READY, 2 blocked by the HTF trend, 3 stop out of range / too tight, 0 no swing.
+f_scen(int d) =>
+    bool  has  = d == 1 ? (not phBroken and not na(lastPH)) : (not plBroken and not na(lastPL))
+    float trig = d == 1 ? lastPH : lastPL
+    int   pbar = d == 1 ? lastPHBar : lastPLBar
+    int   lo   = d == 1 ? math.max(lastPLBar, bar_index - obSearch, 0) : math.max(lastPHBar, bar_index - obSearch, 0)
+    float ext  = d == 1 ? low : high
+    int   span = bar_index - lo
+    if has and span >= 1
+        for k = 1 to span
+            ext := d == 1 ? math.min(ext, low[k]) : math.max(ext, high[k])
+    float e    = isLimit ? trig + d * entryOffAtr * atr : trig
+    float s    = ext - d * slBufAtr * atr
+    float dist = (e - s) * d
+    bool  okD  = has and dist >= slMinAtr * atr and dist <= slMaxAtr * atr and dist / e >= costMult * rtCost
+    bool  ctx  = d * htfAlign >= htfMin - 1e-9
+    int   st   = not has ? 0 : not ctx ? 2 : not okD ? 3 : 1
+    [st, trig, pbar, s, e + d * tp1R * dist, e + d * tp3R * dist]
+
+[scStL, scTrgL, scBarL, scSlL, scTp1L, scTp3L] = f_scen(1)
+[scStS, scTrgS, scBarS, scSlS, scTp1S, scTp3S] = f_scen(-1)
+
+f_scTxt(int st) => st == 1 ? "READY" : st == 2 ? "BLOCKED · HTF trend" : st == 3 ? "BLOCKED · stop range" : "no swing to break"
+
+var array<line>  scLn = array.new<line>()
+var array<label> scLb = array.new<label>()
+
+f_drawScen(int d, int st, float trg, int pb, float s, float t3) =>
+    if st > 0
+        bool  ready = st == 1
+        color col   = d == 1 ? cLong : cShort
+        int   xEnd  = bar_index + 8
+        array.push(scLn, line.new(math.max(pb, bar_index - 300), trg, xEnd, trg, color = color.new(col, ready ? 0 : 55), style = line.style_dashed, width = ready ? 2 : 1))
+        string head = (d == 1 ? "▲ LONG if close > " : "▼ SHORT if close < ") + f_fmt(trg)
+        string body = ready ? "\nSL ≈ " + f_fmt(s) + " · TP3 ≈ " + f_fmt(t3) + " (" + str.tostring(tp3R, "#.#") + "R)" : "\n" + f_scTxt(st)
+        string tip  = "Scenario (projection), not a signal. A confirmed " + (d == 1 ? "LONG" : "SHORT") + " appears only if a candle CLOSES beyond this level with displacement, inside the session and with score ≥ the minimum. Entry, SL and TP are then recomputed exactly."
+        array.push(scLb, label.new(xEnd, trg, head + body, style = label.style_label_left, color = color.new(col, ready ? 10 : 85), textcolor = ready ? color.white : col, size = size.small, tooltip = tip))
+        if ready and na(tr)
+            array.push(scLn, line.new(bar_index, s, xEnd, s, color = color.new(cSl, 20), style = line.style_dotted, width = 1))
+            array.push(scLn, line.new(bar_index, t3, xEnd, t3, color = color.new(cTp, 20), style = line.style_dotted, width = 1))
+
+if barstate.islast
+    while array.size(scLn) > 0
+        line.delete(array.pop(scLn))
+    while array.size(scLb) > 0
+        label.delete(array.pop(scLb))
+    if showScen
+        f_drawScen(1, scStL, scTrgL, scBarL, scSlL, scTp3L)
+        f_drawScen(-1, scStS, scTrgS, scBarS, scSlS, scTp3S)
+
+// ═════════════════════════════════════════════════════════════════════════════════════════════════
 // CHART DRAWINGS
 // ═════════════════════════════════════════════════════════════════════════════════════════════════
 plot(showEma ? emaF : na, "EMA 20", color.new(#42A5F5, 30), 1)
@@ -977,7 +1033,7 @@ f_tfName(string tf) =>
 
 f_arrow(float s) => na(s) ? "N/A" : s >= 0.5 ? "▲" : s <= -0.5 ? "▼" : "■"
 
-var table dash = table.new(dashPos == "Top right" ? position.top_right : dashPos == "Top left" ? position.top_left : dashPos == "Bottom right" ? position.bottom_right : position.bottom_left, 2, 26, bgcolor = color.new(#131722, 8), border_color = color.new(#363A45, 0), border_width = 1, frame_color = color.new(#363A45, 0), frame_width = 1)
+var table dash = table.new(dashPos == "Top right" ? position.top_right : dashPos == "Top left" ? position.top_left : dashPos == "Bottom right" ? position.bottom_right : position.bottom_left, 2, 29, bgcolor = color.new(#131722, 8), border_color = color.new(#363A45, 0), border_width = 1, frame_color = color.new(#363A45, 0), frame_width = 1)
 
 f_row(int r, string k, string v, color vc) =>
     string tsz = dashSize == "Tiny" ? size.tiny : dashSize == "Normal" ? size.normal : size.small
@@ -989,7 +1045,7 @@ f_head(int r, string t) =>
     table.cell(dash, 0, r, t, text_color = color.white, bgcolor = color.new(#2A2E39, 0), text_halign = text.align_left, text_size = tsz)
 
 if showDash and barstate.isfirst
-    for r in array.from(0, 9, 18)
+    for r in array.from(0, 9, 18, 26)
         table.cell(dash, 0, r, "")
         table.cell(dash, 1, r, "")
         table.merge_cells(dash, 0, r, 1, r)
@@ -1072,6 +1128,9 @@ if showDash and barstate.islast
     f_row(22, "Current price", f_fmt(close), neu)
     f_row(23, "Distance to SL", dSlTxt, cSl)
     f_row(24, "Distance to next TP", dTpTxt, cTp)
+    f_head(26, "SCENARIOS (projection, not signals)")
+    f_row(27, "▲ LONG if close > " + (scStL > 0 ? f_fmt(scTrgL) : "N/A"), scStL == 1 ? "SL ≈ " + f_fmt(scSlL) + " · TP3 ≈ " + f_fmt(scTp3L) + " · READY" : f_scTxt(scStL), scStL == 1 ? cLong : color.new(#B2B5BE, 0))
+    f_row(28, "▼ SHORT if close < " + (scStS > 0 ? f_fmt(scTrgS) : "N/A"), scStS == 1 ? "SL ≈ " + f_fmt(scSlS) + " · TP3 ≈ " + f_fmt(scTp3S) + " · READY" : f_scTxt(scStS), scStS == 1 ? cShort : color.new(#B2B5BE, 0))
     f_row(25, "Last signal", na(lastSigBar) ? "N/A" : (lastSigDir == 1 ? "LONG " : "SHORT ") + str.tostring(lastSigScore, "#") + " · " + str.tostring(bar_index - lastSigBar) + " bars ago", neu)
 
 // ═════════════════════════════════════════════════════════════════════════════════════════════════

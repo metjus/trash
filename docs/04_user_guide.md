@@ -41,6 +41,7 @@ nižšie TF (1m/3m) v dashboarde sú obmedzené dostupnou intrabar históriou. F
 | **↺** | Čakajúci limit nahradený novším setupom. |
 | **EXIT?** (oranžový) | Varovanie: CHoCH proti pozícii alebo otočenie HTF trendu. Default len upozornenie. |
 | **EXIT** | Pozícia uzavretá na close (ak je zapnuté automatické uzatváranie / time stop). |
+| **▲ LONG if close > X / ▼ SHORT if close < Y** (hrubá prerušovaná čiara vpravo) | **Scenár** – vopred ukazuje, kde by vznikol ďalší LONG/SHORT: prelomenie poslednej neprelomenej swing úrovne uzavretím sviečky s displacementom. **READY** = povolené HTF trendom a stop filtrami; pri READY a bez otvorenej pozície sú bodkovane zobrazené aj projekcie **SL ≈** a **TP3 ≈** (optimistický cieľ). **BLOCKED** = proti HTF trendu alebo stop mimo rozsahu. Je to projekcia, nie signál. |
 | **PREVIEW LONG/SHORT** (priesvitný) | Setup sa tvorí na **neuzavretej** sviečke. Nie je to signál – po uzavretí sviečky môže zmiznúť. |
 | BOS / CHoCH čiary | Prelomenie štruktúry na close. |
 | Bodkované horizontály | Neodobraté pooly likvidity (swing high/low). EQH/EQL = rovnaké vrcholy/dná. |
@@ -60,6 +61,8 @@ Entry · Stop loss · TP1/TP2/TP3 (✓ = dosiahnuté) · Risk/Reward pre TP1/TP2
 
 **POSITION STATUS** – Active position (% ešte otvorené) · Unrealized PnL (% a R) · Realized R + odhad nákladov (poplatky +
 funding) · Current price · Distance to SL (% a R) · Distance to next TP · Last signal.
+
+**SCENARIOS (projection, not signals)** – riadok ▲ LONG a ▼ SHORT: spúšťacia úroveň, projekcia SL a TP3 a stav READY / BLOCKED.
 
 Kde údaj nie je dostupný, zobrazí sa **N/A** – hodnoty sa nikdy nevymýšľajú.
 
@@ -91,6 +94,11 @@ Kde údaj nie je dostupný, zobrazí sa **N/A** – hodnoty sa nikdy nevymýšľ
 Validované na 24 pároch Binance USDⓈ-M.
 
 ## 6. Ako obchodovať signál (odporúčaný postup)
+
+0. **Pred signálom:** sledujte scenár. Ak je ▲ LONG **READY**, viete vopred, nad ktorou úrovňou by po uzavretí sviečky vznikol LONG,
+   kde by bol približne stop a kde je optimistický cieľ (TP3). Na skutočných dátach (BTCUSDT 15m, 16. 4. 2026) sa trigger scenára
+   presne zhodoval so vstupom nasledujúcich signálov a projekcia SL/TP3 sa líšila o niekoľko dolárov. Nevstupujte už na scenár –
+   signál potvrdí až uzavretá sviečka.
 
 1. Signál **▲ LONG** sa objaví po uzavretí sviečky. Skontrolujte dashboard: HTF trend, volatilita (nie EXTREME), R:R.
 2. Zadajte na burze **limitný príkaz** na úrovni *Entry (limit)*, so **SL** a TP1/TP2/TP3 (reduce-only) podľa štítku.

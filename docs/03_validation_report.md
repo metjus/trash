@@ -32,6 +32,8 @@
 **Overenie implementácie**
 * `tests/test_no_lookahead.py` – engine na dátach orezaných v čase *t* musí dať identické hodnoty (setupy, ceny, skóre, HTF alignment, štruktúra) pre všetky sviečky < *t*. **Prešiel** (5m aj 15m). Negatívna kontrola: úmyselne vložený HTF repaint test **zhodil** („score_l differs … look-ahead!“).
 * `tests/test_simulator_crosscheck.py` – numba simulátor vs. nezávislá jednoduchá implementácia pravidiel (limit fill, partials, BE, lock): zhoda gross R na > 100 obchodoch. **Prešiel.**
+* `tools/lint_pine.py` – statická kontrola Pine skriptov nad syntaktickým stromom (nedefinované/neskôr deklarované premenné, duplicitné deklarácie, polia vlastných typov, argumenty funkcií, whitelist built-in funkcií, zmeny v Pine v6). 0 chýb na všetkých troch skriptoch; negatívne kontroly (8 typov úmyselne vložených chýb) zachytené všetky. Nenahrádza kompiláciu v TradingView – TradingView kompilátor nebol z prostredia dostupný.
+* `tools/build_replay.py` – na skutočnom okne overí, že scenár (▲ LONG / ▼ SHORT trigger) na predchádzajúcej sviečke presne zodpovedal vstupu každého signálu.
 
 ## 2. Návrhové obdobie (2022-01 – 2023-06): pôvodný „klasický“ konfluenčný engine v1
 
