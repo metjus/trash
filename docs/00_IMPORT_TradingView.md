@@ -15,7 +15,7 @@ Súbory `.pine` sú obyčajný text. Otvoríte ich v Poznámkovom bloku (Windows
 Pine Editor je len vo webovej verzii a v desktopovej aplikácii TradingView, nie v mobile.
 
 1. Otvorte **tradingview.com** a prihláste sa. Otvorte graf (*Supercharts*).
-2. Vľavo hore zadajte symbol, napr. **`BINANCE:BTCUSDT.P`** (perpetual futures), a timeframe **15m**.
+2. Vľavo hore zadajte symbol, napr. **`BINANCE:BTCUSDT.P`** (perpetual futures), a timeframe **15m** (funguje každý timeframe – vyššie timeframy pre trend sa vyberú automaticky).
 3. Otvorte **Pine Editor** (záložka dole pod grafom, alebo ikona `{ }` v pravom/spodnom paneli).
 4. Vytvorte nový prázdny indikátor: v Pine Editore kliknite na názov skriptu / ponuku → **Create new** → **Indicator**.
 5. V editore označte všetko (**Ctrl+A**, Mac **Cmd+A**) a zmažte.
@@ -63,9 +63,11 @@ Všetkých 88 nastavení je popísaných v `docs/04_user_guide.md`.
 
 Na grafe nemajte naraz indikátor aj strategy, ak ste na bezplatnom pláne s limitom indikátorov. Na sledovanie stačí indikátor.
 
-## 5. Mobil
+## 5. Desktopová aplikácia a mobil
 
-Skript vytvorený na počítači sa uloží do vášho účtu. V mobilnej aplikácii ho pridáte cez **Indikátory → Moje skripty (My scripts)**. Alerty vytvorené na počítači chodia aj do mobilu.
+**Desktopová aplikácia TradingView (Windows/Mac):** postup je rovnaký ako na webe (Pine Editor → Create new → Indicator).
+
+**Mobilná aplikácia** nemá Pine Editor. Skript vytvorený na počítači sa uloží do vášho účtu. V mobilnej aplikácii ho pridáte cez **Indikátory → Moje skripty (My scripts)**. Alerty vytvorené na počítači chodia aj do mobilu.
 
 ## 6. Ako signál čítať (stručne)
 

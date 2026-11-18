@@ -100,15 +100,23 @@ class Params:
 
 
 TF_MS = {"1m": 60_000, "3m": 180_000, "5m": 300_000, "15m": 900_000, "30m": 1_800_000,
-         "1h": 3_600_000, "2h": 7_200_000, "4h": 14_400_000, "1d": 86_400_000}
+         "1h": 3_600_000, "2h": 7_200_000, "4h": 14_400_000, "1d": 86_400_000, "1w": 604_800_000}
+WEEK_OFFSET = 4 * 86_400_000   # 1970-01-05 00:00 UTC was a Monday (exchange weeks start on Monday)
+
+
+def bucket(open_time_ms, tf: str):
+    """Open time of the `tf` bar containing each timestamp (weekly bars start on Monday 00:00 UTC)."""
+    ms = TF_MS[tf]
+    if tf == "1w":
+        return ((open_time_ms - WEEK_OFFSET) // ms) * ms + WEEK_OFFSET
+    return (open_time_ms // ms) * ms
 
 
 # --------------------------------------------------------------------------------------
 # Resampling / MTF (no look-ahead)
 # --------------------------------------------------------------------------------------
 def resample(df: pd.DataFrame, tf: str) -> pd.DataFrame:
-    ms = TF_MS[tf]
-    g = (df["open_time"] // ms) * ms
+    g = bucket(df["open_time"], tf)
     agg = df.groupby(g).agg(open=("open", "first"), high=("high", "max"), low=("low", "min"),
                             close=("close", "last"), volume=("volume", "sum"),
                             quote_volume=("quote_volume", "sum"),
@@ -134,8 +142,7 @@ def htf_state_aligned(df_chart: pd.DataFrame, df_base: pd.DataFrame, tf: str, p:
     h = resample(df_base, tf)
     t = trend_state(h["close"].to_numpy(), p)
     t_prev = np.concatenate([[np.nan], t[:-1]])
-    ms = TF_MS[tf]
-    key = (df_chart["open_time"].to_numpy() // ms) * ms
+    key = bucket(df_chart["open_time"].to_numpy(), tf)
     idx = np.searchsorted(h["open_time"].to_numpy(), key)
     idx = np.clip(idx, 0, len(h) - 1)
     out = t_prev[idx]

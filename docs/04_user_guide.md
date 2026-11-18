@@ -93,6 +93,27 @@ Kde údaj nie je dostupný, zobrazí sa **N/A** – hodnoty sa nikdy nevymýšľ
 **Rôzne páry:** všetky prahy sú relatívne (ATR, percentily, R), takže skript funguje na BTC aj altcoinoch bez úprav.
 Validované na 24 pároch Binance USDⓈ-M.
 
+## 5a. Rôzne timeframy
+
+Indikátor funguje na **každom** timeframe grafu. Všetky prahy sú relatívne (ATR, R, percentily) a vyššie timeframy pre trend
+sa v režime **⑤ HTF trend timeframes = Auto** (default) vyberú podľa grafu:
+
+| Graf | HTF trend (Auto) | Session filter | Signály na pár / mesiac* | Net R / obchod* | t* |
+|---|---|---|---|---|---|
+| 1m–10m | 15m + 1h + 4h | áno | 5m: 6,3 | 5m: −0,066 | −3,2 |
+| 15m | 1h + 4h | áno | 3,7 | −0,020 | −0,7 |
+| 30m | 1h + 4h | áno | 2,3 | −0,012 | −0,3 |
+| 1h | 4h + 1D | áno | 1,0 | +0,004 | 0,1 |
+| 4h | 1D + 1W | nie (len grafy < 4h) | 0,5 | −0,066 | −0,9 |
+| 1D | 1W + 1M | nie | netestované | – | – |
+
+\* Holdout-1 páry, 2022-01 až 2026-10, po poplatkoch, slippage a fundingu. 5m a 15m sú pre-registrovaný test, 30m/1h/4h sú
+prieskumný test (`backtest/run_timeframes.py`, `results/timeframes_holdout1.json`). Žiadny timeframe nemá štatisticky
+preukázateľný zisk; 5m je preukázateľne stratový (náklady). Na 1m/3m by boli náklady v R ešte vyššie (netestované, chýbajú dáta).
+
+V režime **Manual** si tri HTF timeframy (+ Daily) nastavíte sami. Ak žiadny nie je vyšší ako graf, ako trend sa použije
+trend samotného grafu. Na grafoch ≥ 4h sa ATR percentil počíta zo 200 sviečok (aby fungoval aj týždenný graf).
+
 ## 6. Ako obchodovať signál (odporúčaný postup)
 
 0. **Pred signálom:** sledujte scenár. Ak je ▲ LONG **READY**, viete vopred, nad ktorou úrovňou by po uzavretí sviečky vznikol LONG,
